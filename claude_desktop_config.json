@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "srgssr": {
+      "command": "uvx",
+      "args": ["srgssr-mcp"],
+      "env": {
+        "SRGSSR_CONSUMER_KEY": "DEIN_CONSUMER_KEY",
+        "SRGSSR_CONSUMER_SECRET": "DEIN_CONSUMER_SECRET"
+      }
+    }
+  }
+}
