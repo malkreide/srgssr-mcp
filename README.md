@@ -1,95 +1,105 @@
-# srgssr-mcp
+> 🇨🇭 **Part of the [Swiss Public Data MCP Portfolio](https://github.com/malkreide)**
 
-**[🇬🇧 English version](README_EN.md)**
+# 📺 srgssr-mcp
 
-Ein [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) Server, der KI-Modellen Zugang zu den öffentlichen APIs der SRG SSR ermöglicht – dem Schweizer öffentlich-rechtlichen Medienunternehmen (SRF, RTS, RSI, RTR, SWI).
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io/)
+[![CI](https://github.com/malkreide/srgssr-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/malkreide/srgssr-mcp/actions)
+[![Data Source](https://img.shields.io/badge/Data-SRG%20SSR%20Public%20API-red)](https://developer.srgssr.ch)
 
-> **Anker-Beispiel:** Eine Frage wie «Was waren die Abstimmungsresultate zur Volksinitiative X im Kanton Zürich?» wird mit historischen Echtzeit-Daten aus dem Polis-System beantwortet – nicht mit einer Halluzination.
+> MCP server connecting AI models to SRG SSR public APIs – weather, TV/radio metadata, program guide and Swiss votations/elections since 1900 (SRF, RTS, RSI, RTR, SWI).
 
----
-
-## Verfügbare Tools (12)
-
-### 🌦️ SRF Wetter (4 Tools)
-
-| Tool | Beschreibung |
-|---|---|
-| `srgssr_weather_search_location` | Standort nach Name oder PLZ suchen, `geolocationId` ermitteln |
-| `srgssr_weather_current` | Aktuelles Wetter für einen Schweizer Standort |
-| `srgssr_weather_forecast_24h` | Stündliche 24-Stunden-Prognose |
-| `srgssr_weather_forecast_7day` | Tägliche 7-Tages-Prognose |
-
-### 📺 Video (3 Tools)
-
-| Tool | Beschreibung |
-|---|---|
-| `srgssr_video_get_shows` | TV-Sendungen einer Unternehmenseinheit auflisten |
-| `srgssr_video_get_episodes` | Neueste Episoden einer Sendung abrufen |
-| `srgssr_video_get_livestreams` | Live-TV-Kanäle auflisten |
-
-### 🎙️ Audio (3 Tools)
-
-| Tool | Beschreibung |
-|---|---|
-| `srgssr_audio_get_shows` | Radiosendungen auflisten |
-| `srgssr_audio_get_episodes` | Audio-Episoden einer Sendung abrufen |
-| `srgssr_audio_get_livestreams` | Live-Radiostationen auflisten |
-
-### 📅 EPG – Electronic Program Guide (1 Tool)
-
-| Tool | Beschreibung |
-|---|---|
-| `srgssr_epg_get_programs` | Tagesprogramm für einen TV- oder Radiosender abrufen |
-
-### 🗳️ Polis – Schweizer Demokratie (3 Tools)
-
-| Tool | Beschreibung |
-|---|---|
-| `srgssr_polis_get_votations` | Volksabstimmungen seit 1900 (national oder kantonal) |
-| `srgssr_polis_get_votation_results` | Detaillierte Resultate einer Abstimmung |
-| `srgssr_polis_get_elections` | Wahlergebnisse seit 1900 |
+[🇩🇪 Deutsche Version](README.de.md)
 
 ---
 
-## Unterstützte Unternehmenseinheiten
+## Overview
 
-| Kürzel | Einheit | Sprache |
-|---|---|---|
-| `srf` | SRF (Schweizer Radio und Fernsehen) | Deutsch |
-| `rts` | RTS (Radio Télévision Suisse) | Französisch |
-| `rsi` | RSI (Radiotelevisione svizzera) | Italienisch |
-| `rtr` | RTR (Radiotelevisiun Svizra Rumantscha) | Rätoromanisch |
-| `swi` | SWI swissinfo.ch | Mehrsprachig |
+**srgssr-mcp** gives AI assistants like Claude direct access to the public APIs of SRG SSR – Switzerland's national public broadcaster. Weather forecasts, TV and radio metadata, electronic program guides, and historical democratic data (votations and elections since 1900) are all accessible through a single standardised MCP interface.
+
+The server covers five thematic clusters: SRF Weather, Video, Audio, EPG and Polis (Swiss Democracy). Each cluster maps to a group of purpose-built tools that translate raw SRG SSR API data into clean JSON responses.
+
+**Anchor demo query:** *"What were the cantonal results of the popular vote on initiative X in Zurich?"* – answered with historical real-time data from the Polis system, not a hallucination.
 
 ---
 
-## Voraussetzungen
+## Features
 
-### API-Schlüssel
-
-Kostenlose Registrierung auf [developer.srgssr.ch](https://developer.srgssr.ch):
-
-1. Konto erstellen und anmelden
-2. Unter «My Apps» eine neue Applikation anlegen
-3. Produkt **SRG SSR PUBLIC API V2** hinzufügen
-4. **Consumer Key** und **Consumer Secret** notieren
-
-> ⚠️ **Nutzungsbedingungen:** Die SRG SSR APIs sind für nicht-kommerzielle Nutzung freigegeben. Bei kommerzieller Nutzung direkt anfragen: [api@srgssr.ch](mailto:api@srgssr.ch)
-
-### Python
-
-Python 3.11 oder neuer.
+- 🌦️ **Weather** – location search, current conditions, 24h hourly forecast, 7-day forecast (SRF Meteo)
+- 📺 **Video** – TV show listings, latest episodes, live TV channels across all business units
+- 🎙️ **Audio** – radio show listings, audio episodes, live radio stations
+- 📅 **EPG** – daily program schedule for any TV or radio channel
+- 🗳️ **Polis** – popular votes and elections since 1900, national and cantonal results
+- 🏢 **Multi-unit** – SRF (DE), RTS (FR), RSI (IT), RTR (RM), SWI (multilingual)
+- 🔐 **OAuth2** – automatic token management with Client Credentials flow
+- ☁️ **Dual transport** – stdio for Claude Desktop, Streamable HTTP/SSE for cloud deployment
 
 ---
 
-## Installation und Konfiguration
+## Prerequisites
+
+- Python 3.11+
+- **API keys** from [developer.srgssr.ch](https://developer.srgssr.ch) (free registration):
+  1. Create an account and log in
+  2. Under "My Apps", create a new application
+  3. Add the product **SRG SSR PUBLIC API V2**
+  4. Note your **Consumer Key** and **Consumer Secret**
+
+> ⚠️ **Terms of use:** SRG SSR APIs are available for non-commercial use. For commercial use, contact [api@srgssr.ch](mailto:api@srgssr.ch) directly.
+
+---
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/malkreide/srgssr-mcp.git
+cd srgssr-mcp
+
+# Install
+pip install -e .
+```
+
+Or with `uvx` (no permanent installation):
+
+```bash
+uvx srgssr-mcp
+```
+
+Or via pip:
+
+```bash
+pip install srgssr-mcp
+```
+
+---
+
+## Quickstart
+
+```bash
+# Set credentials
+export SRGSSR_CONSUMER_KEY="your-consumer-key"
+export SRGSSR_CONSUMER_SECRET="your-consumer-secret"
+
+# Start the server (stdio mode for Claude Desktop)
+srgssr-mcp
+```
+
+Try it immediately in Claude Desktop:
+
+> *"What will the weather be like in Zurich tomorrow?"*
+> *"What's on SRF 1 tonight?"*
+> *"Which popular votes took place in the canton of Bern between 2010 and 2020?"*
+
+---
+
+## Configuration
 
 ### Claude Desktop
 
-Konfigurationsdatei öffnen:
-
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+**Minimal (recommended):**
 
 ```json
 {
@@ -98,97 +108,212 @@ Konfigurationsdatei öffnen:
       "command": "uvx",
       "args": ["srgssr-mcp"],
       "env": {
-        "SRGSSR_CONSUMER_KEY": "dein-consumer-key",
-        "SRGSSR_CONSUMER_SECRET": "dein-consumer-secret"
+        "SRGSSR_CONSUMER_KEY": "your-consumer-key",
+        "SRGSSR_CONSUMER_SECRET": "your-consumer-secret"
       }
     }
   }
 }
 ```
 
-Claude Desktop vollständig neu starten.
+**Config file locations:**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-### Andere MCP-Clients
+After saving, restart Claude Desktop completely.
 
-Kompatibel mit Cursor, Windsurf, VS Code + Continue, LibreChat, Cline sowie selbst gehosteten Modellen via `mcp-proxy`. Gleiche Umgebungsvariablen setzen:
+### Other MCP Clients
 
-```bash
-export SRGSSR_CONSUMER_KEY="dein-consumer-key"
-export SRGSSR_CONSUMER_SECRET="dein-consumer-secret"
-```
+Compatible with Cursor, Windsurf, VS Code + Continue, LibreChat, Cline, and self-hosted models via `mcp-proxy`. Set the same environment variables.
 
-### SSE-Transport (Cloud / Render.com)
+### Cloud Deployment (SSE for browser access)
+
+For use via **claude.ai in the browser** (e.g. on managed workstations without local software):
 
 ```bash
 SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
   python -m srgssr_mcp.server --transport streamable_http --port 8000
 ```
 
----
-
-## Beispiel-Anfragen
-
-```
-«Wie wird das Wetter morgen in Zürich?»
-«Was läuft heute Abend auf SRF 1?»
-«Zeige mir die neuesten Tagesschau-Episoden.»
-«Welche Volksabstimmungen gab es im Kanton Bern zwischen 2010 und 2020?»
-«Was waren die kantonalen Ergebnisse zur Abstimmung über die Maskeninitiative?»
-«Liste alle aktuellen RTS-Radiosendungen auf.»
-```
+> 💡 *"stdio for the developer laptop, SSE for the browser."*
 
 ---
 
-## Projektstruktur
+## Available Tools
+
+### 🌦️ SRF Weather (4 tools)
+
+| Tool | Description | Data Source |
+|---|---|---|
+| `srgssr_weather_search_location` | Search for a location by name or postal code to obtain a `geolocationId` | SRF Meteo |
+| `srgssr_weather_current` | Current weather conditions for a Swiss location | SRF Meteo |
+| `srgssr_weather_forecast_24h` | Hourly 24-hour forecast | SRF Meteo |
+| `srgssr_weather_forecast_7day` | Daily 7-day forecast | SRF Meteo |
+
+### 📺 Video (3 tools)
+
+| Tool | Description | Data Source |
+|---|---|---|
+| `srgssr_video_get_shows` | List TV shows for a business unit | SRG SSR IL |
+| `srgssr_video_get_episodes` | Retrieve latest episodes of a show | SRG SSR IL |
+| `srgssr_video_get_livestreams` | List live TV channels | SRG SSR IL |
+
+### 🎙️ Audio (3 tools)
+
+| Tool | Description | Data Source |
+|---|---|---|
+| `srgssr_audio_get_shows` | List radio shows for a business unit | SRG SSR IL |
+| `srgssr_audio_get_episodes` | Retrieve audio episodes of a show | SRG SSR IL |
+| `srgssr_audio_get_livestreams` | List live radio stations | SRG SSR IL |
+
+### 📅 EPG – Electronic Program Guide (1 tool)
+
+| Tool | Description | Data Source |
+|---|---|---|
+| `srgssr_epg_get_programs` | Daily program schedule for a TV or radio channel | SRG SSR IL |
+
+### 🗳️ Polis – Swiss Democracy (3 tools)
+
+| Tool | Description | Data Source |
+|---|---|---|
+| `srgssr_polis_get_votations` | Popular votes since 1900 (national or cantonal) | Polis API |
+| `srgssr_polis_get_votation_results` | Detailed results of a specific vote | Polis API |
+| `srgssr_polis_get_elections` | Election results since 1900 | Polis API |
+
+### Supported Business Units
+
+| Code | Unit | Language |
+|---|---|---|
+| `srf` | SRF (Schweizer Radio und Fernsehen) | German |
+| `rts` | RTS (Radio Télévision Suisse) | French |
+| `rsi` | RSI (Radiotelevisione svizzera) | Italian |
+| `rtr` | RTR (Radiotelevisiun Svizra Rumantscha) | Romansh |
+| `swi` | SWI swissinfo.ch | Multilingual |
+
+### Example Use Cases
+
+| Query | Tool |
+|---|---|
+| *"Weather in Zurich tomorrow?"* | `srgssr_weather_forecast_24h` |
+| *"What's on SRF 1 tonight?"* | `srgssr_epg_get_programs` |
+| *"Latest Tagesschau episodes?"* | `srgssr_video_get_episodes` |
+| *"Popular votes in Canton Bern 2010–2020?"* | `srgssr_polis_get_votations` |
+| *"Cantonal results of the mask initiative vote?"* | `srgssr_polis_get_votation_results` |
+| *"All current RTS radio shows?"* | `srgssr_audio_get_shows` |
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐     ┌───────────────────────────┐     ┌──────────────────────────┐
+│   Claude / AI   │────▶│       srgssr-mcp           │────▶│    SRG SSR APIs          │
+│   (MCP Host)    │◀────│       (MCP Server)         │◀────│                          │
+└─────────────────┘     │                           │     │  SRF Meteo (Weather)     │
+                        │  14 Tools                 │     │  Integration Layer (A/V) │
+                        │  Stdio | SSE              │     │  Polis (Democracy)       │
+                        │                           │     │  developer.srgssr.ch     │
+                        │  OAuth2 token mgmt        │     └──────────────────────────┘
+                        │  server.py (FastMCP)       │
+                        └───────────────────────────┘
+```
+
+### Data Sources
+
+| Source | Data | Access |
+|---|---|---|
+| [developer.srgssr.ch](https://developer.srgssr.ch) | SRG SSR PUBLIC API V2 (weather, A/V, EPG, Polis) | OAuth2 (free registration) |
+
+**Attribution:** SRG SSR APIs are subject to the [SRG SSR Terms of Use](https://developer.srgssr.ch).
+
+---
+
+## Project Structure
 
 ```
 srgssr-mcp/
-├── src/
-│   └── srgssr_mcp/
-│       ├── __init__.py
-│       └── server.py          # Alle 12 Tools
+├── src/srgssr_mcp/
+│   ├── __init__.py          # Package
+│   └── server.py            # FastMCP server: 14 tools, OAuth2 client
 ├── .github/
 │   └── workflows/
-│       └── ci.yml             # Ruff + Syntax-Check, Python 3.11–3.13
+│       └── ci.yml           # GitHub Actions CI (Python 3.11–3.13)
+├── pyproject.toml           # Build configuration (hatchling)
 ├── CHANGELOG.md
-├── LICENSE                    # MIT
-├── README.md                  # Diese Datei (Deutsch)
-├── README_EN.md               # Englische Version
-├── claude_desktop_config.json # Konfigurations-Vorlage
-└── pyproject.toml
+├── CONTRIBUTING.md          # English
+├── CONTRIBUTING.de.md       # German
+├── LICENSE                  # MIT
+├── README.md                # This file (English)
+└── README.de.md             # German version
 ```
 
 ---
 
-## Entwicklung
+## Known Limitations
+
+- **API keys required** – unlike other portfolio servers, SRG SSR APIs require free OAuth2 credentials
+- **Non-commercial use** – the SRG SSR API terms restrict commercial use without explicit permission
+- **Rate limits** – the SRG SSR API may enforce rate limits depending on your application tier
+- **Weather data** – SRF Meteo covers Switzerland only
+
+---
+
+## Testing
 
 ```bash
-git clone https://github.com/malkreide/srgssr-mcp
-cd srgssr-mcp
-pip install -e ".[dev]"
+# Unit tests (no network required)
+PYTHONPATH=src pytest tests/ -m "not live"
 
-# Syntax prüfen
-python -m py_compile src/srgssr_mcp/server.py
+# Integration tests (requires SRG SSR API keys)
+PYTHONPATH=src pytest tests/ -m "live"
 
 # Linting
 ruff check src/
-
-# MCP Inspector (interaktives Testen)
-npx @modelcontextprotocol/inspector uvx srgssr-mcp
 ```
 
 ---
 
-## Verwandte Projekte
+## Contributing
 
-- [zurich-opendata-mcp](https://github.com/malkreide/zurich-opendata-mcp) – Stadtdaten Zürich (CKAN, Wetter, Luftqualität, Parkplätze, Gemeinderat)
-- [fedlex-mcp](https://github.com/malkreide/fedlex-mcp) – Schweizer Bundesrecht via Fedlex SPARQL
-- [swiss-transport-mcp](https://github.com/malkreide/swiss-transport-mcp) – Öffentlicher Verkehr Schweiz (OJP, SIRI-SX, Fahrpreise)
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
-## Lizenz
+## Changelog
 
-MIT License – © 2025 [malkreide](https://github.com/malkreide)
+See [CHANGELOG.md](CHANGELOG.md)
 
-Die verwendeten SRG SSR APIs unterliegen den [Nutzungsbedingungen der SRG SSR](https://developer.srgssr.ch).
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE)
+
+The SRG SSR APIs used in this project are subject to the [SRG SSR Terms of Use](https://developer.srgssr.ch).
+
+---
+
+## Author
+
+Hayal Oezkan · [github.com/malkreide](https://github.com/malkreide)
+
+---
+
+## Credits & Related Projects
+
+- **Data:** [SRG SSR Developer Portal](https://developer.srgssr.ch) · SRF Meteo · Polis API
+- **Protocol:** [Model Context Protocol](https://modelcontextprotocol.io/) – Anthropic / Linux Foundation
+- **Related:**
+
+| Server | Description |
+|---|---|
+| [zurich-opendata-mcp](https://github.com/malkreide/zurich-opendata-mcp) | City of Zurich open data (OSTLUFT air quality, weather, parking, geodata) |
+| [swiss-transport-mcp](https://github.com/malkreide/swiss-transport-mcp) | Swiss public transport – OJP 2.0 journey planning, SIRI-SX disruptions |
+| [swiss-environment-mcp](https://github.com/malkreide/swiss-environment-mcp) | BAFU environmental data – air quality, hydrology, natural hazards |
+| [swiss-statistics-mcp](https://github.com/malkreide/swiss-statistics-mcp) | BFS STAT-TAB – 682 statistical datasets |
+| [fedlex-mcp](https://github.com/malkreide/fedlex-mcp) | Swiss federal law via Fedlex SPARQL |
+
+**Synergy example:** *"What were the results of the 2020 popular votes in Canton Zurich – and how did turnout compare to the national average?"*
+→ `srgssr-mcp` (Polis, cantonal results) + `swiss-statistics-mcp` (BFS, turnout data)
+
+- **Portfolio:** [Swiss Public Data MCP Portfolio](https://github.com/malkreide)
