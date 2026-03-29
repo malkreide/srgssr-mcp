@@ -3,6 +3,16 @@
 Alle wesentlichen Änderungen werden in dieser Datei dokumentiert.
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
+## [0.1.0] - 2026-03-29
+
+### Added
+- Initial release
+- 12 Tools für SRG SSR APIs: SRF Wetter (4), Video (3), Audio (3), EPG (1), Polis/Demokratie (3)
+- Unterstützung für SRF, RTS, RSI, RTR, SWI
+- Historische Abstimmungs- und Wahldaten seit 1900 via Polis-API
+- OAuth2-Authentifizierung für SRG SSR Developer APIs
+- Dual-Transport: stdio (lokal) + Streamable HTTP (Cloud)
+
 ## [0.1.0] – 2026-03-29
 
 ### Neu
