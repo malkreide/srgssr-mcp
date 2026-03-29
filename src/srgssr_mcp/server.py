@@ -108,7 +108,10 @@ def _handle_error(e: Exception) -> str:
         if sc == 401:
             return "Fehler 401: Ungültige API-Credentials. Bitte SRGSSR_CONSUMER_KEY und SRGSSR_CONSUMER_SECRET prüfen."
         if sc == 403:
-            return "Fehler 403: Zugriff verweigert. Möglicherweise fehlt der Zugriff auf diese API im gewählten Produkt."
+            return (
+                "Fehler 403: Zugriff verweigert. Möglicherweise fehlt der Zugriff"
+                " auf diese API im gewählten Produkt."
+            )
         if sc == 404:
             return "Fehler 404: Ressource nicht gefunden. Bitte ID oder Parameter prüfen."
         if sc == 429:
@@ -335,7 +338,11 @@ def _format_hourly_forecast(data: dict) -> str:
     hours = data.get("list", data.get("hour", []))
     if not hours:
         return json.dumps(data, indent=2, ensure_ascii=False)
-    lines = ["## 24-Stunden-Prognose (SRF Meteo)\n", "| Stunde | Temp °C | Niederschlag | Wetterlage |", "| --- | --- | --- | --- |"]
+    lines = [
+        "## 24-Stunden-Prognose (SRF Meteo)\n",
+        "| Stunde | Temp °C | Niederschlag | Wetterlage |",
+        "| --- | --- | --- | --- |",
+    ]
     for h in hours[:24]:
         vals = h.get("values", {})
         lines.append(
@@ -387,7 +394,11 @@ def _format_7day_forecast(data: dict) -> str:
     days = data.get("list", data.get("day", []))
     if not days:
         return json.dumps(data, indent=2, ensure_ascii=False)
-    lines = ["## 7-Tages-Prognose (SRF Meteo)\n", "| Datum | Min °C | Max °C | Niederschlag | Wetterlage |", "| --- | --- | --- | --- | --- |"]
+    lines = [
+        "## 7-Tages-Prognose (SRF Meteo)\n",
+        "| Datum | Min °C | Max °C | Niederschlag | Wetterlage |",
+        "| --- | --- | --- | --- | --- |",
+    ]
     for d in days[:7]:
         vals = d.get("values", {})
         lines.append(
@@ -903,7 +914,10 @@ class PolisListInput(BaseModel):
     )
     canton: str | None = Field(
         default=None,
-        description="Kantonskürzel für kantonale Abstimmungen (z.B. 'ZH', 'BE', 'GE'). Leer für nationale Abstimmungen.",
+        description=(
+            "Kantonskürzel für kantonale Abstimmungen (z.B. 'ZH', 'BE', 'GE')."
+            " Leer für nationale Abstimmungen."
+        ),
         max_length=4,
     )
     page_size: int | None = Field(default=20, ge=1, le=100, description="Einträge pro Seite")
@@ -970,7 +984,10 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
         filter_desc.append(f"Kanton {params.canton.upper()}")
     filter_str = " | ".join(filter_desc) if filter_desc else "alle"
 
-    lines = [f"## Schweizer Volksabstimmungen ({filter_str})\n", f"*Total: {total} Abstimmungen, Seite {params.page}*\n"]
+    lines = [
+        f"## Schweizer Volksabstimmungen ({filter_str})\n",
+        f"*Total: {total} Abstimmungen, Seite {params.page}*\n",
+    ]
     for v in votations:
         v_date = v.get("date", v.get("votationDate", "?"))
         title = v.get("title", v.get("titleDe", "Unbekannt"))
