@@ -1122,6 +1122,9 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
 # Entry point
 # ===========================================================================
 
-if __name__ == "__main__":
+def main():
+    """Entry point for uvx / pip install."""
     mcp.run()
 
+if __name__ == "__main__":
+    main()
