@@ -13,6 +13,10 @@
 
 [🇩🇪 Deutsche Version](README.de.md)
 
+<p align="center">
+  <img src="assets/demo.svg" alt="Demo: Claude asks a question → srgssr-mcp tool call → grounded answer from SRG SSR Polis API" width="760">
+</p>
+
 ---
 
 ## Overview
@@ -246,6 +250,20 @@ srgssr-mcp/
 ├── README.md                # This file (English)
 └── README.de.md             # German version
 ```
+
+---
+
+## 🛡️ Safety & Limits
+
+| Aspect | Details |
+|--------|---------|
+| **Access** | Read-only — the server only reads from SRG SSR APIs and cannot post, modify or delete any content |
+| **Personal data** | No personal data — all endpoints serve public broadcast metadata, weather observations and historical votation/election results |
+| **Rate limits** | Subject to the tier of your OAuth2 application on [developer.srgssr.ch](https://developer.srgssr.ch); the server adds sensible per-query caps (e.g. max 100 episodes, 50 shows per list call) |
+| **Timeout** | 30 seconds per upstream API call |
+| **Authentication** | OAuth2 Client Credentials (free registration); secrets stay local, never logged |
+| **Licensing & use** | SRG SSR APIs are for **non-commercial use**; commercial use requires written permission from [api@srgssr.ch](mailto:api@srgssr.ch) |
+| **Terms of Service** | Subject to the [SRG SSR Developer Terms of Use](https://developer.srgssr.ch) — users remain responsible for attribution and compliance |
 
 ---
 

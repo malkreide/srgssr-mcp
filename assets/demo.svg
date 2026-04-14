@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fafafa"/>
+      <stop offset="1" stop-color="#f0f0f3"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="o"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d1002e"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="360" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="480" y="36" text-anchor="middle" font-size="18" font-weight="600" fill="#1a1a1a">
+    srgssr-mcp · Claude queries SRG SSR Public APIs via a single tool call
+  </text>
+
+  <!-- ========== Column 1: User prompt ========== -->
+  <g filter="url(#shadow)">
+    <rect x="30" y="70" width="280" height="240" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  </g>
+  <text x="50" y="98" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1">USER · CLAUDE DESKTOP</text>
+  <circle cx="50" cy="120" r="10" fill="#1a1a1a"/>
+  <text x="68" y="124" font-size="12" fill="#1a1a1a" font-weight="600">You</text>
+  <foreignObject x="50" y="138" width="240" height="160">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font:13px -apple-system,Segoe UI,sans-serif; color:#1f2937; line-height:1.45;">
+      «Wie waren die kantonalen Resultate der Abstimmung zur <b>9. AHV-Revision</b> im Kanton Zürich?»
+    </div>
+  </foreignObject>
+
+  <!-- Arrow 1 -->
+  <line x1="315" y1="190" x2="345" y2="190" stroke="#d1002e" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== Column 2: MCP tool call ========== -->
+  <g filter="url(#shadow)">
+    <rect x="350" y="70" width="260" height="240" rx="12" fill="#1a1a1a"/>
+  </g>
+  <text x="370" y="98" font-size="11" font-weight="700" fill="#d1002e" letter-spacing="1">MCP TOOL CALL</text>
+  <foreignObject x="370" y="112" width="220" height="190">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font:12px ui-monospace,SFMono-Regular,Menlo,monospace; color:#e5e7eb; line-height:1.5;">
+      <div style="color:#9ca3af;">// Claude picks the right tool</div>
+      <div style="color:#fca5a5;">srgssr_polis_<br/>get_votation_results</div>
+      <div style="margin-top:10px; color:#9ca3af;">{</div>
+      <div>&#160;&#160;<span style="color:#93c5fd;">"votation_id"</span>: <span style="color:#fcd34d;">"1978-12-03"</span>,</div>
+      <div>&#160;&#160;<span style="color:#93c5fd;">"canton"</span>: <span style="color:#fcd34d;">"ZH"</span></div>
+      <div style="color:#9ca3af;">}</div>
+      <div style="margin-top:10px; color:#6b7280;">→ OAuth2 → Polis API</div>
+    </div>
+  </foreignObject>
+
+  <!-- Arrow 2 -->
+  <line x1="615" y1="190" x2="645" y2="190" stroke="#d1002e" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== Column 3: Answer ========== -->
+  <g filter="url(#shadow)">
+    <rect x="650" y="70" width="280" height="240" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+  </g>
+  <text x="670" y="98" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1">GROUNDED ANSWER</text>
+  <circle cx="670" cy="120" r="10" fill="#d1002e"/>
+  <text x="688" y="124" font-size="12" fill="#1a1a1a" font-weight="600">Claude</text>
+  <foreignObject x="670" y="138" width="240" height="165">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font:12.5px -apple-system,Segoe UI,sans-serif; color:#1f2937; line-height:1.45;">
+      Am <b>3. Dez. 1978</b> stimmten im Kanton Zürich:
+      <div style="margin-top:6px; padding:6px 8px; background:#fef2f2; border-left:3px solid #d1002e; border-radius:3px;">
+        <b>Ja</b> 58.1&#160;% · <b>Nein</b> 41.9&#160;%<br/>
+        Stimmbeteiligung 48.7&#160;%
+      </div>
+      <div style="margin-top:6px; font-size:10.5px; color:#6b7280;">Quelle: Polis API · srgssr-mcp</div>
+    </div>
+  </foreignObject>
+
+  <!-- Footer -->
+  <text x="480" y="342" text-anchor="middle" font-size="11" fill="#6b7280">
+    14 tools · Weather · Video · Audio · EPG · Polis (Swiss Democracy since 1900) · OAuth2 · stdio + SSE
+  </text>
+</svg>

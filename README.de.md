@@ -13,6 +13,10 @@
 
 > MCP-Server, der KI-Modelle mit den öffentlichen APIs der SRG SSR verbindet – Wetter, TV-/Radio-Metadaten, Programmguide und Schweizer Abstimmungen/Wahlen seit 1900 (SRF, RTS, RSI, RTR, SWI).
 
+<p align="center">
+  <img src="assets/demo.svg" alt="Demo: Claude stellt eine Frage → srgssr-mcp Tool Call → fundierte Antwort aus der SRG SSR Polis API" width="760">
+</p>
+
 ---
 
 ## Übersicht
@@ -246,6 +250,20 @@ srgssr-mcp/
 ├── README.md                # Englische Hauptversion
 └── README.de.md             # Diese Datei (Deutsch)
 ```
+
+---
+
+## 🛡️ Sicherheit & Limits
+
+| Aspekt | Details |
+|--------|---------|
+| **Zugriff** | Nur lesend — der Server liest ausschliesslich aus SRG SSR APIs und kann keine Inhalte posten, ändern oder löschen |
+| **Personendaten** | Keine Personendaten — alle Endpoints liefern öffentliche Sendungs-Metadaten, Wetterdaten sowie historische Abstimmungs- und Wahlresultate |
+| **Rate Limits** | Abhängig von der Stufe deiner OAuth2-Applikation auf [developer.srgssr.ch](https://developer.srgssr.ch); der Server ergänzt sinnvolle Pro-Query-Caps (z.B. max. 100 Episoden, 50 Sendungen pro Listen-Call) |
+| **Timeout** | 30 Sekunden pro Upstream-API-Call |
+| **Authentifizierung** | OAuth2 Client Credentials (kostenlose Registrierung); Secrets bleiben lokal, werden nicht geloggt |
+| **Lizenz & Nutzung** | Die SRG SSR APIs sind für **nicht-kommerzielle Nutzung** vorgesehen; kommerzielle Nutzung erfordert schriftliche Genehmigung via [api@srgssr.ch](mailto:api@srgssr.ch) |
+| **Nutzungsbedingungen** | Es gelten die [SRG SSR Developer Terms of Use](https://developer.srgssr.ch) — Nutzende bleiben für Quellenangabe und Compliance verantwortlich |
 
 ---
 
