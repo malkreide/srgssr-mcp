@@ -205,6 +205,8 @@ SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
 | *"Cantonal results of the mask initiative vote?"* | `srgssr_polis_get_votation_results` |
 | *"All current RTS radio shows?"* | `srgssr_audio_get_shows` |
 
+→ [More use cases by audience](EXAMPLES.md) →
+
 ---
 
 ## Architecture
