@@ -17,6 +17,7 @@ import base64
 import json
 import os
 import time
+import unicodedata
 from enum import StrEnum
 
 import httpx
@@ -100,7 +101,7 @@ async def _api_get(url: str, params: dict | None = None) -> dict:
         return resp.json()
 
 
-def _handle_error(e: Exception) -> str:
+def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
     if isinstance(e, ValueError):
         return f"Konfigurationsfehler: {e}"
     if isinstance(e, httpx.HTTPStatusError):
@@ -113,13 +114,34 @@ def _handle_error(e: Exception) -> str:
                 " auf diese API im gewählten Produkt."
             )
         if sc == 404:
-            return "Fehler 404: Ressource nicht gefunden. Bitte ID oder Parameter prüfen."
+            base = "Fehler 404: Ressource nicht gefunden. Bitte ID oder Parameter prüfen."
+            return f"{base}\n\n**Tipp:** {not_found_hint}" if not_found_hint else base
         if sc == 429:
             return "Fehler 429: Rate-Limit überschritten. Bitte etwas warten und erneut versuchen."
         return f"API-Fehler {sc}: {e.response.text[:200]}"
     if isinstance(e, httpx.TimeoutException):
         return "Fehler: Anfrage hat das Timeout überschritten. Bitte erneut versuchen."
     return f"Unerwarteter Fehler ({type(e).__name__}): {e}"
+
+
+def _query_variants(query: str) -> list[str]:
+    """Returns deduplicated query variants for fuzzy retry.
+
+    Generates the original query plus normalized forms (ASCII-folded for
+    diacritic-insensitive matching, lowercased, title-cased) so that a search
+    for "Zurich" still hits "Zürich" upstream and vice versa.
+    """
+    seen: set[str] = set()
+    variants: list[str] = []
+    folded = "".join(
+        c for c in unicodedata.normalize("NFKD", query) if not unicodedata.combining(c)
+    )
+    for v in (query, folded, query.lower(), folded.lower(), query.title(), folded.title()):
+        v = v.strip()
+        if v and v not in seen:
+            seen.add(v)
+            variants.append(v)
+    return variants
 
 
 # ---------------------------------------------------------------------------
@@ -208,22 +230,40 @@ async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
     Returns:
         str: Liste von Standorten mit Name, Kanton, PLZ und geolocationId
     """
+    locations: list = []
+    matched_variant = params.query
+    tried: list[str] = []
     try:
-        data = await _api_get(
-            f"{WEATHER_BASE}/geolocations",
-            params={"searchterm": params.query},
-        )
+        for variant in _query_variants(params.query):
+            tried.append(variant)
+            data = await _api_get(
+                f"{WEATHER_BASE}/geolocations",
+                params={"searchterm": variant},
+            )
+            locations = data.get("geolocationList", [])
+            if locations:
+                matched_variant = variant
+                break
     except Exception as e:
         return _handle_error(e)
 
-    locations = data.get("geolocationList", [])
     if not locations:
-        return f"Keine Standorte gefunden für: '{params.query}'. Bitte anderen Suchbegriff verwenden."
+        tried_str = ", ".join(f"'{t}'" for t in tried)
+        return (
+            f"Keine Standorte gefunden für: '{params.query}' "
+            f"(versuchte Varianten: {tried_str}). "
+            f"Vorschläge: deutsche Schreibweise mit Diakritika (z.B. 'Zürich', "
+            f"'Genève', 'Bern'), die offizielle PLZ (z.B. '8001', '1003'), oder "
+            f"einen kürzeren Namensbestandteil verwenden."
+        )
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(locations, indent=2, ensure_ascii=False)
 
-    lines = [f"## Gefundene Standorte für '{params.query}'\n"]
+    header = f"## Gefundene Standorte für '{params.query}'"
+    if matched_variant != params.query:
+        header += f" (Treffer via '{matched_variant}')"
+    lines = [header + "\n"]
     for loc in locations:
         lines.append(
             f"- **{loc.get('name', 'Unbekannt')}** "
@@ -553,6 +593,13 @@ async def srgssr_video_get_shows(params: VideoShowsInput) -> str:
         return json.dumps({"total": total, "shows": shows}, indent=2, ensure_ascii=False)
 
     bu_label = params.business_unit.value.upper()
+    if not shows:
+        return (
+            f"Keine TV-Sendungen gefunden für business_unit='{bu}' "
+            f"(Seite {params.page}). Vorschläge: andere Unternehmenseinheit "
+            f"({', '.join(b for b in VALID_BU if b != bu)}) probieren, oder "
+            f"page=1 setzen falls die Seitennummer zu hoch ist."
+        )
     lines = [f"## TV-Sendungen – {bu_label} (Seite {params.page})\n", f"*Total: {total} Sendungen*\n"]
     for show in shows:
         title = show.get("title", show.get("name", "Unbekannt"))
@@ -643,13 +690,28 @@ async def srgssr_video_get_episodes(params: VideoEpisodesInput) -> str:
             params={"pageSize": params.page_size, "pageNumber": params.page},
         )
     except Exception as e:
-        return _handle_error(e)
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"Verwende srgssr_video_get_shows mit business_unit='{params.business_unit.value}', "
+                f"um eine gültige show_id für '{params.show_id}' zu finden."
+            ),
+        )
 
     episodes = data.get("episodeList", data.get("medias", data.get("mediaList", [])))
     total = data.get("total", len(episodes))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "episodes": episodes}, indent=2, ensure_ascii=False)
+
+    if not episodes:
+        return (
+            f"Keine Episoden gefunden für show_id='{params.show_id}' "
+            f"({params.business_unit.value.upper()}). "
+            f"Möglich: Sendung existiert ohne aktuelle Episoden, oder die show_id ist "
+            f"ungültig. Vorschlag: srgssr_video_get_shows aufrufen, um die show_id zu "
+            f"verifizieren."
+        )
 
     lines = [f"## Episoden: {params.show_id} ({params.business_unit.value.upper()})\n"]
     for ep in episodes:
@@ -728,6 +790,13 @@ async def srgssr_video_get_livestreams(params: VideoLivestreamsInput) -> str:
         return json.dumps(channels, indent=2, ensure_ascii=False)
 
     bu_label = params.business_unit.value.upper()
+    if not channels:
+        return (
+            f"Keine Live-TV-Sender für business_unit='{params.business_unit.value}' "
+            f"verfügbar. RTR und SWI haben weniger oder keine Live-Kanäle; eine "
+            f"andere Unternehmenseinheit ({', '.join(b for b in VALID_BU if b != params.business_unit.value)}) "
+            f"liefert in der Regel mehr Resultate."
+        )
     lines = [f"## Live-TV-Sender – {bu_label}\n"]
     for ch in channels:
         name = ch.get("title", ch.get("name", "Unbekannt"))
@@ -795,6 +864,13 @@ async def srgssr_audio_get_shows(params: VideoShowsInput) -> str:
         return json.dumps({"total": total, "shows": shows}, indent=2, ensure_ascii=False)
 
     bu_label = params.business_unit.value.upper()
+    if not shows:
+        return (
+            f"Keine Radiosendungen gefunden für business_unit='{bu}' "
+            f"(Seite {params.page}). Vorschläge: andere Unternehmenseinheit "
+            f"({', '.join(b for b in VALID_BU if b != bu)}) probieren, oder "
+            f"page=1 setzen falls die Seitennummer zu hoch ist."
+        )
     lines = [f"## Radiosendungen – {bu_label} (Seite {params.page})\n", f"*Total: {total} Sendungen*\n"]
     for show in shows:
         title = show.get("title", show.get("name", "Unbekannt"))
@@ -875,13 +951,28 @@ async def srgssr_audio_get_episodes(params: AudioEpisodesInput) -> str:
             params={"pageSize": params.page_size, "pageNumber": params.page},
         )
     except Exception as e:
-        return _handle_error(e)
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"Verwende srgssr_audio_get_shows mit business_unit='{params.business_unit.value}', "
+                f"um eine gültige show_id für '{params.show_id}' zu finden."
+            ),
+        )
 
     episodes = data.get("episodeList", data.get("medias", []))
     total = data.get("total", len(episodes))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "episodes": episodes}, indent=2, ensure_ascii=False)
+
+    if not episodes:
+        return (
+            f"Keine Audio-Episoden gefunden für show_id='{params.show_id}' "
+            f"({params.business_unit.value.upper()}). "
+            f"Möglich: Sendung existiert ohne aktuelle Episoden, oder die show_id ist "
+            f"ungültig. Vorschlag: srgssr_audio_get_shows aufrufen, um die show_id zu "
+            f"verifizieren."
+        )
 
     lines = [f"## Audio-Episoden: {params.show_id} ({params.business_unit.value.upper()})\n"]
     for ep in episodes:
@@ -947,6 +1038,14 @@ async def srgssr_audio_get_livestreams(params: VideoLivestreamsInput) -> str:
         return json.dumps(channels, indent=2, ensure_ascii=False)
 
     bu_label = params.business_unit.value.upper()
+    if not channels:
+        return (
+            f"## Live-Radiosender – {bu_label}\n\n"
+            f"Keine Live-Radiosender für business_unit='{params.business_unit.value}' "
+            f"verfügbar. Eine andere Unternehmenseinheit "
+            f"({', '.join(b for b in VALID_BU if b != params.business_unit.value)}) "
+            f"liefert in der Regel mehr Resultate."
+        )
     lines = [f"## Live-Radiosender – {bu_label}\n"]
     for ch in channels:
         name = ch.get("title", ch.get("name", "Unbekannt"))
@@ -1032,12 +1131,30 @@ async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
             params={"bu": bu, "channel": params.channel_id, "date": params.date},
         )
     except Exception as e:
-        return _handle_error(e)
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"channel_id='{params.channel_id}' nicht gefunden für "
+                f"business_unit='{params.business_unit.value}'. Verwende "
+                f"srgssr_video_get_livestreams oder srgssr_audio_get_livestreams, "
+                f"um eine gültige channel_id zu finden. EPG ist nur für SRF, RTS "
+                f"und RSI verfügbar."
+            ),
+        )
 
     programs = data.get("programList", data.get("programs", []))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(programs, indent=2, ensure_ascii=False)
+
+    if not programs:
+        return (
+            f"Keine Programmeinträge für channel_id='{params.channel_id}' "
+            f"({params.business_unit.value.upper()}) am {params.date}. "
+            f"Vorschläge: Datum prüfen (Format YYYY-MM-DD, sehr ferne Zukunft "
+            f"oft nicht verfügbar), oder channel_id über "
+            f"srgssr_video_get_livestreams verifizieren."
+        )
 
     lines = [
         f"## Programm – {params.channel_id.upper()} ({params.business_unit.value.upper()}) "
@@ -1165,6 +1282,24 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
         filter_desc.append(f"Kanton {params.canton.upper()}")
     filter_str = " | ".join(filter_desc) if filter_desc else "alle"
 
+    if not votations:
+        suggestions = []
+        if params.canton:
+            suggestions.append(
+                f"canton-Filter entfernen (kantonale Abstimmungen für "
+                f"'{params.canton.upper()}' sind möglicherweise nicht erfasst)"
+            )
+        if params.year_from and params.year_from > 1990:
+            suggestions.append(f"year_from auf einen früheren Wert setzen (z.B. {params.year_from - 10})")
+        if params.year_to and params.year_to < 2024:
+            suggestions.append(f"year_to auf einen späteren Wert setzen (z.B. {params.year_to + 10})")
+        if not suggestions:
+            suggestions.append("Filter weglassen, um den vollen Datenbestand seit 1900 zu sehen")
+        return (
+            f"Keine Volksabstimmungen gefunden ({filter_str}). "
+            f"Vorschläge: " + "; ".join(suggestions) + "."
+        )
+
     lines = [
         f"## Schweizer Volksabstimmungen ({filter_str})\n",
         f"*Total: {total} Abstimmungen, Seite {params.page}*\n",
@@ -1234,7 +1369,14 @@ async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
     try:
         data = await _api_get(f"{POLIS_BASE}/votations/{params.votation_id}")
     except Exception as e:
-        return _handle_error(e)
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"votation_id='{params.votation_id}' nicht gefunden. Verwende "
+                f"srgssr_polis_get_votations (optional mit year_from/year_to oder "
+                f"canton) und übernimm die ID aus der Resultatliste."
+            ),
+        )
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -1338,6 +1480,22 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "elections": elections}, indent=2, ensure_ascii=False)
+
+    if not elections:
+        suggestions = []
+        if params.canton:
+            suggestions.append(
+                f"canton-Filter entfernen (Wahlen für '{params.canton.upper()}' "
+                f"sind möglicherweise nicht erfasst)"
+            )
+        if params.year_from and params.year_from > 1990:
+            suggestions.append(f"year_from auf einen früheren Wert setzen (z.B. {params.year_from - 10})")
+        if not suggestions:
+            suggestions.append("Filter weglassen, um den vollen Datenbestand seit 1900 zu sehen")
+        return (
+            "Keine Wahlen gefunden mit den angegebenen Filtern. "
+            "Vorschläge: " + "; ".join(suggestions) + "."
+        )
 
     lines = ["## Schweizer Wahlen\n", f"*Total: {total} Wahlen, Seite {params.page}*\n"]
     for el in elections:

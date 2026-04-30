@@ -751,3 +751,139 @@ async def test_tool_descriptions_carry_structured_tags():
             if tag not in desc:
                 missing.append(f"{t.name} missing {tag}")
     assert not missing, "Structured tags missing:\n" + "\n".join(missing)
+
+
+# ---------------------------------------------------------------------------
+# ARCH-003: Fuzzy search and suggestion engines for empty results
+# ---------------------------------------------------------------------------
+
+@respx.mock
+async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
+    """Ascii-folded variant ('Zurich') hits when original ('Zürich') misses."""
+    route = respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        side_effect=[
+            httpx.Response(200, json={"geolocationList": []}),
+            httpx.Response(
+                200,
+                json={"geolocationList": [{"id": "100001", "name": "Zürich", "canton": "ZH", "postalCode": "8001"}]},
+            ),
+        ]
+    )
+    result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
+    assert "Zürich" in result
+    assert "100001" in result
+    # Header annotates which variant succeeded
+    assert "Treffer via" in result
+    assert route.call_count >= 2
+
+
+@respx.mock
+async def test_weather_search_location_empty_includes_suggestions():
+    """All variants empty → response lists tried variants and provides hints."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json={"geolocationList": []})
+    )
+    result = await srgssr_weather_search_location(WeatherSearchInput(query="Atlantis"))
+    assert "Keine Standorte gefunden" in result
+    assert "versuchte Varianten" in result
+    assert "Vorschläge" in result
+    assert "PLZ" in result
+
+
+@respx.mock
+async def test_video_get_episodes_404_includes_recovery_hint():
+    """404 on show_id includes a hint pointing to srgssr_video_get_shows."""
+    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/typo-id").mock(
+        return_value=httpx.Response(404, text="Not Found")
+    )
+    result = await srgssr_video_get_episodes(
+        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="typo-id")
+    )
+    assert "404" in result
+    assert "srgssr_video_get_shows" in result
+    assert "typo-id" in result
+
+
+@respx.mock
+async def test_video_get_episodes_empty_list_includes_suggestion():
+    """Empty episode list → suggests verifying show_id via srgssr_video_get_shows."""
+    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/empty-show").mock(
+        return_value=httpx.Response(200, json={"total": 0, "episodeList": []})
+    )
+    result = await srgssr_video_get_episodes(
+        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="empty-show")
+    )
+    assert "Keine Episoden gefunden" in result
+    assert "srgssr_video_get_shows" in result
+
+
+@respx.mock
+async def test_audio_get_episodes_404_includes_recovery_hint():
+    respx.get(f"{AUDIO_BASE}/rts/showEpisodesList/missing").mock(
+        return_value=httpx.Response(404, text="Not Found")
+    )
+    result = await srgssr_audio_get_episodes(
+        AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="missing")
+    )
+    assert "404" in result
+    assert "srgssr_audio_get_shows" in result
+
+
+@respx.mock
+async def test_polis_get_votation_results_404_includes_recovery_hint():
+    """404 on votation_id should suggest srgssr_polis_get_votations."""
+    respx.get(f"{POLIS_BASE}/votations/missing").mock(
+        return_value=httpx.Response(404, text="Not Found")
+    )
+    result = await srgssr_polis_get_votation_results(PolisResultInput(votation_id="missing"))
+    assert "404" in result
+    assert "srgssr_polis_get_votations" in result
+
+
+@respx.mock
+async def test_polis_get_votations_empty_includes_filter_suggestions():
+    """Empty result with restrictive filters → response suggests loosening filters."""
+    respx.get(f"{POLIS_BASE}/votations").mock(
+        return_value=httpx.Response(200, json={"total": 0, "votationList": []})
+    )
+    result = await srgssr_polis_get_votations(
+        PolisListInput(canton="GR", year_from=2020, year_to=2021)
+    )
+    assert "Keine Volksabstimmungen gefunden" in result
+    assert "Vorschläge" in result
+    # canton-Filter suggestion
+    assert "canton-Filter entfernen" in result
+
+
+@respx.mock
+async def test_polis_get_elections_empty_includes_filter_suggestions():
+    respx.get(f"{POLIS_BASE}/elections").mock(
+        return_value=httpx.Response(200, json={"total": 0, "electionList": []})
+    )
+    result = await srgssr_polis_get_elections(
+        PolisListInput(canton="ZG", year_from=2024)
+    )
+    assert "Keine Wahlen gefunden" in result
+    assert "Vorschläge" in result
+
+
+@respx.mock
+async def test_epg_get_programs_404_includes_recovery_hint():
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(404, text="Not Found")
+    )
+    result = await srgssr_epg_get_programs(
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="bogus", date="2026-04-30")
+    )
+    assert "404" in result
+    assert "srgssr_video_get_livestreams" in result
+
+
+@respx.mock
+async def test_video_get_shows_empty_suggests_alternative_bu():
+    respx.get(f"{VIDEO_BASE}/swi/showList").mock(
+        return_value=httpx.Response(200, json={"total": 0, "showList": []})
+    )
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI))
+    assert "Keine TV-Sendungen gefunden" in result
+    assert "srf" in result or "rts" in result
