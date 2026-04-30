@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import EPG_BASE, _api_get, _handle_error
+from srgssr_mcp.logging_config import get_logger
+
+logger = get_logger("mcp.srgssr.epg")
 
 
 class EpgProgramsInput(BaseModel):
@@ -73,13 +76,21 @@ async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
     Returns:
         str: Programmliste des Tages mit Startuhrzeit, Titel und Beschreibung
     """
+    bu = params.business_unit.value
+    log = logger.bind(
+        tool="srgssr_epg_get_programs",
+        business_unit=bu,
+        channel_id=params.channel_id,
+        date=params.date,
+    )
+    log.info("tool_invoked")
     try:
-        bu = params.business_unit.value
         data = await _api_get(
             f"{EPG_BASE}/programs",
             params={"bu": bu, "channel": params.channel_id, "date": params.date},
         )
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(
             e,
             not_found_hint=(
@@ -92,6 +103,7 @@ async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
         )
 
     programs = data.get("programList", data.get("programs", []))
+    log.info("tool_succeeded", program_count=len(programs))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(programs, indent=2, ensure_ascii=False)

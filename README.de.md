@@ -336,6 +336,45 @@ srgssr-mcp/
 
 ---
 
+## Logging
+
+Der Server verwendet **strukturiertes Logging** (OBS-003) mit [`structlog`](https://www.structlog.org/) und JSON-Ausgabe auf **stderr** — `stdout` bleibt frei für den JSON-RPC-Verkehr des stdio-Transports.
+
+**Format:**
+- JSON-codierte Events, eine Zeile pro Eintrag
+- ISO-8601-UTC-`timestamp` auf jedem Record
+- RFC-5424-Severity-Stufen: `debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`
+- Pro Aufruf gebundene Felder: `tool`, `business_unit`, `channel_id`, `query`, …
+
+**Beispiel-Ausgabe:**
+
+```json
+{"event": "tool_invoked", "tool": "srgssr_weather_search_location", "query": "Bern", "level": "info", "logger": "mcp.srgssr.weather", "timestamp": "2026-04-30T14:23:45.123Z"}
+{"event": "tool_succeeded", "tool": "srgssr_weather_search_location", "query": "Bern", "result_count": 3, "matched_variant": "Bern", "level": "info", "logger": "mcp.srgssr.weather", "timestamp": "2026-04-30T14:23:45.456Z"}
+```
+
+**Log-Stufen (RFC 5424):**
+
+| Stufe | Verwendung |
+|-------|-----------|
+| `debug` | OAuth-Token-Cache-Hits, interner Zustand |
+| `info` | Tool-Aufrufe, erfolgreiche Antworten, Server-Lifecycle |
+| `warning` | Erholbare Bedingungen (Rate-Limit nähert sich, Business-Unit nicht unterstützt) |
+| `error` | API-Fehler, Timeouts (erholbar) |
+| `critical` | Credential-Probleme, Service-Degradation |
+
+**Konfiguration:**
+
+Standard-Stufe ist `info`. Anpassbar via Umgebungsvariable `SRGSSR_LOG_LEVEL` (`debug`, `info`, `warning`, `error`, `critical`):
+
+```bash
+SRGSSR_LOG_LEVEL=debug srgssr-mcp
+```
+
+JSON-Ausgabe ist Aggregator-tauglich — stderr direkt nach Datadog, Splunk, Loki etc. piepen und nach strukturierten Feldern (`tool`, `business_unit`, `level`) filtern, ohne Regex-Parsing.
+
+---
+
 ## Tests
 
 ```bash

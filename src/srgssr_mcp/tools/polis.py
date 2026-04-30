@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
 from srgssr_mcp._http import POLIS_BASE, _api_get, _handle_error
+from srgssr_mcp.logging_config import get_logger
+
+logger = get_logger("mcp.srgssr.polis")
 
 
 class PolisListInput(BaseModel):
@@ -97,6 +100,15 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
     Returns:
         str: Liste von Abstimmungen mit Datum, Titel und Abstimmungs-ID
     """
+    log = logger.bind(
+        tool="srgssr_polis_get_votations",
+        year_from=params.year_from,
+        year_to=params.year_to,
+        canton=params.canton.upper() if params.canton else None,
+        page=params.page,
+        page_size=params.page_size,
+    )
+    log.info("tool_invoked")
     try:
         query_params: dict = {
             "pageSize": params.page_size,
@@ -111,10 +123,12 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
 
         data = await _api_get(f"{POLIS_BASE}/votations", params=query_params)
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
 
     votations = data.get("votationList", data.get("votations", []))
     total = data.get("total", len(votations))
+    log.info("tool_succeeded", result_count=len(votations), total=total)
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "votations": votations}, indent=2, ensure_ascii=False)
@@ -196,9 +210,15 @@ async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
     Returns:
         str: Detaillierte Abstimmungsresultate mit Ja/Nein-Anteilen und kantonalen Ergebnissen
     """
+    log = logger.bind(
+        tool="srgssr_polis_get_votation_results",
+        votation_id=params.votation_id,
+    )
+    log.info("tool_invoked")
     try:
         data = await _api_get(f"{POLIS_BASE}/votations/{params.votation_id}")
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(
             e,
             not_found_hint=(
@@ -207,6 +227,8 @@ async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
                 f"canton) und übernimm die ID aus der Resultatliste."
             ),
         )
+
+    log.info("tool_succeeded")
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -289,6 +311,15 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
     Returns:
         str: Liste von Wahlen mit Datum, Bezeichnung und Wahl-ID
     """
+    log = logger.bind(
+        tool="srgssr_polis_get_elections",
+        year_from=params.year_from,
+        year_to=params.year_to,
+        canton=params.canton.upper() if params.canton else None,
+        page=params.page,
+        page_size=params.page_size,
+    )
+    log.info("tool_invoked")
     try:
         query_params: dict = {
             "pageSize": params.page_size,
@@ -303,10 +334,12 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
 
         data = await _api_get(f"{POLIS_BASE}/elections", params=query_params)
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
 
     elections = data.get("electionList", data.get("elections", []))
     total = data.get("total", len(elections))
+    log.info("tool_succeeded", result_count=len(elections), total=total)
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "elections": elections}, indent=2, ensure_ascii=False)
