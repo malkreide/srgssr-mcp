@@ -1149,3 +1149,153 @@ def test_main_defaults_to_stdio(monkeypatch):
         _server.get_settings.cache_clear()
 
     assert calls == [{"transport": "stdio", "mount_path": None}]
+
+
+# ---------------------------------------------------------------------------
+# MCP Primitives: Resources & Prompts (ARCH-008)
+# ---------------------------------------------------------------------------
+
+
+async def test_resource_templates_registered():
+    templates = await mcp.list_resource_templates()
+    uris = {t.uriTemplate for t in templates}
+    assert "epg://{bu}/{channel_id}/{date}" in uris
+    assert "votation://{votation_id}" in uris
+
+
+async def test_prompts_registered():
+    prompts = await mcp.list_prompts()
+    names = {p.name for p in prompts}
+    assert "analyse_abstimmungsverhalten" in names
+    assert "tagesbriefing_kanton" in names
+
+
+@respx.mock
+async def test_epg_resource_returns_markdown():
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "programList": [
+                    {
+                        "startTime": "20:00",
+                        "title": "Tagesschau",
+                        "subtitle": "Hauptausgabe",
+                        "description": "Nachrichten",
+                    }
+                ]
+            },
+        )
+    )
+    contents = list(await mcp.read_resource("epg://srf/srf1/2026-04-30"))
+    assert len(contents) == 1
+    body = contents[0].content
+    assert "Programm" in body
+    assert "SRF1" in body
+    assert "Tagesschau" in body
+    assert "2026-04-30" in body
+
+
+async def test_epg_resource_rejects_unsupported_business_unit():
+    contents = list(await mcp.read_resource("epg://rtr/rtr1/2026-04-30"))
+    body = contents[0].content
+    assert "EPG nicht verfügbar" in body
+    assert "rtr" in body.lower()
+
+
+@respx.mock
+async def test_epg_resource_handles_404():
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(404, text="not found")
+    )
+    contents = list(await mcp.read_resource("epg://srf/unknown/2026-04-30"))
+    body = contents[0].content
+    assert "404" in body
+    assert "srgssr_video_get_livestreams" in body
+
+
+@respx.mock
+async def test_votation_resource_returns_markdown():
+    respx.get(f"{POLIS_BASE}/votations/v1").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "title": "Maskeninitiative",
+                "date": "2024-09-22",
+                "result": {
+                    "yesPercentage": 53.4,
+                    "noPercentage": 46.6,
+                    "accepted": True,
+                    "turnout": 47.1,
+                },
+                "cantonalResults": [
+                    {"canton": "ZH", "yesPercentage": 55.0, "accepted": True},
+                ],
+            },
+        )
+    )
+    contents = list(await mcp.read_resource("votation://v1"))
+    body = contents[0].content
+    assert "Maskeninitiative" in body
+    assert "Angenommen" in body
+    assert "53.4" in body
+    assert "ZH" in body
+
+
+@respx.mock
+async def test_votation_resource_handles_404():
+    respx.get(f"{POLIS_BASE}/votations/missing").mock(
+        return_value=httpx.Response(404, text="not found")
+    )
+    contents = list(await mcp.read_resource("votation://missing"))
+    body = contents[0].content
+    assert "404" in body
+    assert "srgssr_polis_get_votations" in body
+
+
+async def test_analyse_abstimmungsverhalten_prompt_default_focus():
+    result = await mcp.get_prompt(
+        "analyse_abstimmungsverhalten", {"votation_id": "v123"}
+    )
+    text = result.messages[0].content.text
+    assert "v123" in text
+    assert "Stadt-Land" in text
+    assert "votation://v123" in text
+
+
+async def test_analyse_abstimmungsverhalten_prompt_focus_kantone():
+    result = await mcp.get_prompt(
+        "analyse_abstimmungsverhalten",
+        {"votation_id": "v999", "focus": "kantone"},
+    )
+    text = result.messages[0].content.text
+    assert "v999" in text
+    assert "kantonale Ausreisser" in text
+
+
+async def test_tagesbriefing_kanton_prompt_default():
+    result = await mcp.get_prompt(
+        "tagesbriefing_kanton", {"location": "Zürich"}
+    )
+    text = result.messages[0].content.text
+    assert "Zürich" in text
+    assert "srgssr_daily_briefing" in text
+    assert "epg://srf/srf1" in text
+    assert "heutige Datum" in text
+
+
+async def test_tagesbriefing_kanton_prompt_with_date_and_channel():
+    result = await mcp.get_prompt(
+        "tagesbriefing_kanton",
+        {
+            "location": "Lausanne",
+            "channel_id": "rts1",
+            "business_unit": "rts",
+            "date": "2026-05-01",
+        },
+    )
+    text = result.messages[0].content.text
+    assert "Lausanne" in text
+    assert "rts1" in text
+    assert "epg://rts/rts1" in text
+    assert "2026-05-01" in text

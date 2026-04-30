@@ -143,13 +143,41 @@ SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
 
 ---
 
+## MCP-Primitive
+
+Dieser Server nutzt alle drei orthogonalen MCP-Primitive:
+
+| Primitiv | Mentales Modell | Im Server vorhanden |
+|---|---|---|
+| **Tools** (Verben) | Ausführbare Funktionen / parametrisierte Abfragen | 15 Tools — Suche, Listen, Fetch, Aggregation |
+| **Resources** (Substantive) | Passive, cache-freundliche Daten hinter URIs | EPG-Einträge und immutable Abstimmungsresultate |
+| **Prompts** (Kochrezepte) | Wiederverwendbare Workflow-Templates | Abstimmungsanalyse & Tagesbriefing |
+
+Tools decken parametrisierte Abfragen ab (Jahres-Ranges, Freitext, Paginierung), bei denen jeder Aufruf andere Resultate liefern kann. Resources exponieren stabile Datenpunkte, die clientseitig gecacht werden können: einen veröffentlichten EPG-Eintrag für einen Kanal/Tag oder das endgültige Resultat einer abgeschlossenen Schweizer Volksabstimmung. Prompts standardisieren wiederkehrende mehrstufige Analysen, damit User sie nicht jedes Mal neu formulieren müssen.
+
+### Resources
+
+| URI-Template | Beschreibung |
+|---|---|
+| `epg://{bu}/{channel_id}/{date}` | Tagesprogramm eines TV- oder Radiosenders (SRF, RTS, RSI) — z.B. `epg://srf/srf1/2026-04-30` |
+| `votation://{votation_id}` | Detailresultat einer abgeschlossenen Schweizer Volksabstimmung — z.B. `votation://v1` |
+
+### Prompts
+
+| Name | Argumente | Zweck |
+|---|---|---|
+| `analyse_abstimmungsverhalten` | `votation_id`, `focus` (`stadt_land` / `sprachregionen` / `kantone`) | Strukturierte Analyse einer Schweizer Volksabstimmung |
+| `tagesbriefing_kanton` | `location`, `channel_id`, `business_unit`, `date` | Tagesbriefing mit Wetter und Programm |
+
+---
+
 ## Verfügbare Tools
 
 ### Tool-Namenskonvention
 
 Dieser Server verwendet **`snake_case`** für Tool-Namen und folgt damit den Konventionen des Python-Ökosystems. Die MCP-Best-Practice bevorzugt zwar `camelCase` für optimale LLM-Tokenisierung, doch `snake_case` ist weiterhin akzeptabel und hält die Tool-Namen konsistent mit den zugrunde liegenden Python-Funktions-Bezeichnern.
 
-Alle 14 Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfix `srgssr_` und einem semantisch aussagekräftigen `<domain>_<action>`-Suffix (z. B. `srgssr_weather_current`, `srgssr_polis_get_votations`).
+Alle Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfix `srgssr_` und einem semantisch aussagekräftigen `<domain>_<action>`-Suffix (z. B. `srgssr_weather_current`, `srgssr_polis_get_votations`).
 
 ### 🌦️ SRF Wetter (4 Tools)
 

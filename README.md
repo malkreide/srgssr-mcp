@@ -151,13 +151,41 @@ are `stdio` (default), `sse`, and `streamable-http`.
 
 ---
 
+## MCP Primitives
+
+This server exposes all three orthogonal MCP primitives:
+
+| Primitive | Mental model | What's here |
+|---|---|---|
+| **Tools** (verbs) | Executable functions / parametrized queries | 15 tools — search, list, fetch, aggregate |
+| **Resources** (nouns) | Cache-friendly passive data behind URIs | EPG entries and immutable votation results |
+| **Prompts** (recipes) | Reusable workflow templates | Voting analysis & daily briefing |
+
+Tools cover parametrized searches (year ranges, free-text, paginated listings) where every call may yield different results. Resources expose stable data points that are safe to cache: a published EPG for a given channel/date, or the final result of a closed Swiss votation. Prompts standardise recurring multi-step analyses so users don't have to phrase them from scratch.
+
+### Resources
+
+| URI template | Description |
+|---|---|
+| `epg://{bu}/{channel_id}/{date}` | Daily TV/radio program guide for SRF, RTS, RSI (e.g. `epg://srf/srf1/2026-04-30`) |
+| `votation://{votation_id}` | Detailed result of a closed Swiss popular vote (e.g. `votation://v1`) |
+
+### Prompts
+
+| Name | Arguments | Purpose |
+|---|---|---|
+| `analyse_abstimmungsverhalten` | `votation_id`, `focus` (`stadt_land` / `sprachregionen` / `kantone`) | Structured analysis of a Swiss popular vote |
+| `tagesbriefing_kanton` | `location`, `channel_id`, `business_unit`, `date` | Daily briefing combining weather and EPG |
+
+---
+
 ## Available Tools
 
 ### Tool Naming Convention
 
 This server uses **`snake_case`** for tool names, following Python ecosystem idioms. While MCP best practice favors `camelCase` for optimal LLM tokenization, `snake_case` remains acceptable and keeps tool names aligned with the underlying Python function identifiers.
 
-All 14 tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefix `srgssr_` and a semantically meaningful `<domain>_<action>` suffix (e.g. `srgssr_weather_current`, `srgssr_polis_get_votations`).
+All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefix `srgssr_` and a semantically meaningful `<domain>_<action>` suffix (e.g. `srgssr_weather_current`, `srgssr_polis_get_votations`).
 
 ### 🌦️ SRF Weather (4 tools)
 
