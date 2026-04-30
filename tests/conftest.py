@@ -31,4 +31,6 @@ def live_credentials():
         pytest.skip("SRGSSR_CONSUMER_KEY/SECRET not set; live tests require real credentials")
     server._token_cache["access_token"] = None
     server._token_cache["expires_at"] = 0.0
+    # Settings are memoized; drop any cached value so the live env is re-read.
+    server.get_settings.cache_clear()
     return key, secret

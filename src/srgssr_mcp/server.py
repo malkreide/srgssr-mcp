@@ -11,18 +11,24 @@ Provides AI models with access to SRG SSR public APIs:
 Authentication:
     Set SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET as environment variables.
     Register at https://developer.srgssr.ch to obtain credentials.
+
+Configuration is centralized in :class:`Settings` (Pydantic BaseSettings),
+which also selects the MCP transport (``stdio``, ``sse``, ``streamable-http``)
+via the ``SRGSSR_MCP_TRANSPORT`` environment variable.
 """
 
 import base64
 import json
-import os
 import time
 import unicodedata
 from enum import StrEnum
+from functools import lru_cache
+from typing import Literal
 
 import httpx
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -42,6 +48,57 @@ USER_AGENT = "srgssr-mcp/1.0.0 (github.com/malkreide/srgssr-mcp)"
 VALID_BU = ["srf", "rts", "rsi", "rtr", "swi"]
 
 # ---------------------------------------------------------------------------
+# Settings (Pydantic BaseSettings — single source of truth for configuration)
+# ---------------------------------------------------------------------------
+
+Transport = Literal["stdio", "sse", "streamable-http"]
+
+
+class Settings(BaseSettings):
+    """Centralized configuration loaded from environment variables.
+
+    Environment variables (case-insensitive) with the ``SRGSSR_`` prefix map
+    onto these fields. Credentials are required for any tool call that hits
+    the SRG SSR API; the transport setting controls how :func:`main` runs the
+    MCP server.
+    """
+
+    model_config = SettingsConfigDict(
+        env_prefix="SRGSSR_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    consumer_key: str = Field(default="", validation_alias="SRGSSR_CONSUMER_KEY")
+    consumer_secret: str = Field(default="", validation_alias="SRGSSR_CONSUMER_SECRET")
+
+    transport: Transport = Field(
+        default="stdio",
+        validation_alias="SRGSSR_MCP_TRANSPORT",
+        description="MCP transport: 'stdio' (local), 'sse' or 'streamable-http' (remote).",
+    )
+    host: str = Field(default="127.0.0.1", validation_alias="SRGSSR_MCP_HOST")
+    port: int = Field(default=8000, validation_alias="SRGSSR_MCP_PORT")
+    mount_path: str | None = Field(default=None, validation_alias="SRGSSR_MCP_MOUNT_PATH")
+
+    def require_credentials(self) -> tuple[str, str]:
+        if not self.consumer_key or not self.consumer_secret:
+            raise ValueError(
+                "SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET must be set. "
+                "Register at https://developer.srgssr.ch to obtain credentials."
+            )
+        return self.consumer_key, self.consumer_secret
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Return the process-wide :class:`Settings` instance (memoized)."""
+    return Settings()
+
+
+# ---------------------------------------------------------------------------
 # Token management (simple in-memory cache)
 # ---------------------------------------------------------------------------
 
@@ -49,14 +106,7 @@ _token_cache: dict = {"access_token": None, "expires_at": 0.0}
 
 
 def _get_credentials() -> tuple[str, str]:
-    key = os.environ.get("SRGSSR_CONSUMER_KEY", "")
-    secret = os.environ.get("SRGSSR_CONSUMER_SECRET", "")
-    if not key or not secret:
-        raise ValueError(
-            "SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET must be set. "
-            "Register at https://developer.srgssr.ch to obtain credentials."
-        )
-    return key, secret
+    return get_settings().require_credentials()
 
 
 async def _get_access_token() -> str:
@@ -1511,9 +1561,30 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
 # Entry point
 # ===========================================================================
 
-def main():
-    """Entry point for uvx / pip install."""
-    mcp.run()
+def _build_mcp(settings: Settings) -> FastMCP:
+    """Apply transport-relevant settings to the module-level :data:`mcp`.
+
+    Tools are registered against the module-level ``mcp`` instance at import
+    time, so we mutate its host/port/mount_path here rather than constructing
+    a fresh server. This keeps the lifespan setup identical across stdio and
+    HTTP-style transports.
+    """
+    mcp.settings.host = settings.host
+    mcp.settings.port = settings.port
+    if settings.mount_path:
+        mcp.settings.mount_path = settings.mount_path
+    return mcp
+
+
+def main() -> None:
+    """Entry point for uvx / pip install. Transport selected via settings."""
+    settings = get_settings()
+    server = _build_mcp(settings)
+    if settings.transport == "stdio":
+        server.run(transport="stdio")
+    else:
+        server.run(transport=settings.transport, mount_path=settings.mount_path)
+
 
 if __name__ == "__main__":
     main()

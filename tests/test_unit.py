@@ -887,3 +887,122 @@ async def test_video_get_shows_empty_suggests_alternative_bu():
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI))
     assert "Keine TV-Sendungen gefunden" in result
     assert "srf" in result or "rts" in result
+
+
+# ---------------------------------------------------------------------------
+# Settings / Inversion-of-Control (ARCH-004)
+# ---------------------------------------------------------------------------
+
+import pytest as _pytest  # noqa: E402
+
+from srgssr_mcp import server as _server  # noqa: E402
+from srgssr_mcp.server import Settings  # noqa: E402
+
+
+def test_settings_reads_credentials_from_env(monkeypatch):
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "env-key")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "env-secret")
+    monkeypatch.delenv("SRGSSR_MCP_TRANSPORT", raising=False)
+    s = Settings()
+    assert s.consumer_key == "env-key"
+    assert s.consumer_secret == "env-secret"
+    assert s.transport == "stdio"
+    assert s.host == "127.0.0.1"
+    assert s.port == 8000
+
+
+def test_settings_transport_override(monkeypatch):
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "sse")
+    monkeypatch.setenv("SRGSSR_MCP_HOST", "0.0.0.0")
+    monkeypatch.setenv("SRGSSR_MCP_PORT", "9001")
+    s = Settings()
+    assert s.transport == "sse"
+    assert s.host == "0.0.0.0"
+    assert s.port == 9001
+
+
+def test_settings_rejects_invalid_transport(monkeypatch):
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "carrier-pigeon")
+    with _pytest.raises(Exception):
+        Settings()
+
+
+def test_require_credentials_raises_when_missing():
+    s = Settings(consumer_key="", consumer_secret="")
+    with _pytest.raises(ValueError, match="SRGSSR_CONSUMER_KEY"):
+        s.require_credentials()
+
+
+def test_get_credentials_uses_settings(monkeypatch):
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "via-settings")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "shh")
+    _server.get_settings.cache_clear()
+    try:
+        assert _server._get_credentials() == ("via-settings", "shh")
+    finally:
+        _server.get_settings.cache_clear()
+
+
+def test_build_mcp_applies_host_port(monkeypatch):
+    monkeypatch.setenv("SRGSSR_MCP_HOST", "10.0.0.5")
+    monkeypatch.setenv("SRGSSR_MCP_PORT", "7777")
+    monkeypatch.setenv("SRGSSR_MCP_MOUNT_PATH", "/srg")
+    _server.get_settings.cache_clear()
+    try:
+        s = _server.get_settings()
+        original_host = mcp.settings.host
+        original_port = mcp.settings.port
+        original_mount = mcp.settings.mount_path
+        try:
+            built = _server._build_mcp(s)
+            assert built is mcp
+            assert built.settings.host == "10.0.0.5"
+            assert built.settings.port == 7777
+            assert built.settings.mount_path == "/srg"
+        finally:
+            mcp.settings.host = original_host
+            mcp.settings.port = original_port
+            mcp.settings.mount_path = original_mount
+    finally:
+        _server.get_settings.cache_clear()
+
+
+def test_main_dispatches_to_configured_transport(monkeypatch):
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "k")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "s")
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "streamable-http")
+    monkeypatch.delenv("SRGSSR_MCP_MOUNT_PATH", raising=False)
+    _server.get_settings.cache_clear()
+
+    calls: list[dict] = []
+
+    def _fake_run(self, transport="stdio", mount_path=None):
+        calls.append({"transport": transport, "mount_path": mount_path})
+
+    monkeypatch.setattr(type(mcp), "run", _fake_run)
+    try:
+        _server.main()
+    finally:
+        _server.get_settings.cache_clear()
+
+    assert calls == [{"transport": "streamable-http", "mount_path": None}]
+
+
+def test_main_defaults_to_stdio(monkeypatch):
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "k")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "s")
+    monkeypatch.delenv("SRGSSR_MCP_TRANSPORT", raising=False)
+    _server.get_settings.cache_clear()
+
+    calls: list[dict] = []
+
+    def _fake_run(self, transport="stdio", mount_path=None):
+        calls.append({"transport": transport, "mount_path": mount_path})
+
+    monkeypatch.setattr(type(mcp), "run", _fake_run)
+    try:
+        _server.main()
+    finally:
+        _server.get_settings.cache_clear()
+
+    assert calls == [{"transport": "stdio", "mount_path": None}]
