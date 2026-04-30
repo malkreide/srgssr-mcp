@@ -25,7 +25,7 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Run unit tests (no live)
-        run: pytest -m "not live" --cov=src --cov-report=term-missing --cov-report=xml
+        run: pytest -m "not live" --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
       - name: Upload coverage
         if: matrix.python-version == '3.11'

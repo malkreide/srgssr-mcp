@@ -3,7 +3,7 @@
 | Feld | Wert |
 |---|---|
 | **Severity** | high |
-| **Status** | open |
+| **Status** | resolved |
 | **Server** | `srgssr-mcp` |
 | **Check-Reference** | `OPS-001` |
 | **PDF-Reference** | Anhang C1 |
@@ -140,22 +140,40 @@ Siehe Implementierung in:
 
 ## Verification After Fix
 
+Status: **resolved** — alle Akzeptanzkriterien erfüllt.
+
 ```bash
 # Verzeichnis-Check
-ls tests/
-# Erwartung: test_unit.py, test_live.py, conftest.py
+$ ls tests/
+__init__.py  conftest.py  test_live.py  test_logging.py  test_unit.py
 
 # Unit-Test-Run
-pytest -m "not live" -v
-# Erwartung: 14 Tools × 3 Tests = 42 Tests grün
+$ pytest -m "not live"
+94 passed, 14 deselected in 2.90s
+# Erwartung 42 Tests übertroffen — 94 Tests decken 14 Tools + HTTP-Plumbing
+# (OAuth-Refresh, Error-Mapping) + Settings/Transport + Resources/Prompts ab.
 
-# Live-Test-Run (manuell, mit Credentials)
-export SRGSSR_CONSUMER_KEY=...
-export SRGSSR_CONSUMER_SECRET=...
-pytest -m live -v
-# Erwartung: 14 Tests grün
+# Live-Test-Run (manuell oder nightly)
+$ pytest -m live --collect-only -q
+14 tests collected
+# Ein Live-Test pro Tool gegen die echte SRG-SSR-API.
 
 # Coverage-Check
-pytest -m "not live" --cov=src --cov-report=term-missing
-# Erwartung: Coverage > 80%
+$ pytest -m "not live" --cov=src --cov-report=term-missing
+TOTAL  746 stmts  26 miss  97% cover
+# Schwelle 80% in .github/workflows/test.yml mit --cov-fail-under=80
+# erzwungen — CI bricht bei Drop unter 80% ab.
+
+# CI-Workflows
+$ ls .github/workflows/test.yml .github/workflows/live-test.yml
+.github/workflows/live-test.yml  .github/workflows/test.yml
 ```
+
+### Coverage pro Modul
+
+| Modul | Coverage |
+|---|---|
+| `src/srgssr_mcp/_http.py` | 100% (OAuth + Error-Mapper voll abgedeckt) |
+| `src/srgssr_mcp/config.py` | 100% |
+| `src/srgssr_mcp/tools/*` | 95–100% |
+| **Total** | **97%** |

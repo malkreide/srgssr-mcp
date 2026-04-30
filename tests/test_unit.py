@@ -1299,3 +1299,83 @@ async def test_tagesbriefing_kanton_prompt_with_date_and_channel():
     assert "rts1" in text
     assert "epg://rts/rts1" in text
     assert "2026-05-01" in text
+
+
+# ---------------------------------------------------------------------------
+# HTTP plumbing: OAuth token refresh + error mapping (OPS-001 coverage gap)
+# ---------------------------------------------------------------------------
+
+
+@respx.mock
+async def test_oauth_token_cache_hit_skips_refresh():
+    """A non-expired cached token short-circuits the OAuth round-trip."""
+    token_route = respx.post(_server.TOKEN_URL).mock(
+        return_value=httpx.Response(500, json={"error": "should_not_be_called"})
+    )
+    cleared = await _server._get_access_token()
+    assert cleared == "test-token"
+    assert not token_route.called
+
+
+@respx.mock
+async def test_oauth_token_refresh_posts_to_token_url(monkeypatch):
+    """When the cache is cold, the helper acquires a new token and caches it."""
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "k")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "s")
+    _server.get_settings.cache_clear()
+    _server._token_cache["access_token"] = None
+    _server._token_cache["expires_at"] = 0.0
+
+    token_route = respx.post(_server.TOKEN_URL).mock(
+        return_value=httpx.Response(
+            200, json={"access_token": "fresh-token", "expires_in": 1800}
+        )
+    )
+    try:
+        token = await _server._get_access_token()
+    finally:
+        _server.get_settings.cache_clear()
+
+    assert token == "fresh-token"
+    assert token_route.called
+    request = token_route.calls.last.request
+    # Basic auth header carries base64(key:secret)
+    assert request.headers["Authorization"].startswith("Basic ")
+    assert _server._token_cache["access_token"] == "fresh-token"
+    assert _server._token_cache["expires_at"] > 0
+
+
+def test_handle_error_value_error_returns_config_message():
+    msg = _server._handle_error(ValueError("SRGSSR_CONSUMER_KEY missing"))
+    assert msg.startswith("Konfigurationsfehler")
+    assert "SRGSSR_CONSUMER_KEY" in msg
+
+
+def test_handle_error_timeout_returns_localized_message():
+    msg = _server._handle_error(httpx.TimeoutException("read timed out"))
+    assert "Timeout" in msg
+
+
+def test_handle_error_unknown_exception_returns_unexpected_message():
+    msg = _server._handle_error(RuntimeError("kaboom"))
+    assert msg.startswith("Unerwarteter Fehler")
+    assert "RuntimeError" in msg
+    assert "kaboom" in msg
+
+
+def test_handle_error_status_500_includes_truncated_body():
+    response = httpx.Response(500, text="x" * 500, request=httpx.Request("GET", "http://x"))
+    msg = _server._handle_error(httpx.HTTPStatusError("500", request=response.request, response=response))
+    assert msg.startswith("API-Fehler 500")
+    # body is truncated to 200 chars
+    assert msg.count("x") <= 200
+
+
+def test_handle_error_404_with_hint_appends_recovery_tip():
+    response = httpx.Response(404, request=httpx.Request("GET", "http://x"))
+    msg = _server._handle_error(
+        httpx.HTTPStatusError("404", request=response.request, response=response),
+        not_found_hint="Try a different ID.",
+    )
+    assert "404" in msg
+    assert "Try a different ID." in msg
