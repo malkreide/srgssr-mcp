@@ -8,6 +8,9 @@ Each tool covers three scenarios:
 Tools are called directly (the @mcp.tool decorator does not wrap them);
 input is constructed via the Pydantic models from server.py.
 """
+import asyncio
+import json
+
 import httpx
 import pytest
 import respx
@@ -15,6 +18,7 @@ import respx
 from srgssr_mcp.server import (
     AudioEpisodesInput,
     BusinessUnit,
+    DailyBriefingInput,
     EpgProgramsInput,
     PolisListInput,
     PolisResultInput,
@@ -28,6 +32,7 @@ from srgssr_mcp.server import (
     srgssr_audio_get_episodes,
     srgssr_audio_get_livestreams,
     srgssr_audio_get_shows,
+    srgssr_daily_briefing,
     srgssr_epg_get_programs,
     srgssr_polis_get_elections,
     srgssr_polis_get_votation_results,
@@ -887,6 +892,144 @@ async def test_video_get_shows_empty_suggests_alternative_bu():
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI))
     assert "Keine TV-Sendungen gefunden" in result
     assert "srf" in result or "rts" in result
+
+
+# ---------------------------------------------------------------------------
+# ARCH-007: Capability aggregation (parallel weather + EPG fan-out)
+# ---------------------------------------------------------------------------
+
+def _briefing_input(**overrides) -> DailyBriefingInput:
+    defaults = dict(
+        business_unit=BusinessUnit.SRF,
+        channel_id="srf1",
+        date="2026-04-30",
+        latitude=47.3769,
+        longitude=8.5417,
+    )
+    defaults.update(overrides)
+    return DailyBriefingInput(**defaults)
+
+
+@respx.mock
+async def test_daily_briefing_combines_weather_and_epg():
+    """Both upstream calls succeed → markdown briefing carries both sections."""
+    weather_route = respx.get(f"{WEATHER_BASE}/24hour").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "list": [
+                    {
+                        "dateTime": "2026-04-30T18:00",
+                        "values": {
+                            "ttt": {"value": 14.0},
+                            "rr": {"value": 0.0},
+                            "weatherCode": {"value": 1},
+                        },
+                    }
+                ]
+            },
+        )
+    )
+    epg_route = respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "programList": [
+                    {
+                        "startTime": "19:30",
+                        "title": "Tagesschau",
+                        "description": "Die Hauptausgabe der Nachrichten.",
+                    }
+                ]
+            },
+        )
+    )
+
+    result = await srgssr_daily_briefing(_briefing_input())
+
+    assert "Tagesbriefing" in result
+    assert "## Wetter (24h)" in result
+    assert "14.0" in result
+    assert "## TV-/Radioprogramm" in result
+    assert "Tagesschau" in result
+    assert weather_route.called
+    assert epg_route.called
+
+
+@respx.mock
+async def test_daily_briefing_runs_upstreams_in_parallel():
+    """asyncio.gather should kick off both calls before either resolves."""
+    inflight = 0
+    peak = 0
+
+    async def _trace(request):
+        nonlocal inflight, peak
+        inflight += 1
+        peak = max(peak, inflight)
+        # yield to the event loop so the sibling coroutine gets a chance to start
+        await asyncio.sleep(0)
+        inflight -= 1
+        if "/24hour" in str(request.url):
+            return httpx.Response(200, json={"list": []})
+        return httpx.Response(200, json={"programList": []})
+
+    respx.get(f"{WEATHER_BASE}/24hour").mock(side_effect=_trace)
+    respx.get(f"{EPG_BASE}/programs").mock(side_effect=_trace)
+
+    await srgssr_daily_briefing(_briefing_input())
+
+    assert peak == 2, f"expected concurrent fan-out (peak=2), saw peak={peak}"
+
+
+@respx.mock
+async def test_daily_briefing_partial_failure_renders_remaining_section():
+    """When EPG returns 404 the weather section must still render (graceful degradation)."""
+    respx.get(f"{WEATHER_BASE}/24hour").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "list": [
+                    {
+                        "dateTime": "2026-04-30T12:00",
+                        "values": {"ttt": {"value": 22.5}, "rr": {"value": 0.0}, "weatherCode": {"value": 2}},
+                    }
+                ]
+            },
+        )
+    )
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(404, text="Not Found")
+    )
+
+    result = await srgssr_daily_briefing(_briefing_input(channel_id="bogus"))
+
+    # Weather rendered normally
+    assert "22.5" in result
+    # EPG section shows the 404 hint instead of programs
+    assert "404" in result
+    assert "srgssr_video_get_livestreams" in result
+
+
+@respx.mock
+async def test_daily_briefing_json_format_returns_both_payloads():
+    respx.get(f"{WEATHER_BASE}/24hour").mock(
+        return_value=httpx.Response(200, json={"list": [{"dateTime": "2026-04-30T00:00"}]})
+    )
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(
+            200, json={"programList": [{"startTime": "08:00", "title": "Echo der Zeit"}]}
+        )
+    )
+
+    result = await srgssr_daily_briefing(
+        _briefing_input(response_format=ResponseFormat.JSON)
+    )
+
+    payload = json.loads(result)
+    assert payload["channel_id"] == "srf1"
+    assert payload["business_unit"] == "srf"
+    assert payload["weather"]["list"][0]["dateTime"] == "2026-04-30T00:00"
+    assert payload["epg"][0]["title"] == "Echo der Zeit"
 
 
 # ---------------------------------------------------------------------------
