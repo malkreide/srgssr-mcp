@@ -212,16 +212,23 @@ SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
 ## Architecture
 
 ```
-┌─────────────────┐     ┌───────────────────────────┐     ┌──────────────────────────┐
-│   Claude / AI   │────▶│       srgssr-mcp           │────▶│    SRG SSR APIs          │
-│   (MCP Host)    │◀────│       (MCP Server)         │◀────│                          │
-└─────────────────┘     │                           │     │  SRF Meteo (Weather)     │
-                        │  14 Tools                 │     │  Integration Layer (A/V) │
-                        │  Stdio | SSE              │     │  Polis (Democracy)       │
-                        │                           │     │  developer.srgssr.ch     │
-                        │  OAuth2 token mgmt        │     └──────────────────────────┘
-                        │  server.py (FastMCP)       │
-                        └───────────────────────────┘
+┌─────────────┐
+│ Claude / LLM│
+└──────┬──────┘
+       │ MCP (stdio)
+┌──────▼───────────────────┐
+│ srgssr-mcp Server        │
+│  ├─ Weather Tools (4)    │
+│  ├─ EPG Tools (1)        │
+│  ├─ Polis Tools (3)      │
+│  ├─ Video Tools (3)      │
+│  └─ Audio Tools (3)      │
+└──────┬───────────────────┘
+       │ HTTPS (OAuth2)
+┌──────▼──────────────┐
+│ SRG SSR Public APIs │
+│  developer.srgssr.ch│
+└─────────────────────┘
 ```
 
 ### Data Sources
@@ -269,12 +276,15 @@ srgssr-mcp/
 
 ---
 
-## Known Limitations
+## Known Limits
 
-- **API keys required** – unlike other portfolio servers, SRG SSR APIs require free OAuth2 credentials
-- **Non-commercial use** – the SRG SSR API terms restrict commercial use without explicit permission
-- **Rate limits** – the SRG SSR API may enforce rate limits depending on your application tier
-- **Weather data** – SRF Meteo covers Switzerland only
+- **Rate Limits:** SRG SSR APIs enforce rate limits — see [developer.srgssr.ch](https://developer.srgssr.ch) for details on the tier of your OAuth2 application
+- **Data Freshness:** EPG data may be delayed by up to 6 hours
+- **Historical Data:** Polis data goes back to 1900 — older data is not available
+- **Geo-Restriction:** Some streaming APIs are only available within Switzerland
+- **API keys required:** SRG SSR APIs require free OAuth2 credentials from [developer.srgssr.ch](https://developer.srgssr.ch)
+- **Non-commercial use:** SRG SSR API terms restrict commercial use without explicit permission from [api@srgssr.ch](mailto:api@srgssr.ch)
+- **Weather coverage:** SRF Meteo covers Switzerland only
 
 ---
 
