@@ -283,6 +283,20 @@ All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefi
 
 ---
 
+## MCP Protocol Version
+
+This server is built and tested against MCP protocol version **`2025-06-18`**.
+
+The version is pinned explicitly as `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) and validated at import time against the installed SDK's `SUPPORTED_PROTOCOL_VERSIONS` — a `fastmcp`/`mcp` upgrade that drops support for the pinned revision will fail fast at startup instead of silently changing wire-level behaviour. Bumps are tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
+
+### Update Policy
+
+- SDK dependency updates land via Dependabot (`.github/dependabot.yml`, monthly cadence, grouped under the `mcp-sdk` label) and run the full test suite before merge.
+- Spec bumps are evaluated on a feature branch against the relevant MCP SDK release; the [official MCP changelog](https://modelcontextprotocol.io/specification/draft/changelog) is the source of truth for breaking changes.
+- A spec-version bump is always documented in `CHANGELOG.md` and, if it changes the externally observable wire contract, triggers a minor or major release per [Semantic Versioning](https://semver.org/).
+
+---
+
 ## Project Structure
 
 ```
