@@ -174,6 +174,20 @@ class WeatherSearchInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_weather_search_location",
+    description=(
+        "Sucht Schweizer Standorte für die Wettervorhersage nach Name oder Postleitzahl "
+        "und gibt eine Liste von Orten mit geolocationId zurück.\n\n"
+        "<use_case>Wetteranalysen, Reiseplanung und journalistische Recherchen zu "
+        "Schweizer Standorten. Erster Schritt vor srgssr_weather_current, "
+        "srgssr_weather_forecast_24h oder srgssr_weather_forecast_7day, um die "
+        "präzise geolocationId für eine Vorhersage zu ermitteln.</use_case>\n\n"
+        "<important_notes>Beschränkt auf Schweizer Standorte (SRF Meteo). Die "
+        "zurückgelieferte geolocationId verbessert die Qualität der Wettervorhersagen "
+        "gegenüber reinen Koordinaten. Bei mehrdeutigen Ortsnamen (z.B. mehrere "
+        "'Buchs') werden mehrere Resultate zurückgegeben — der Aufrufer sollte "
+        "nach Kanton oder PLZ disambiguieren.</important_notes>\n\n"
+        "<example>query='Zürich' | query='8001' | query='Lausanne'</example>"
+    ),
     annotations={
         "title": "SRF Meteo – Standort suchen",
         "readOnlyHint": True,
@@ -245,6 +259,21 @@ class WeatherForecastInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_weather_current",
+    description=(
+        "Liefert die aktuelle Wettersituation von SRF Meteo für einen Schweizer Standort "
+        "(Temperatur, Wettercode, Wind, Niederschlag, Luftfeuchtigkeit).\n\n"
+        "<use_case>Echtzeit-Wetterabfragen für Outdoor-Aktivitäten, Verkehrsmeldungen, "
+        "Energieprognosen oder kontextuelle Anreicherung von redaktionellen Inhalten. "
+        "Wird verwendet, wenn der aktuelle Zustand wichtig ist; für stündliche "
+        "Vorhersagen srgssr_weather_forecast_24h, für mehrtägige Trends "
+        "srgssr_weather_forecast_7day verwenden.</use_case>\n\n"
+        "<important_notes>Nur für Schweizer Standorte (Latitude 45.8–47.9, Longitude "
+        "5.9–10.5). geolocation_id aus srgssr_weather_search_location erhöht die "
+        "Genauigkeit gegenüber rohen Koordinaten und ist daher empfohlen. "
+        "Wettercode entspricht der SRF-Meteo-Skala, nicht WMO.</important_notes>\n\n"
+        "<example>latitude=47.3769, longitude=8.5417 (Zürich) | latitude=46.5197, "
+        "longitude=6.6323, geolocation_id='100123' (Lausanne)</example>"
+    ),
     annotations={
         "title": "SRF Meteo – Aktuelles Wetter",
         "readOnlyHint": True,
@@ -300,6 +329,20 @@ def _format_current_weather(data: dict) -> str:
 
 @mcp.tool(
     name="srgssr_weather_forecast_24h",
+    description=(
+        "Liefert die stündliche Wettervorhersage der nächsten 24 Stunden von SRF Meteo "
+        "(Temperatur, Niederschlag, Wettercode pro Stunde).\n\n"
+        "<use_case>Tagesplanung, Veranstaltungsorganisation, Reiseberichte oder "
+        "kurzfristige Wetterwarnungen. Im Vergleich zu srgssr_weather_current die "
+        "richtige Wahl, wenn der zeitliche Verlauf relevant ist; für Trends über "
+        "mehrere Tage stattdessen srgssr_weather_forecast_7day verwenden.</use_case>\n\n"
+        "<important_notes>Nur für Schweizer Standorte (Latitude 45.8–47.9, Longitude "
+        "5.9–10.5). Liefert maximal 24 stündliche Datenpunkte ab dem nächsten "
+        "Stundenschlag. geolocation_id aus srgssr_weather_search_location wird "
+        "empfohlen für punktgenaue Vorhersagen.</important_notes>\n\n"
+        "<example>latitude=47.3769, longitude=8.5417 | latitude=46.2044, "
+        "longitude=6.1432, geolocation_id='100456'</example>"
+    ),
     annotations={
         "title": "SRF Meteo – 24-Stunden-Prognose",
         "readOnlyHint": True,
@@ -356,6 +399,21 @@ def _format_hourly_forecast(data: dict) -> str:
 
 @mcp.tool(
     name="srgssr_weather_forecast_7day",
+    description=(
+        "Liefert die tägliche Wettervorhersage der nächsten 7 Tage von SRF Meteo "
+        "mit Min/Max-Temperatur, Niederschlag und Wetterlage pro Tag.\n\n"
+        "<use_case>Wochenplanung, Tourismus-Empfehlungen, Trendanalysen oder "
+        "Energie- und Landwirtschaftsprognosen. Im Unterschied zu "
+        "srgssr_weather_forecast_24h die richtige Wahl, wenn ein mehrtägiger "
+        "Überblick gefragt ist; für Echtzeit-Bedingungen srgssr_weather_current "
+        "verwenden.</use_case>\n\n"
+        "<important_notes>Nur für Schweizer Standorte (Latitude 45.8–47.9, Longitude "
+        "5.9–10.5). Liefert maximal 7 Tage; die Vorhersagegüte nimmt mit der "
+        "Distanz ab — Tage 1–3 sind deutlich verlässlicher als Tage 5–7. "
+        "geolocation_id aus srgssr_weather_search_location empfohlen.</important_notes>\n\n"
+        "<example>latitude=47.3769, longitude=8.5417 | latitude=46.0207, "
+        "longitude=7.7491 (Zermatt)</example>"
+    ),
     annotations={
         "title": "SRF Meteo – 7-Tages-Prognose",
         "readOnlyHint": True,
@@ -441,6 +499,22 @@ class VideoShowsInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_video_get_shows",
+    description=(
+        "Listet alle TV-Sendungen einer SRG SSR Unternehmenseinheit auf "
+        "(SRF, RTS, RSI, RTR, SWI) mit Sendungstitel, ID und Beschreibung.\n\n"
+        "<use_case>Katalog-Browsing für TV-Sendungen, Programmanalysen oder "
+        "Recherche, welche Formate eine Sprachregion produziert. Erster Schritt, "
+        "um eine show_id für srgssr_video_get_episodes zu ermitteln. Für "
+        "Radiosendungen stattdessen srgssr_audio_get_shows verwenden, für "
+        "Live-Sender srgssr_video_get_livestreams.</use_case>\n\n"
+        "<important_notes>Liefert Sendungs-Metadaten, keine Episoden — Episodenliste "
+        "erfordert einen separaten Aufruf von srgssr_video_get_episodes mit der "
+        "show_id. Paginiert (page_size 1–100, Standard 20). Bei grossen Katalogen "
+        "müssen mehrere Seiten abgerufen werden; das Tool zeigt einen Hinweis "
+        "auf die nächste Seite an.</important_notes>\n\n"
+        "<example>business_unit='srf' | business_unit='rts', page_size=50, "
+        "page=2</example>"
+    ),
     annotations={
         "title": "SRG SSR Video – Sendungen auflisten",
         "readOnlyHint": True,
@@ -523,6 +597,22 @@ class VideoEpisodesInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_video_get_episodes",
+    description=(
+        "Ruft die neuesten Episoden einer TV-Sendung ab (Episodentitel, Datum, "
+        "Dauer und Video-ID für den Mediaplayer Pillarbox).\n\n"
+        "<use_case>Recherche zu konkreten Sendungsausgaben, Generierung von "
+        "Programm-Übersichten, Auffinden archivierter Beiträge oder Verlinkung "
+        "auf bestimmte Episoden. Setzt einen vorherigen Aufruf von "
+        "srgssr_video_get_shows voraus, um die show_id zu ermitteln. Für ein "
+        "tagesaktuelles TV-Programm stattdessen srgssr_epg_get_programs "
+        "verwenden.</use_case>\n\n"
+        "<important_notes>Liefert die jüngsten Episoden zuerst (chronologisch "
+        "absteigend). Verfügbarkeit pro Episode kann durch Geo-Restriktionen "
+        "und Lizenz-Embargos eingeschränkt sein. Paginiert mit page_size 1–50 "
+        "(Standard 10). Episoden ohne Dauer-Feld werden mit '?' angezeigt.</important_notes>\n\n"
+        "<example>business_unit='srf', show_id='srf-tagesschau' | "
+        "business_unit='rts', show_id='rts-le-19h30', page_size=20</example>"
+    ),
     annotations={
         "title": "SRG SSR Video – Episoden einer Sendung",
         "readOnlyHint": True,
@@ -592,6 +682,20 @@ class VideoLivestreamsInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_video_get_livestreams",
+    description=(
+        "Listet alle Live-TV-Sender einer SRG SSR Unternehmenseinheit auf "
+        "und liefert Sendernamen sowie Kanal-IDs für den Pillarbox-Mediaplayer.\n\n"
+        "<use_case>Aufbau von Senderverzeichnissen, Live-Stream-Auswahl, "
+        "Voraussetzung für srgssr_epg_get_programs (das eine channel_id "
+        "benötigt) sowie für Mediaplayer-Integration. Für Radio-Live-Streams "
+        "stattdessen srgssr_audio_get_livestreams verwenden, für aufgezeichnete "
+        "Episoden srgssr_video_get_episodes.</use_case>\n\n"
+        "<important_notes>Liefert nur Metadaten und IDs — keine Stream-URLs oder "
+        "Player-Tokens. Anzahl Live-Kanäle variiert pro Unternehmenseinheit "
+        "(SRF mehr Kanäle als RTR/SWI). Geografische Restriktionen können beim "
+        "tatsächlichen Streaming greifen.</important_notes>\n\n"
+        "<example>business_unit='srf' | business_unit='rsi'</example>"
+    ),
     annotations={
         "title": "SRG SSR Video – Live-TV-Sender",
         "readOnlyHint": True,
@@ -639,6 +743,20 @@ async def srgssr_video_get_livestreams(params: VideoLivestreamsInput) -> str:
 
 @mcp.tool(
     name="srgssr_audio_get_shows",
+    description=(
+        "Listet alle Radiosendungen einer SRG SSR Unternehmenseinheit auf "
+        "(SRF, RTS, RSI, RTR, SWI) mit Sendungstitel, ID und Beschreibung.\n\n"
+        "<use_case>Katalog-Browsing für Radio- und Podcast-Formate, Recherche zu "
+        "Audio-Inhalten in allen vier Landessprachen, Voraussetzung um eine "
+        "show_id für srgssr_audio_get_episodes zu ermitteln. Für TV-Sendungen "
+        "stattdessen srgssr_video_get_shows verwenden, für Live-Radio-Sender "
+        "srgssr_audio_get_livestreams.</use_case>\n\n"
+        "<important_notes>Liefert ausschliesslich Sendungs-Metadaten — Episodenliste "
+        "über srgssr_audio_get_episodes mit der show_id. Paginiert (page_size "
+        "1–100, Standard 20). Audio-Kataloge enthalten häufig auch reine Podcasts "
+        "ohne On-Air-Ausstrahlung.</important_notes>\n\n"
+        "<example>business_unit='srf' | business_unit='rsi', page_size=50</example>"
+    ),
     annotations={
         "title": "SRG SSR Audio – Radiosendungen auflisten",
         "readOnlyHint": True,
@@ -712,6 +830,21 @@ class AudioEpisodesInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_audio_get_episodes",
+    description=(
+        "Ruft die neuesten Episoden einer Radiosendung ab (Episodentitel, Datum, "
+        "Dauer und Audio-ID für den SRG-Mediaplayer).\n\n"
+        "<use_case>Auffinden konkreter Radiobeiträge oder Podcast-Folgen, "
+        "Generierung von Audio-Listen, Verlinkung auf Beiträge in Artikeln. "
+        "Setzt einen vorherigen Aufruf von srgssr_audio_get_shows voraus, um "
+        "die show_id zu erhalten. Für TV-Episoden srgssr_video_get_episodes, "
+        "für Live-Radio srgssr_audio_get_livestreams verwenden.</use_case>\n\n"
+        "<important_notes>Liefert Episoden in chronologisch absteigender Reihenfolge "
+        "(neueste zuerst). Paginiert mit page_size 1–50 (Standard 10). Lizenz- "
+        "und Geo-Restriktionen können einzelne Episoden beim tatsächlichen "
+        "Abspielen sperren — die Audio-ID ist trotzdem verfügbar.</important_notes>\n\n"
+        "<example>business_unit='srf', show_id='echo' | business_unit='rts', "
+        "show_id='rts-tribu', page_size=20</example>"
+    ),
     annotations={
         "title": "SRG SSR Audio – Episoden einer Sendung",
         "readOnlyHint": True,
@@ -769,6 +902,19 @@ async def srgssr_audio_get_episodes(params: AudioEpisodesInput) -> str:
 
 @mcp.tool(
     name="srgssr_audio_get_livestreams",
+    description=(
+        "Listet alle Live-Radiosender einer SRG SSR Unternehmenseinheit auf "
+        "und liefert Sendernamen sowie Kanal-IDs für den SRG-Mediaplayer.\n\n"
+        "<use_case>Aufbau von Radio-Senderverzeichnissen, Live-Stream-Auswahl, "
+        "Voraussetzung für srgssr_epg_get_programs (das eine channel_id "
+        "benötigt). Für Live-TV stattdessen srgssr_video_get_livestreams "
+        "verwenden, für aufgezeichnete Episoden srgssr_audio_get_episodes.</use_case>\n\n"
+        "<important_notes>Liefert nur Metadaten und IDs — keine Stream-URLs. "
+        "Die Anzahl Live-Kanäle variiert pro Unternehmenseinheit (SRF mit "
+        "mehreren Programmen, SWI mit weniger). Geo-Restriktionen können beim "
+        "tatsächlichen Streaming greifen.</important_notes>\n\n"
+        "<example>business_unit='srf' | business_unit='rts'</example>"
+    ),
     annotations={
         "title": "SRG SSR Audio – Live-Radiosender",
         "readOnlyHint": True,
@@ -839,6 +985,23 @@ class EpgProgramsInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_epg_get_programs",
+    description=(
+        "Ruft den vollständigen Programmplan (Electronic Program Guide) eines "
+        "SRG SSR TV- oder Radiosenders für einen bestimmten Tag ab "
+        "(Startzeit, Titel, Untertitel, Beschreibung).\n\n"
+        "<use_case>TV-/Radio-Programmvorschauen, redaktionelle Programm-Tipps, "
+        "Recherche zu historischen Sendeplätzen, Zuschauer-Empfehlungen oder "
+        "Aufbau von Programm-Apps. Im Unterschied zu srgssr_video_get_episodes "
+        "(Episoden einer einzelnen Sendung) liefert dieses Tool das gesamte "
+        "Tagesprogramm eines Kanals chronologisch.</use_case>\n\n"
+        "<important_notes>Verfügbar nur für SRF, RTS und RSI — nicht für RTR "
+        "oder SWI. channel_id muss aus srgssr_video_get_livestreams oder "
+        "srgssr_audio_get_livestreams stammen (z.B. 'srf1', 'rts1', 'rsi-la1'). "
+        "Datum strikt im Format YYYY-MM-DD. Programmänderungen kurzfristig "
+        "möglich; das EPG kann von der tatsächlichen Ausstrahlung abweichen.</important_notes>\n\n"
+        "<example>business_unit='srf', channel_id='srf1', date='2026-04-30' | "
+        "business_unit='rts', channel_id='rts1', date='2026-05-01'</example>"
+    ),
     annotations={
         "title": "SRG SSR EPG – Programmvorschau",
         "readOnlyHint": True,
@@ -930,6 +1093,24 @@ class PolisListInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_polis_get_votations",
+    description=(
+        "Ruft Schweizer Volksabstimmungen und Referenden (national und kantonal) "
+        "aus dem Polis-System ab. Liefert Datum, Titel und votation_id pro Eintrag.\n\n"
+        "<use_case>Historische Analysen von Abstimmungsverhalten, journalistische "
+        "Recherchen zu direkter Demokratie, Bildungszwecke für Schweizer Politik, "
+        "Trendanalysen über Kantone und Zeiträume. Erster Schritt, um eine "
+        "votation_id für srgssr_polis_get_votation_results zu ermitteln. Für "
+        "Wahlen (Nationalrat, Ständerat) stattdessen "
+        "srgssr_polis_get_elections.</use_case>\n\n"
+        "<important_notes>Daten reichen zurück bis 1900. Filter nach Jahr "
+        "(year_from/year_to, beide 1900–2100) und Kanton möglich. Ohne canton-Filter "
+        "werden nationale Abstimmungen geliefert; mit Kantonskürzel ('ZH', 'BE', "
+        "'GE' …) kantonale. Liefert nur Metadaten — detaillierte Resultate "
+        "(Ja/Nein-Anteile, Stimmbeteiligung) über srgssr_polis_get_votation_results. "
+        "Paginiert mit page_size 1–100.</important_notes>\n\n"
+        "<example>year_from=2020, year_to=2024 | canton='ZH', year_from=2000 | "
+        "page_size=50, page=1</example>"
+    ),
     annotations={
         "title": "SRG SSR Polis – Schweizer Abstimmungen",
         "readOnlyHint": True,
@@ -1013,6 +1194,22 @@ class PolisResultInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_polis_get_votation_results",
+    description=(
+        "Ruft detaillierte Resultate einer einzelnen Schweizer Volksabstimmung ab "
+        "(Ja/Nein-Anteile, Stimmbeteiligung, kantonale Ergebnisse, "
+        "Annahme/Ablehnung).\n\n"
+        "<use_case>Vertiefte politische Analysen, Visualisierung kantonaler "
+        "Unterschiede, redaktionelle Aufbereitung von Abstimmungs-Sonntagen, "
+        "Vergleiche zwischen Sprachregionen oder Stadt/Land. Im Unterschied zu "
+        "srgssr_polis_get_votations (Liste mit Metadaten) liefert dieses Tool "
+        "die vollständigen Resultate einer einzelnen Abstimmung.</use_case>\n\n"
+        "<important_notes>Erfordert eine votation_id, die zuvor über "
+        "srgssr_polis_get_votations ermittelt wurde. Bei sehr aktuellen "
+        "Abstimmungen kann das Resultat-Feld leer sein ('Ergebnis ausstehend'). "
+        "Kantonale Resultate werden nur für nationale Abstimmungen mit "
+        "Ständemehr-Erfordernis vollständig geliefert.</important_notes>\n\n"
+        "<example>votation_id='v1' | votation_id='2024-09-22-bildung'</example>"
+    ),
     annotations={
         "title": "SRG SSR Polis – Abstimmungsresultate",
         "readOnlyHint": True,
@@ -1079,6 +1276,23 @@ def _format_votation_result(data: dict) -> str:
 
 @mcp.tool(
     name="srgssr_polis_get_elections",
+    description=(
+        "Ruft Schweizer Nationalrats-, Ständerats- und kantonale Regierungs- bzw. "
+        "Parlamentswahlen aus dem Polis-System ab. Liefert Datum, Wahlbezeichnung "
+        "und Wahl-ID pro Eintrag.\n\n"
+        "<use_case>Historische Wahlanalysen, journalistische Recherchen zu "
+        "politischen Mehrheiten, Bildungsmaterial zum Schweizer Wahlsystem, "
+        "Trendvergleiche zwischen Wahljahren. Im Unterschied zu "
+        "srgssr_polis_get_votations (Sachvorlagen) liefert dieses Tool "
+        "Personenwahlen.</use_case>\n\n"
+        "<important_notes>Daten reichen zurück bis 1900. Filter nach Jahr "
+        "(year_from/year_to) und Kanton möglich; ohne canton-Filter werden "
+        "nationale Wahlen geliefert. Liefert ausschliesslich Wahl-Metadaten "
+        "(keine Stimmen-Resultate oder Sitzverteilungen). Paginiert mit "
+        "page_size 1–100.</important_notes>\n\n"
+        "<example>year_from=2023 | canton='ZH', year_from=2015, year_to=2024 | "
+        "page_size=50</example>"
+    ),
     annotations={
         "title": "SRG SSR Polis – Schweizer Wahlen",
         "readOnlyHint": True,
