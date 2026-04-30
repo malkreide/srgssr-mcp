@@ -145,6 +145,12 @@ SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
 
 ## Verfügbare Tools
 
+### Tool-Namenskonvention
+
+Dieser Server verwendet **`snake_case`** für Tool-Namen und folgt damit den Konventionen des Python-Ökosystems. Die MCP-Best-Practice bevorzugt zwar `camelCase` für optimale LLM-Tokenisierung, doch `snake_case` ist weiterhin akzeptabel und hält die Tool-Namen konsistent mit den zugrunde liegenden Python-Funktions-Bezeichnern.
+
+Alle 14 Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfix `srgssr_` und einem semantisch aussagekräftigen `<domain>_<action>`-Suffix (z. B. `srgssr_weather_current`, `srgssr_polis_get_votations`).
+
 ### 🌦️ SRF Wetter (4 Tools)
 
 | Tool | Beschreibung | Datenquelle |
