@@ -135,9 +135,17 @@ Compatible with Cursor, Windsurf, VS Code + Continue, LibreChat, Cline, and self
 For use via **claude.ai in the browser** (e.g. on managed workstations without local software):
 
 ```bash
-SRGSSR_CONSUMER_KEY=... SRGSSR_CONSUMER_SECRET=... \
-  python -m srgssr_mcp.server --transport streamable_http --port 8000
+SRGSSR_CONSUMER_KEY=... \
+SRGSSR_CONSUMER_SECRET=... \
+SRGSSR_MCP_TRANSPORT=streamable-http \
+SRGSSR_MCP_HOST=0.0.0.0 \
+SRGSSR_MCP_PORT=8000 \
+  python -m srgssr_mcp.server
 ```
+
+Transport, host, port and mount path are all driven by environment variables
+(see `srgssr_mcp.server.Settings`). Valid values for `SRGSSR_MCP_TRANSPORT`
+are `stdio` (default), `sse`, and `streamable-http`.
 
 > 💡 *"stdio for the developer laptop, SSE for the browser."*
 
