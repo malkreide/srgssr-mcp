@@ -8,6 +8,21 @@ submodules) executes the decorator-based registrations against this object.
 from enum import StrEnum
 
 from mcp.server.fastmcp import FastMCP
+from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
+
+# MCP spec revision this server is built and tested against. Pinned explicitly
+# (rather than relying on the SDK default) so SDK upgrades cannot silently
+# change wire-level behaviour. Bump together with a CHANGELOG entry whenever
+# the target spec version moves.
+PROTOCOL_VERSION = "2025-06-18"
+
+if PROTOCOL_VERSION not in SUPPORTED_PROTOCOL_VERSIONS:
+    raise RuntimeError(
+        f"Pinned MCP protocolVersion {PROTOCOL_VERSION!r} is not in the installed "
+        f"SDK's SUPPORTED_PROTOCOL_VERSIONS={SUPPORTED_PROTOCOL_VERSIONS}. "
+        "Update PROTOCOL_VERSION (and CHANGELOG.md) or pin the SDK to a "
+        "compatible version."
+    )
 
 VALID_BU = ["srf", "rts", "rsi", "rtr", "swi"]
 

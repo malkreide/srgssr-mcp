@@ -20,7 +20,7 @@ re-exports the public surface so callers (and tests) can keep importing from
 
 from mcp.server.fastmcp import FastMCP
 
-from srgssr_mcp._app import VALID_BU, BusinessUnit, ResponseFormat, mcp
+from srgssr_mcp._app import PROTOCOL_VERSION, VALID_BU, BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import (  # noqa: F401  (re-exported for backwards-compat)
     AUDIO_BASE,
     BASE_URL,
@@ -107,6 +107,7 @@ __all__ = [
     "EPG_BASE",
     "EpgProgramsInput",
     "POLIS_BASE",
+    "PROTOCOL_VERSION",
     "PolisListInput",
     "PolisResultInput",
     "ResponseFormat",

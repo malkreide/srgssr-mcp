@@ -275,6 +275,20 @@ Alle Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfi
 
 ---
 
+## MCP Protocol Version
+
+Dieser Server wird gegen die MCP-Protokollversion **`2025-06-18`** entwickelt und getestet.
+
+Die Version ist als Konstante `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) explizit gepinnt und wird beim Import gegen die `SUPPORTED_PROTOCOL_VERSIONS` des installierten SDK validiert — ein `fastmcp`/`mcp`-Upgrade, das die gepinnte Spec-Revision fallen lässt, schlägt sofort beim Start fehl, statt still die Wire-Semantik zu ändern. Spec-Bumps werden in [CHANGELOG.md](CHANGELOG.md) unter dem jeweiligen Release dokumentiert.
+
+### Update-Policy
+
+- SDK-Dependency-Updates kommen via Dependabot (`.github/dependabot.yml`, monatlich, gruppiert unter dem Label `mcp-sdk`) und müssen die komplette Testsuite passieren, bevor sie gemerged werden.
+- Spec-Bumps werden auf einem Feature-Branch gegen das passende MCP-SDK-Release evaluiert; die [offizielle MCP-Changelog](https://modelcontextprotocol.io/specification/draft/changelog) ist Quelle der Wahrheit für Breaking Changes.
+- Jeder Spec-Version-Bump landet im `CHANGELOG.md` und löst — falls sich der nach aussen sichtbare Wire-Contract ändert — einen Minor- oder Major-Release gemäss [Semantic Versioning](https://semver.org/) aus.
+
+---
+
 ## Projektstruktur
 
 ```
