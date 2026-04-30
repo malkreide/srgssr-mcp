@@ -24,6 +24,7 @@ from srgssr_mcp.server import (
     VideoShowsInput,
     WeatherForecastInput,
     WeatherSearchInput,
+    mcp,
     srgssr_audio_get_episodes,
     srgssr_audio_get_livestreams,
     srgssr_audio_get_shows,
@@ -715,3 +716,38 @@ async def test_polis_get_elections_json_format():
     )
     assert "elections" in result
     assert "\"total\": 0" in result
+
+
+# ---------------------------------------------------------------------------
+# ARCH-002: Tool description quality (length + structured tags)
+# ---------------------------------------------------------------------------
+
+async def test_tool_descriptions_meet_length_requirement():
+    """Median tool-description length must be ≥100 chars (ARCH-002)."""
+    tools = await mcp.list_tools()
+    lengths = sorted(len(t.description or "") for t in tools)
+    median = lengths[len(lengths) // 2]
+    assert median >= 100, f"Median description length {median} < 100"
+
+
+async def test_tool_descriptions_have_use_case_tag_coverage():
+    """At least 80% of tools must carry a <use_case> tag (ARCH-002)."""
+    tools = await mcp.list_tools()
+    with_use_case = sum(1 for t in tools if "<use_case>" in (t.description or ""))
+    coverage = with_use_case / len(tools)
+    assert coverage >= 0.8, (
+        f"<use_case> coverage {coverage:.0%} < 80% "
+        f"({with_use_case}/{len(tools)} tools)"
+    )
+
+
+async def test_tool_descriptions_carry_structured_tags():
+    """Every tool description must include use_case, important_notes and example tags."""
+    tools = await mcp.list_tools()
+    missing: list[str] = []
+    for t in tools:
+        desc = t.description or ""
+        for tag in ("<use_case>", "<important_notes>", "<example>"):
+            if tag not in desc:
+                missing.append(f"{t.name} missing {tag}")
+    assert not missing, "Structured tags missing:\n" + "\n".join(missing)
