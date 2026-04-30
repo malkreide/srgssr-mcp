@@ -344,6 +344,45 @@ srgssr-mcp/
 
 ---
 
+## Logging
+
+The server uses **structured logging** (OBS-003) via [`structlog`](https://www.structlog.org/) with JSON output to **stderr** — keeping `stdout` clean for the stdio transport's JSON-RPC traffic.
+
+**Format:**
+- JSON-encoded events, one per line
+- ISO 8601 UTC `timestamp` on every record
+- RFC 5424 severity levels: `debug`, `info`, `notice`, `warning`, `error`, `critical`, `alert`, `emergency`
+- Per-call bound context: `tool`, `business_unit`, `channel_id`, `query`, etc.
+
+**Example output:**
+
+```json
+{"event": "tool_invoked", "tool": "srgssr_weather_search_location", "query": "Bern", "level": "info", "logger": "mcp.srgssr.weather", "timestamp": "2026-04-30T14:23:45.123Z"}
+{"event": "tool_succeeded", "tool": "srgssr_weather_search_location", "query": "Bern", "result_count": 3, "matched_variant": "Bern", "level": "info", "logger": "mcp.srgssr.weather", "timestamp": "2026-04-30T14:23:45.456Z"}
+```
+
+**Log levels (RFC 5424):**
+
+| Level | Used for |
+|-------|----------|
+| `debug` | OAuth token cache hits, internal state |
+| `info` | Tool invocations, successful responses, server lifecycle |
+| `warning` | Recoverable conditions (rate-limit approaching, unsupported business unit) |
+| `error` | API failures, timeouts (recoverable) |
+| `critical` | Credential issues, service degradation |
+
+**Configuration:**
+
+The default level is `info`. Override via the `SRGSSR_LOG_LEVEL` environment variable (`debug`, `info`, `warning`, `error`, `critical`):
+
+```bash
+SRGSSR_LOG_LEVEL=debug srgssr-mcp
+```
+
+JSON output is aggregator-friendly — pipe stderr to Datadog, Splunk, Loki, etc., and filter by structured fields (`tool`, `business_unit`, `level`) without regex parsing.
+
+---
+
 ## Testing
 
 ```bash

@@ -10,6 +10,11 @@ from enum import StrEnum
 from mcp.server.fastmcp import FastMCP
 from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
 
+from srgssr_mcp.logging_config import configure_logging, get_logger
+
+configure_logging()
+logger = get_logger()
+
 # MCP spec revision this server is built and tested against. Pinned explicitly
 # (rather than relying on the SDK default) so SDK upgrades cannot silently
 # change wire-level behaviour. Bump together with a CHANGELOG entry whenever
@@ -49,3 +54,5 @@ mcp = FastMCP(
         "All tools require valid SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET."
     ),
 )
+
+logger.info("server_initialized", protocol_version=PROTOCOL_VERSION)

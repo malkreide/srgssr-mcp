@@ -11,7 +11,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import VALID_BU, BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import AUDIO_BASE, _api_get, _handle_error
+from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.video import VideoLivestreamsInput, VideoShowsInput
+
+logger = get_logger("mcp.srgssr.audio")
 
 
 class AudioEpisodesInput(BaseModel):
@@ -72,17 +75,26 @@ async def srgssr_audio_get_shows(params: VideoShowsInput) -> str:
     Returns:
         str: Liste von Radiosendungen mit Titel, ID und Beschreibung
     """
+    bu = params.business_unit.value
+    log = logger.bind(
+        tool="srgssr_audio_get_shows",
+        business_unit=bu,
+        page=params.page,
+        page_size=params.page_size,
+    )
+    log.info("tool_invoked")
     try:
-        bu = params.business_unit.value
         data = await _api_get(
             f"{AUDIO_BASE}/{bu}/showList",
             params={"pageSize": params.page_size, "pageNumber": params.page},
         )
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
 
     shows = data.get("showList", data.get("shows", []))
     total = data.get("total", len(shows))
+    log.info("tool_succeeded", result_count=len(shows), total=total)
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "shows": shows}, indent=2, ensure_ascii=False)
@@ -148,13 +160,22 @@ async def srgssr_audio_get_episodes(params: AudioEpisodesInput) -> str:
     Returns:
         str: Episodenliste mit Titel, Datum, Dauer und Audio-ID
     """
+    bu = params.business_unit.value
+    log = logger.bind(
+        tool="srgssr_audio_get_episodes",
+        business_unit=bu,
+        show_id=params.show_id,
+        page=params.page,
+        page_size=params.page_size,
+    )
+    log.info("tool_invoked")
     try:
-        bu = params.business_unit.value
         data = await _api_get(
             f"{AUDIO_BASE}/{bu}/showEpisodesList/{params.show_id}",
             params={"pageSize": params.page_size, "pageNumber": params.page},
         )
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(
             e,
             not_found_hint=(
@@ -165,6 +186,7 @@ async def srgssr_audio_get_episodes(params: AudioEpisodesInput) -> str:
 
     episodes = data.get("episodeList", data.get("medias", []))
     total = data.get("total", len(episodes))
+    log.info("tool_succeeded", result_count=len(episodes), total=total)
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps({"total": total, "episodes": episodes}, indent=2, ensure_ascii=False)
@@ -230,13 +252,17 @@ async def srgssr_audio_get_livestreams(params: VideoLivestreamsInput) -> str:
     Returns:
         str: Liste der Live-Radiosender mit Name und Kanal-ID
     """
+    bu = params.business_unit.value
+    log = logger.bind(tool="srgssr_audio_get_livestreams", business_unit=bu)
+    log.info("tool_invoked")
     try:
-        bu = params.business_unit.value
         data = await _api_get(f"{AUDIO_BASE}/{bu}/channels")
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
 
     channels = data.get("channelList", data.get("channels", []))
+    log.info("tool_succeeded", result_count=len(channels))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(channels, indent=2, ensure_ascii=False)

@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
 from srgssr_mcp._http import WEATHER_BASE, _api_get, _handle_error, _query_variants
+from srgssr_mcp.logging_config import get_logger
+
+logger = get_logger("mcp.srgssr.weather")
 
 
 class WeatherSearchInput(BaseModel):
@@ -82,6 +85,8 @@ async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
     Returns:
         str: Liste von Standorten mit Name, Kanton, PLZ und geolocationId
     """
+    log = logger.bind(tool="srgssr_weather_search_location", query=params.query)
+    log.info("tool_invoked")
     locations: list = []
     matched_variant = params.query
     tried: list[str] = []
@@ -97,7 +102,15 @@ async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
                 matched_variant = variant
                 break
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e), tried=tried)
         return _handle_error(e)
+
+    log.info(
+        "tool_succeeded",
+        result_count=len(locations),
+        matched_variant=matched_variant,
+        variants_tried=len(tried),
+    )
 
     if not locations:
         tried_str = ", ".join(f"'{t}'" for t in tried)
@@ -164,6 +177,13 @@ async def srgssr_weather_current(params: WeatherForecastInput) -> str:
     Returns:
         str: Aktuelle Temperatur, Wetterlage, Wind, Niederschlag
     """
+    log = logger.bind(
+        tool="srgssr_weather_current",
+        latitude=params.latitude,
+        longitude=params.longitude,
+        geolocation_id=params.geolocation_id,
+    )
+    log.info("tool_invoked")
     try:
         query_params = {
             "latitude": params.latitude,
@@ -173,7 +193,10 @@ async def srgssr_weather_current(params: WeatherForecastInput) -> str:
             query_params["geolocationId"] = params.geolocation_id
         data = await _api_get(f"{WEATHER_BASE}/current", params=query_params)
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
+
+    log.info("tool_succeeded")
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -228,6 +251,13 @@ async def srgssr_weather_forecast_24h(params: WeatherForecastInput) -> str:
     Returns:
         str: Stündliche Temperatur, Niederschlag, Wind für 24 Stunden
     """
+    log = logger.bind(
+        tool="srgssr_weather_forecast_24h",
+        latitude=params.latitude,
+        longitude=params.longitude,
+        geolocation_id=params.geolocation_id,
+    )
+    log.info("tool_invoked")
     try:
         query_params = {
             "latitude": params.latitude,
@@ -237,7 +267,10 @@ async def srgssr_weather_forecast_24h(params: WeatherForecastInput) -> str:
             query_params["geolocationId"] = params.geolocation_id
         data = await _api_get(f"{WEATHER_BASE}/24hour", params=query_params)
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
+
+    log.info("tool_succeeded", hours=len(data.get("list", data.get("hour", []))))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -299,6 +332,13 @@ async def srgssr_weather_forecast_7day(params: WeatherForecastInput) -> str:
     Returns:
         str: Tagesvorhersage mit Min/Max-Temperatur, Niederschlag und Wetterlage
     """
+    log = logger.bind(
+        tool="srgssr_weather_forecast_7day",
+        latitude=params.latitude,
+        longitude=params.longitude,
+        geolocation_id=params.geolocation_id,
+    )
+    log.info("tool_invoked")
     try:
         query_params = {
             "latitude": params.latitude,
@@ -308,7 +348,10 @@ async def srgssr_weather_forecast_7day(params: WeatherForecastInput) -> str:
             query_params["geolocationId"] = params.geolocation_id
         data = await _api_get(f"{WEATHER_BASE}/7day", params=query_params)
     except Exception as e:
+        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(e)
+
+    log.info("tool_succeeded", days=len(data.get("list", data.get("day", []))))
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(data, indent=2, ensure_ascii=False)

@@ -10,8 +10,11 @@ searches (year ranges, free-text, paginated listings).
 
 from srgssr_mcp._app import mcp
 from srgssr_mcp._http import EPG_BASE, POLIS_BASE, _api_get, _handle_error
+from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.epg import _format_epg_programs
 from srgssr_mcp.tools.polis import _format_votation_result
+
+logger = get_logger("mcp.srgssr.resources")
 
 _RESOURCE_BU_HINT = (
     "Erlaubte Unternehmenseinheiten: 'srf', 'rts', 'rsi'. EPG ist für RTR und SWI "
@@ -44,7 +47,15 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
         date: ISO date YYYY-MM-DD.
     """
     bu_norm = _normalize_bu(bu)
+    log = logger.bind(
+        resource="srgssr_epg",
+        business_unit=bu_norm,
+        channel_id=channel_id,
+        date=date,
+    )
+    log.info("resource_invoked")
     if bu_norm not in {"srf", "rts", "rsi"}:
+        log.warning("resource_unsupported_business_unit")
         return (
             f"## EPG nicht verfügbar\n\nUnternehmenseinheit '{bu}' wird vom EPG nicht "
             f"unterstützt. {_RESOURCE_BU_HINT}"
@@ -55,6 +66,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
             params={"bu": bu_norm, "channel": channel_id, "date": date},
         )
     except Exception as e:
+        log.error("resource_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(
             e,
             not_found_hint=(
@@ -65,6 +77,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
         )
 
     programs = data.get("programList", data.get("programs", []))
+    log.info("resource_succeeded", program_count=len(programs))
     return _format_epg_programs(programs, channel_id, bu_norm, date)
 
 
@@ -84,9 +97,12 @@ async def votation_resource(votation_id: str) -> str:
 
     Use the srgssr_polis_get_votations tool to discover available IDs.
     """
+    log = logger.bind(resource="srgssr_polis_votation", votation_id=votation_id)
+    log.info("resource_invoked")
     try:
         data = await _api_get(f"{POLIS_BASE}/votations/{votation_id}")
     except Exception as e:
+        log.error("resource_failed", error_type=type(e).__name__, error=str(e))
         return _handle_error(
             e,
             not_found_hint=(
@@ -94,4 +110,5 @@ async def votation_resource(votation_id: str) -> str:
                 f"srgssr_polis_get_votations, um gültige IDs zu ermitteln."
             ),
         )
+    log.info("resource_succeeded")
     return _format_votation_result(data)

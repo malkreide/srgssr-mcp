@@ -7,6 +7,9 @@ import unicodedata
 import httpx
 
 from srgssr_mcp.config import get_settings
+from srgssr_mcp.logging_config import get_logger
+
+logger = get_logger("mcp.srgssr.http")
 
 BASE_URL = "https://api.srgssr.ch"
 TOKEN_URL = f"{BASE_URL}/oauth/v1/accesstoken"
@@ -30,11 +33,13 @@ async def _get_access_token() -> str:
     """Returns a valid OAuth2 access token, refreshing if necessary."""
     now = time.time()
     if _token_cache["access_token"] and _token_cache["expires_at"] > now + 60:
+        logger.debug("oauth_token_cache_hit")
         return _token_cache["access_token"]
 
     key, secret = _get_credentials()
     credentials = base64.b64encode(f"{key}:{secret}".encode()).decode()
 
+    logger.info("oauth_token_refresh")
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.post(
             TOKEN_URL,
@@ -51,6 +56,7 @@ async def _get_access_token() -> str:
     _token_cache["access_token"] = data["access_token"]
     expires_in = int(data.get("expires_in", 3600))
     _token_cache["expires_at"] = now + expires_in
+    logger.info("oauth_token_acquired", expires_in=expires_in)
     return _token_cache["access_token"]
 
 

@@ -15,8 +15,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import EPG_BASE, WEATHER_BASE, _safe_api_get
+from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.epg import _format_epg_programs
 from srgssr_mcp.tools.weather import _format_hourly_forecast
+
+logger = get_logger("mcp.srgssr.aggregation")
 
 
 class DailyBriefingInput(BaseModel):
@@ -96,6 +99,16 @@ async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
     Both upstream calls run concurrently via :func:`asyncio.gather`. If one of
     them fails the other is still returned, with the failure surfaced inline.
     """
+    log = logger.bind(
+        tool="srgssr_daily_briefing",
+        business_unit=params.business_unit.value,
+        channel_id=params.channel_id,
+        date=params.date,
+        latitude=params.latitude,
+        longitude=params.longitude,
+        geolocation_id=params.geolocation_id,
+    )
+    log.info("tool_invoked")
     weather_query: dict = {
         "latitude": params.latitude,
         "longitude": params.longitude,
@@ -118,6 +131,12 @@ async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
     weather_result, epg_result = await asyncio.gather(
         _safe_api_get(f"{WEATHER_BASE}/24hour", params=weather_query),
         _safe_api_get(f"{EPG_BASE}/programs", params=epg_query, not_found_hint=epg_hint),
+    )
+
+    log.info(
+        "tool_succeeded",
+        weather_ok=isinstance(weather_result, dict),
+        epg_ok=isinstance(epg_result, dict),
     )
 
     if params.response_format == ResponseFormat.JSON:
