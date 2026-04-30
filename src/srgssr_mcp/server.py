@@ -1726,6 +1726,195 @@ async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
 
 
 # ===========================================================================
+# RESOURCES (ARCH-008)
+# ===========================================================================
+
+# Resources expose stable, cache-friendly data points behind URI templates so
+# clients can read them as passive context rather than invoking a parametrized
+# tool. EPG entries are stable for a given channel/date once published, and
+# votation/election results are immutable after the vote — both are natural
+# fits for the MCP Resource primitive. Tools remain available for parametrized
+# searches (year ranges, free-text, paginated listings).
+
+
+_RESOURCE_BU_HINT = (
+    "Erlaubte Unternehmenseinheiten: 'srf', 'rts', 'rsi'. EPG ist für RTR und SWI "
+    "nicht verfügbar."
+)
+
+
+def _normalize_bu(bu: str) -> str:
+    return bu.strip().lower()
+
+
+@mcp.resource(
+    "epg://{bu}/{channel_id}/{date}",
+    name="srgssr_epg",
+    title="SRG SSR EPG – Programmvorschau",
+    description=(
+        "Tagesprogramm (Electronic Program Guide) eines SRG SSR TV- oder "
+        "Radiosenders als Markdown. Stabile Daten pro (bu, channel_id, date) — "
+        "cache-freundlich. Verfügbar für SRF, RTS und RSI. Beispiel-URI: "
+        "epg://srf/srf1/2026-04-30"
+    ),
+    mime_type="text/markdown",
+)
+async def epg_resource(bu: str, channel_id: str, date: str) -> str:
+    """Read EPG programs for the given business unit, channel and date.
+
+    URI template parameters:
+        bu: 'srf', 'rts' or 'rsi' (RTR/SWI have no EPG).
+        channel_id: channel identifier from the livestream listings (e.g. 'srf1').
+        date: ISO date YYYY-MM-DD.
+    """
+    bu_norm = _normalize_bu(bu)
+    if bu_norm not in {"srf", "rts", "rsi"}:
+        return (
+            f"## EPG nicht verfügbar\n\nUnternehmenseinheit '{bu}' wird vom EPG nicht "
+            f"unterstützt. {_RESOURCE_BU_HINT}"
+        )
+    try:
+        data = await _api_get(
+            f"{EPG_BASE}/programs",
+            params={"bu": bu_norm, "channel": channel_id, "date": date},
+        )
+    except Exception as e:
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"channel_id='{channel_id}' nicht gefunden für business_unit='{bu_norm}'. "
+                f"Verwende das Tool srgssr_video_get_livestreams oder "
+                f"srgssr_audio_get_livestreams, um eine gültige channel_id zu finden."
+            ),
+        )
+
+    programs = data.get("programList", data.get("programs", []))
+    return _format_epg_programs(programs, channel_id, bu_norm, date)
+
+
+@mcp.resource(
+    "votation://{votation_id}",
+    name="srgssr_polis_votation",
+    title="SRG SSR Polis – Abstimmungsresultate",
+    description=(
+        "Detaillierte Resultate einer Schweizer Volksabstimmung (Ja/Nein-Anteile, "
+        "Stimmbeteiligung, kantonale Ergebnisse). Nach Abschluss einer Abstimmung "
+        "immutable und damit cache-freundlich. Beispiel-URI: votation://v1"
+    ),
+    mime_type="text/markdown",
+)
+async def votation_resource(votation_id: str) -> str:
+    """Read detailed results of a Swiss popular vote by its votation_id.
+
+    Use the srgssr_polis_get_votations tool to discover available IDs.
+    """
+    try:
+        data = await _api_get(f"{POLIS_BASE}/votations/{votation_id}")
+    except Exception as e:
+        return _handle_error(
+            e,
+            not_found_hint=(
+                f"votation_id='{votation_id}' nicht gefunden. Verwende das Tool "
+                f"srgssr_polis_get_votations, um gültige IDs zu ermitteln."
+            ),
+        )
+    return _format_votation_result(data)
+
+
+# ===========================================================================
+# PROMPTS (ARCH-008)
+# ===========================================================================
+
+# Prompts are reusable workflow templates: they stitch together one or more of
+# the available tools/resources for recurring analysis patterns so users don't
+# have to phrase the same multi-step request from scratch each time.
+
+
+@mcp.prompt(
+    name="analyse_abstimmungsverhalten",
+    title="Analyse Schweizer Abstimmungsverhalten",
+    description=(
+        "Strukturierter Workflow zur Analyse einer Schweizer Volksabstimmung: "
+        "Stadt-Land-Gefälle, Sprachregionen, kantonale Ausreisser. Nutzt "
+        "srgssr_polis_get_votation_results bzw. die Resource votation://<id>."
+    ),
+)
+def analyse_abstimmungsverhalten_prompt(
+    votation_id: str,
+    focus: str = "stadt_land",
+) -> str:
+    """Prompt template for analysing voting behaviour for a single votation.
+
+    Args:
+        votation_id: ID from srgssr_polis_get_votations.
+        focus: 'stadt_land', 'sprachregionen' oder 'kantone' (default 'stadt_land').
+    """
+    focus_label = {
+        "stadt_land": "Stadt-Land-Gefälle (urbane vs. ländliche Kantone)",
+        "sprachregionen": "Sprachregionen (Deutschschweiz, Romandie, Tessin, Rätoromanisch)",
+        "kantone": "kantonale Ausreisser (Kantone mit deutlich abweichendem Ja-Anteil)",
+    }.get(focus, focus)
+    return (
+        f"Analysiere das Schweizer Abstimmungsverhalten für votation_id='{votation_id}' "
+        f"mit Fokus auf {focus_label}.\n\n"
+        f"Vorgehen:\n"
+        f"1. Lies die Resource `votation://{votation_id}` (oder rufe das Tool "
+        f"`srgssr_polis_get_votation_results` mit votation_id='{votation_id}' auf), "
+        f"um Ja/Nein-Anteile, Stimmbeteiligung und kantonale Resultate zu erhalten.\n"
+        f"2. Fasse das Gesamtresultat zusammen (Annahme/Ablehnung, nationale Ja-Quote, "
+        f"Stimmbeteiligung).\n"
+        f"3. Identifiziere die drei Kantone mit dem höchsten und tiefsten Ja-Anteil und "
+        f"interpretiere sie im Lichte des Fokus '{focus_label}'.\n"
+        f"4. Schliesse mit einer kurzen Einordnung: was sagt das Muster über die "
+        f"politische Landschaft der Schweiz aus?\n\n"
+        f"Bleibe faktenbasiert; kennzeichne Spekulation als solche."
+    )
+
+
+@mcp.prompt(
+    name="tagesbriefing_kanton",
+    title="Tagesbriefing für einen Schweizer Kanton",
+    description=(
+        "Workflow für ein Tagesbriefing mit Wetter und TV-/Radio-Programm für eine "
+        "Schweizer Stadt. Nutzt srgssr_daily_briefing (oder einzeln "
+        "srgssr_weather_forecast_24h + srgssr_epg_get_programs)."
+    ),
+)
+def tagesbriefing_kanton_prompt(
+    location: str,
+    channel_id: str = "srf1",
+    business_unit: str = "srf",
+    date: str | None = None,
+) -> str:
+    """Prompt template for a daily briefing combining weather and EPG.
+
+    Args:
+        location: Schweizer Ort oder PLZ (z.B. 'Zürich', '8001', 'Lausanne').
+        channel_id: TV-/Radio-Kanal-ID (z.B. 'srf1', 'rts1', 'rsi-la1').
+        business_unit: 'srf', 'rts' oder 'rsi'.
+        date: ISO-Datum YYYY-MM-DD; leer = heute.
+    """
+    date_clause = f"das Datum '{date}'" if date else "das heutige Datum"
+    return (
+        f"Erstelle ein Tagesbriefing für '{location}' und {date_clause}, basierend "
+        f"auf SRG-SSR-Daten.\n\n"
+        f"Vorgehen:\n"
+        f"1. Standort auflösen: Tool `srgssr_weather_search_location` mit "
+        f"query='{location}' aufrufen, um Koordinaten und geolocationId zu erhalten.\n"
+        f"2. Wetter und Programm parallel via `srgssr_daily_briefing` abfragen "
+        f"(business_unit='{business_unit}', channel_id='{channel_id}'); alternativ "
+        f"die Resource `epg://{business_unit}/{channel_id}/<date>` lesen und "
+        f"`srgssr_weather_forecast_24h` aufrufen.\n"
+        f"3. Briefing strukturieren: Wetterüberblick (Temperatur-Range, Niederschlag, "
+        f"Wetterlage) → drei Programm-Highlights mit Sendezeit → kurze Empfehlung "
+        f"(z.B. «Indoor bei Regen, Outdoor bei Sonne»).\n"
+        f"4. Schweizerdeutsche Ortsnamen mit Diakritika schreiben (z.B. Zürich, "
+        f"Genève) und Sender-Bezeichnungen in Grossbuchstaben (SRF, RTS, RSI).\n\n"
+        f"Halte das Briefing knapp (max. 200 Wörter)."
+    )
+
+
+# ===========================================================================
 # Entry point
 # ===========================================================================
 
