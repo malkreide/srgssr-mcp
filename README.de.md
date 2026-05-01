@@ -358,6 +358,28 @@ srgssr-mcp/
 
 ---
 
+## Sicherheit: Egress-Allowlist
+
+Der Server implementiert eine **Code-Layer-Egress-Allowlist** (SEC-021, kombiniert mit SEC-004 SSRF-Defense), um unbeabsichtigte externe Requests zu verhindern. Jeder ausgehende HTTP-Request wird vor der Ausführung durch `_validate_url_safe()` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py) geprüft.
+
+**Drei Kontrollen pro Request:**
+
+1. **HTTPS-only** — `http://`, `file://`, `ftp://` und andere Nicht-HTTPS-Schemata werden abgewiesen.
+2. **Host-Allowlist** — der URL-Hostname muss exakt einem Eintrag aus `ALLOWED_HOSTS = {"api.srgssr.ch"}` entsprechen (Exact-Match — Subdomain-Tricks wie `api.srgssr.ch.attacker.example` werden geblockt).
+3. **IP-Blocklist** — jede aufgelöste IP des Hostnamens wird gegen private, Loopback-, Link-Local- (inkl. `169.254.169.254` Cloud-Metadata), CGNAT-, Multicast- und Reserved-Ranges (IPv4 + IPv6) geprüft. Jeder einzelne Treffer bricht den Request ab — Defense-in-Depth gegen DNS-Rebinding.
+
+Verstöße werden als `ValueError` propagiert und durch `_handle_error` zu einer lokalisierten `Konfigurationsfehler: …`-Meldung gemappt; interne Netz-Details werden niemals an den MCP-Client geleakt.
+
+**Neue SRG SSR Domain hinzufügen:**
+
+1. `ALLOWED_HOSTS` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py) aktualisieren.
+2. Begründung im PR und in `CHANGELOG.md` dokumentieren.
+3. Positiven Test in `tests/test_unit.py` ergänzen (Vorbild: `test_validate_url_safe_accepts_public_srgssr_host`).
+
+**Network-Layer-Egress (für zukünftige SSE/HTTP-Deployments):** siehe [`docs/network-egress.md`](docs/network-egress.md). Für den aktuellen `stdio`-Transport sind Netzwerk-Layer-Kontrollen nicht anwendbar — der Prozess läuft im User-Kontext des MCP-Clients.
+
+---
+
 ## Logging
 
 Der Server verwendet **strukturiertes Logging** (OBS-003) mit [`structlog`](https://www.structlog.org/) und JSON-Ausgabe auf **stderr** — `stdout` bleibt frei für den JSON-RPC-Verkehr des stdio-Transports.

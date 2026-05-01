@@ -366,6 +366,28 @@ srgssr-mcp/
 
 ---
 
+## Security: Egress Allowlist
+
+The server implements a **code-layer egress allowlist** (SEC-021, combined with SEC-004 SSRF defense) to prevent unintended external requests. Every outbound HTTP request is validated by `_validate_url_safe()` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py) before it is issued.
+
+**Three controls per request:**
+
+1. **HTTPS-only** — `http://`, `file://`, `ftp://` and other non-HTTPS schemes are rejected.
+2. **Host allowlist** — the URL hostname must equal one of `ALLOWED_HOSTS = {"api.srgssr.ch"}` (exact match — subdomain tricks like `api.srgssr.ch.attacker.example` are blocked).
+3. **IP blocklist** — every resolved IP for the hostname is checked against private, loopback, link-local (incl. `169.254.169.254` cloud-metadata), CGNAT, multicast and reserved ranges (IPv4 + IPv6). Any single match aborts the request — defense-in-depth against DNS rebinding.
+
+Violations surface as `ValueError` and are mapped to a localized `Konfigurationsfehler: …` message by `_handle_error`, so internal network details never leak to the MCP client.
+
+**Adding a new SRG SSR domain:**
+
+1. Update `ALLOWED_HOSTS` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py).
+2. Document the reason in the PR and `CHANGELOG.md`.
+3. Add a positive test case in `tests/test_unit.py` (mirror `test_validate_url_safe_accepts_public_srgssr_host`).
+
+**Network-Layer Egress (for future SSE/HTTP deployments):** see [`docs/network-egress.md`](docs/network-egress.md). For the current `stdio` transport, network-layer controls do not apply — the process runs in the MCP client's user context.
+
+---
+
 ## Logging
 
 The server uses **structured logging** (OBS-003) via [`structlog`](https://www.structlog.org/) with JSON output to **stderr** — keeping `stdout` clean for the stdio transport's JSON-RPC traffic.
