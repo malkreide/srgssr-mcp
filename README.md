@@ -283,6 +283,28 @@ All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefi
 
 ---
 
+## Development Phase
+
+This server is in **Phase 1: Read-only Wrapper**.
+
+The server exposes only `GET`-style operations against public SRG SSR APIs. There are no write, mutate or delete capabilities by design — see [Safety & Limits](#-safety--limits) for the threat-model implications.
+
+### Phase 1 Completion Criteria
+
+- [x] 14 read-only tools across five thematic clusters (Weather, Video, Audio, EPG, Polis)
+- [x] OAuth2 Client Credentials authentication with token caching
+- [x] Bilingual documentation (EN/DE)
+- [x] Test suite (unit + live) — see [OPS-001](audits/2026-04-30-srgssr-mcp/findings/OPS-001-test-strategy.md)
+- [x] Structured logging — see [OBS-003](#logging) and CHANGELOG
+- [ ] Production-ready error handling (uniform retry/backoff, typed error envelopes)
+
+### Future Phases
+
+- **Phase 2 (Write):** **Not planned.** The SRG SSR Public APIs are read-only by contract; there is no upstream surface to write to.
+- **Phase 3 (Multi-Agent):** **Evaluation deferred.** Will be reconsidered once user feedback indicates concrete multi-agent workflows that this server should orchestrate (e.g. cross-server aggregation with `swiss-statistics-mcp` or `swiss-transport-mcp`).
+
+---
+
 ## MCP Protocol Version
 
 This server is built and tested against MCP protocol version **`2025-06-18`**.
