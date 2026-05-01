@@ -1,8 +1,11 @@
 """HTTP plumbing: OAuth2 token cache, authenticated GET helpers, error mapper."""
 
 import base64
+import ipaddress
+import socket
 import time
 import unicodedata
+from urllib.parse import urlparse
 
 import httpx
 
@@ -22,7 +25,82 @@ POLIS_BASE = f"{BASE_URL}/polis/v1"
 TIMEOUT = 30.0
 USER_AGENT = "srgssr-mcp/1.0.0 (github.com/malkreide/srgssr-mcp)"
 
+# SSRF defense (SEC-004 + SEC-021): every outbound HTTP request is restricted
+# to the SRG SSR API host, must use HTTPS, and the resolved IPs must not fall
+# in any private, loopback, link-local, multicast, or otherwise non-routable
+# range. The host allowlist is the primary control; the IP blocklist is
+# defense-in-depth against DNS rebinding, a compromised resolver, or future
+# code that constructs URLs from less-trusted input.
+ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+
+_BLOCKED_IP_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...] = (
+    ipaddress.ip_network("0.0.0.0/8"),       # "this network"
+    ipaddress.ip_network("10.0.0.0/8"),      # RFC1918 private
+    ipaddress.ip_network("100.64.0.0/10"),   # CGNAT
+    ipaddress.ip_network("127.0.0.0/8"),     # loopback
+    ipaddress.ip_network("169.254.0.0/16"),  # link-local (cloud metadata)
+    ipaddress.ip_network("172.16.0.0/12"),   # RFC1918 private
+    ipaddress.ip_network("192.0.0.0/24"),    # IETF protocol assignments
+    ipaddress.ip_network("192.168.0.0/16"),  # RFC1918 private
+    ipaddress.ip_network("198.18.0.0/15"),   # benchmarking
+    ipaddress.ip_network("224.0.0.0/4"),     # multicast
+    ipaddress.ip_network("240.0.0.0/4"),     # reserved (incl. broadcast)
+    ipaddress.ip_network("::1/128"),         # IPv6 loopback
+    ipaddress.ip_network("::/128"),          # IPv6 unspecified
+    ipaddress.ip_network("::ffff:0:0/96"),   # IPv4-mapped IPv6
+    ipaddress.ip_network("64:ff9b::/96"),    # IPv4/IPv6 translation
+    ipaddress.ip_network("fc00::/7"),        # IPv6 unique-local
+    ipaddress.ip_network("fe80::/10"),       # IPv6 link-local
+    ipaddress.ip_network("ff00::/8"),        # IPv6 multicast
+)
+
 _token_cache: dict = {"access_token": None, "expires_at": 0.0}
+
+
+def _validate_url_safe(url: str) -> None:
+    """Reject ``url`` if it would expose the server to SSRF.
+
+    Three controls are enforced before any outbound request is issued:
+
+    1. **HTTPS-only** — ``http://``, ``file://`` and other schemes are refused.
+    2. **Egress allowlist** — the hostname must appear in :data:`ALLOWED_HOSTS`.
+    3. **IP blocklist** — every address the hostname resolves to is checked
+       against :data:`_BLOCKED_IP_NETWORKS`; resolution to any private,
+       loopback, link-local, multicast or reserved range aborts the request.
+
+    Raises :class:`ValueError` on any violation. The caller (``_api_get`` /
+    ``_get_access_token``) propagates the exception, which is mapped to a
+    localized "Konfigurationsfehler" by :func:`_handle_error` so internal
+    network details are not leaked to the MCP client.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme != "https":
+        raise ValueError(
+            f"SSRF blocked: only HTTPS is permitted for outbound requests "
+            f"(got scheme '{parsed.scheme}')"
+        )
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("SSRF blocked: URL has no hostname")
+    if hostname not in ALLOWED_HOSTS:
+        raise ValueError(
+            f"SSRF blocked: host '{hostname}' is not in the egress allowlist "
+            f"({sorted(ALLOWED_HOSTS)})"
+        )
+    try:
+        addr_infos = socket.getaddrinfo(hostname, None)
+    except socket.gaierror as e:
+        raise ValueError(
+            f"SSRF blocked: cannot resolve host '{hostname}' ({e})"
+        ) from e
+    for info in addr_infos:
+        ip = ipaddress.ip_address(info[4][0])
+        for blocked in _BLOCKED_IP_NETWORKS:
+            if ip.version == blocked.version and ip in blocked:
+                raise ValueError(
+                    f"SSRF blocked: host '{hostname}' resolves to {ip} "
+                    f"which is in blocked range {blocked}"
+                )
 
 
 def _get_credentials() -> tuple[str, str]:
@@ -39,6 +117,7 @@ async def _get_access_token() -> str:
     key, secret = _get_credentials()
     credentials = base64.b64encode(f"{key}:{secret}".encode()).decode()
 
+    _validate_url_safe(TOKEN_URL)
     logger.info("oauth_token_refresh")
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.post(
@@ -62,6 +141,7 @@ async def _get_access_token() -> str:
 
 async def _api_get(url: str, params: dict | None = None) -> dict:
     """Authenticated GET helper returning parsed JSON."""
+    _validate_url_safe(url)
     token = await _get_access_token()
     headers = {
         "Authorization": f"Bearer {token}",

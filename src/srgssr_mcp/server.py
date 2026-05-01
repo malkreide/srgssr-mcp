@@ -22,6 +22,7 @@ from mcp.server.fastmcp import FastMCP
 
 from srgssr_mcp._app import PROTOCOL_VERSION, VALID_BU, BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import (  # noqa: F401  (re-exported for backwards-compat)
+    ALLOWED_HOSTS,
     AUDIO_BASE,
     BASE_URL,
     EPG_BASE,
@@ -38,6 +39,7 @@ from srgssr_mcp._http import (  # noqa: F401  (re-exported for backwards-compat)
     _query_variants,
     _safe_api_get,
     _token_cache,
+    _validate_url_safe,
 )
 from srgssr_mcp.config import Settings, Transport, get_settings  # noqa: F401
 
@@ -99,6 +101,7 @@ from srgssr_mcp.tools.weather import (  # noqa: F401  (formatters re-exported)
 )
 
 __all__ = [
+    "ALLOWED_HOSTS",
     "AUDIO_BASE",
     "AudioEpisodesInput",
     "BASE_URL",
