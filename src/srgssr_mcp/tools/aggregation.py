@@ -23,7 +23,7 @@ logger = get_logger("mcp.srgssr.aggregation")
 
 
 class DailyBriefingInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit für das EPG: 'srf', 'rts' oder 'rsi' (RTR/SWI ohne EPG)",
@@ -33,6 +33,7 @@ class DailyBriefingInput(BaseModel):
         description="Kanal-ID aus srgssr_video_get_livestreams (z.B. 'srf1', 'rts1', 'rsi-la1')",
         min_length=1,
         max_length=100,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     date: str = Field(
         ...,
@@ -54,6 +55,9 @@ class DailyBriefingInput(BaseModel):
     geolocation_id: str | None = Field(
         default=None,
         description="Optionale geolocationId aus srgssr_weather_search_location für präzisere Vorhersagen",
+        min_length=1,
+        max_length=50,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     response_format: ResponseFormat = Field(
         default=ResponseFormat.MARKDOWN,

@@ -18,7 +18,7 @@ logger = get_logger("mcp.srgssr.audio")
 
 
 class AudioEpisodesInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
@@ -28,6 +28,7 @@ class AudioEpisodesInput(BaseModel):
         description="Sendungs-ID aus srgssr_audio_get_shows",
         min_length=1,
         max_length=200,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     page_size: int | None = Field(default=10, ge=1, le=50, description="Episoden pro Seite")
     page: int | None = Field(default=1, ge=1, description="Seitennummer")

@@ -12,7 +12,7 @@ logger = get_logger("mcp.srgssr.video")
 
 
 class VideoShowsInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
@@ -35,7 +35,7 @@ class VideoShowsInput(BaseModel):
 
 
 class VideoEpisodesInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
@@ -45,6 +45,7 @@ class VideoEpisodesInput(BaseModel):
         description="Sendungs-ID aus srgssr_video_get_shows (z.B. 'srf-tagesschau')",
         min_length=1,
         max_length=200,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     page_size: int | None = Field(
         default=10,
@@ -64,7 +65,7 @@ class VideoEpisodesInput(BaseModel):
 
 
 class VideoLivestreamsInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",

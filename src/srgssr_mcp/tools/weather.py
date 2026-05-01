@@ -12,12 +12,13 @@ logger = get_logger("mcp.srgssr.weather")
 
 
 class WeatherSearchInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     query: str = Field(
         ...,
         description="Ortname oder Postleitzahl in der Schweiz (z.B. 'Zürich', '8001', 'Luzern')",
         min_length=2,
         max_length=100,
+        pattern=r"^[\w\s.\-']+$",
     )
     response_format: ResponseFormat = Field(
         default=ResponseFormat.MARKDOWN,
@@ -26,7 +27,7 @@ class WeatherSearchInput(BaseModel):
 
 
 class WeatherForecastInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     latitude: float = Field(
         ...,
         description="Geografische Breite (z.B. 47.3769 für Zürich)",
@@ -42,6 +43,9 @@ class WeatherForecastInput(BaseModel):
     geolocation_id: str | None = Field(
         default=None,
         description="Optionale geolocationId aus srgssr_weather_search_location für präzisere Vorhersagen",
+        min_length=1,
+        max_length=50,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     response_format: ResponseFormat = Field(
         default=ResponseFormat.MARKDOWN,

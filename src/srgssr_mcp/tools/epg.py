@@ -12,7 +12,7 @@ logger = get_logger("mcp.srgssr.epg")
 
 
 class EpgProgramsInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi' (EPG für RTR/SWI nicht verfügbar)",
@@ -22,6 +22,7 @@ class EpgProgramsInput(BaseModel):
         description="Kanal-ID aus srgssr_video_get_livestreams (z.B. 'srf1', 'rts1', 'rsi-la1')",
         min_length=1,
         max_length=100,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     date: str = Field(
         ...,
