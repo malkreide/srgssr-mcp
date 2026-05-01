@@ -12,7 +12,7 @@ logger = get_logger("mcp.srgssr.polis")
 
 
 class PolisListInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     year_from: int | None = Field(
         default=None,
         description="Startjahr der Abfrage (z.B. 2000). Minimum: 1900",
@@ -31,7 +31,9 @@ class PolisListInput(BaseModel):
             "Kantonskürzel für kantonale Abstimmungen (z.B. 'ZH', 'BE', 'GE')."
             " Leer für nationale Abstimmungen."
         ),
+        min_length=2,
         max_length=4,
+        pattern=r"^[A-Za-z]{2,4}$",
     )
     page_size: int | None = Field(default=20, ge=1, le=100, description="Einträge pro Seite")
     page: int | None = Field(default=1, ge=1, description="Seitennummer")
@@ -42,12 +44,13 @@ class PolisListInput(BaseModel):
 
 
 class PolisResultInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     votation_id: str = Field(
         ...,
         description="Abstimmungs-ID aus srgssr_polis_get_votations",
         min_length=1,
         max_length=100,
+        pattern=r"^[A-Za-z0-9_-]+$",
     )
     response_format: ResponseFormat = Field(
         default=ResponseFormat.MARKDOWN,

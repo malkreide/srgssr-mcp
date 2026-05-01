@@ -1547,3 +1547,179 @@ def test_all_base_urls_are_https_and_in_allowlist():
         assert parsed.hostname in _server.ALLOWED_HOSTS, (
             f"{base} hostname must be in ALLOWED_HOSTS"
         )
+
+
+# ---------------------------------------------------------------------------
+# SEC-018: Input validation hardening (Pydantic strict + extra=forbid + patterns)
+# ---------------------------------------------------------------------------
+
+from pydantic import ValidationError as _ValidationError  # noqa: E402
+
+_TOOL_INPUT_MODELS = (
+    EpgProgramsInput,
+    AudioEpisodesInput,
+    PolisListInput,
+    PolisResultInput,
+    VideoShowsInput,
+    VideoEpisodesInput,
+    VideoLivestreamsInput,
+    WeatherSearchInput,
+    WeatherForecastInput,
+    DailyBriefingInput,
+)
+
+
+def test_all_tool_inputs_enforce_strict_mode():
+    """Every tool input model must run Pydantic in strict mode (SEC-018)."""
+    for model in _TOOL_INPUT_MODELS:
+        cfg = model.model_config
+        assert cfg.get("strict") is True, (
+            f"{model.__name__} model_config must set strict=True"
+        )
+
+
+def test_all_tool_inputs_forbid_extra_fields():
+    """Every tool input model must reject unknown fields (SEC-018)."""
+    for model in _TOOL_INPUT_MODELS:
+        cfg = model.model_config
+        assert cfg.get("extra") == "forbid", (
+            f"{model.__name__} model_config must set extra='forbid'"
+        )
+
+
+def test_strict_mode_rejects_string_for_int_field():
+    """Strict mode must refuse implicit str→int coercion."""
+    with pytest.raises(_ValidationError):
+        VideoShowsInput(business_unit=BusinessUnit.SRF, page_size="20")  # type: ignore[arg-type]
+
+
+def test_strict_mode_rejects_string_for_float_field():
+    """Strict mode must refuse implicit str→float coercion."""
+    with pytest.raises(_ValidationError):
+        WeatherForecastInput(latitude="47.0", longitude=8.0)  # type: ignore[arg-type]
+
+
+def test_extra_field_rejected_on_video_shows_input():
+    with pytest.raises(_ValidationError):
+        VideoShowsInput(business_unit=BusinessUnit.SRF, unknown_param="x")  # type: ignore[call-arg]
+
+
+def test_extra_field_rejected_on_weather_forecast_input():
+    with pytest.raises(_ValidationError):
+        WeatherForecastInput(  # type: ignore[call-arg]
+            latitude=47.0,
+            longitude=8.0,
+            sneaky="injected",
+        )
+
+
+def test_epg_channel_id_rejects_path_traversal():
+    """Patterns must block path-traversal-style payloads in IDs."""
+    with pytest.raises(_ValidationError):
+        EpgProgramsInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id="../../etc/passwd",
+            date="2026-04-30",
+        )
+
+
+def test_epg_channel_id_rejects_url_injection():
+    with pytest.raises(_ValidationError):
+        EpgProgramsInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id="srf1?evil=1",
+            date="2026-04-30",
+        )
+
+
+def test_video_show_id_rejects_whitespace_injection():
+    with pytest.raises(_ValidationError):
+        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="srf tagesschau")
+
+
+def test_audio_show_id_rejects_slash():
+    with pytest.raises(_ValidationError):
+        AudioEpisodesInput(business_unit=BusinessUnit.SRF, show_id="echo/../foo")
+
+
+def test_polis_votation_id_rejects_special_chars():
+    with pytest.raises(_ValidationError):
+        PolisResultInput(votation_id="v1; DROP TABLE")
+
+
+def test_polis_canton_rejects_digits():
+    with pytest.raises(_ValidationError):
+        PolisListInput(canton="Z1")
+
+
+def test_polis_canton_rejects_too_short():
+    with pytest.raises(_ValidationError):
+        PolisListInput(canton="Z")
+
+
+def test_polis_canton_accepts_valid_two_letter():
+    # Sanity: legitimate kantonal cases still pass.
+    p = PolisListInput(canton="zh")
+    assert p.canton == "zh"
+
+
+def test_weather_query_rejects_html_payload():
+    with pytest.raises(_ValidationError):
+        WeatherSearchInput(query="<script>alert(1)</script>")
+
+
+def test_weather_query_accepts_unicode_city_name():
+    # Unicode word characters (umlauts, accents) must still pass.
+    assert WeatherSearchInput(query="Zürich").query == "Zürich"
+    assert WeatherSearchInput(query="Genève").query == "Genève"
+    assert WeatherSearchInput(query="8001").query == "8001"
+
+
+def test_weather_geolocation_id_rejects_special_chars():
+    with pytest.raises(_ValidationError):
+        WeatherForecastInput(
+            latitude=47.0, longitude=8.0, geolocation_id="100123;rm -rf"
+        )
+
+
+def test_weather_latitude_out_of_range_rejected():
+    with pytest.raises(_ValidationError):
+        WeatherForecastInput(latitude=10.0, longitude=8.0)
+
+
+def test_video_page_size_zero_rejected():
+    with pytest.raises(_ValidationError):
+        VideoShowsInput(business_unit=BusinessUnit.SRF, page_size=0)
+
+
+def test_video_page_size_above_limit_rejected():
+    with pytest.raises(_ValidationError):
+        VideoShowsInput(business_unit=BusinessUnit.SRF, page_size=101)
+
+
+def test_polis_year_out_of_range_rejected():
+    with pytest.raises(_ValidationError):
+        PolisListInput(year_from=1800)
+
+
+def test_daily_briefing_channel_id_rejects_special_chars():
+    with pytest.raises(_ValidationError):
+        DailyBriefingInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id="srf1 OR 1=1",
+            date="2026-04-30",
+            latitude=47.0,
+            longitude=8.0,
+        )
+
+
+def test_daily_briefing_extra_field_rejected():
+    with pytest.raises(_ValidationError):
+        DailyBriefingInput(  # type: ignore[call-arg]
+            business_unit=BusinessUnit.SRF,
+            channel_id="srf1",
+            date="2026-04-30",
+            latitude=47.0,
+            longitude=8.0,
+            extra_payload="x",
+        )
