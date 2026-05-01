@@ -1379,3 +1379,171 @@ def test_handle_error_404_with_hint_appends_recovery_tip():
     )
     assert "404" in msg
     assert "Try a different ID." in msg
+
+
+# ---------------------------------------------------------------------------
+# SSRF defense: HTTPS enforcement + host allowlist + IP blocklist (SEC-004)
+# ---------------------------------------------------------------------------
+
+import socket as _socket  # noqa: E402
+from urllib.parse import urlparse  # noqa: E402
+
+from srgssr_mcp import _http as _http_mod  # noqa: E402
+
+
+def _fake_addrinfo(ip: str):
+    """Build an addrinfo-shaped tuple list for a single IP, IPv4 or IPv6."""
+    family = _socket.AF_INET6 if ":" in ip else _socket.AF_INET
+    sockaddr = (ip, 0, 0, 0) if family == _socket.AF_INET6 else (ip, 0)
+    return [(family, _socket.SOCK_STREAM, 6, "", sockaddr)]
+
+
+def test_validate_url_safe_rejects_http_scheme():
+    with _pytest.raises(ValueError, match="HTTPS"):
+        _server._validate_url_safe("http://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_file_scheme():
+    with _pytest.raises(ValueError, match="SSRF blocked"):
+        _server._validate_url_safe("file:///etc/passwd")
+
+
+def test_validate_url_safe_rejects_ftp_scheme():
+    with _pytest.raises(ValueError, match="SSRF blocked"):
+        _server._validate_url_safe("ftp://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_url_without_hostname():
+    with _pytest.raises(ValueError, match="no hostname"):
+        _server._validate_url_safe("https:///path-only")
+
+
+def test_validate_url_safe_rejects_host_outside_allowlist():
+    with _pytest.raises(ValueError, match="egress allowlist"):
+        _server._validate_url_safe("https://evil.example.com/foo")
+
+
+def test_validate_url_safe_rejects_attacker_controlled_subdomain():
+    # Subtle SSRF attempt: looks similar to the allowed host but differs.
+    with _pytest.raises(ValueError, match="egress allowlist"):
+        _server._validate_url_safe("https://api.srgssr.ch.evil.example/foo")
+
+
+def test_validate_url_safe_rejects_private_rfc1918_ip(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("192.168.1.1")
+    )
+    with _pytest.raises(ValueError, match="192.168.1.1"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_loopback_ip(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("127.0.0.1")
+    )
+    with _pytest.raises(ValueError, match="127.0.0.1"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_aws_metadata_link_local(monkeypatch):
+    # 169.254.169.254 is the cloud-metadata IP — the canonical SSRF target.
+    monkeypatch.setattr(
+        _http_mod.socket,
+        "getaddrinfo",
+        lambda *a, **kw: _fake_addrinfo("169.254.169.254"),
+    )
+    with _pytest.raises(ValueError, match="169.254.169.254"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_ipv6_loopback(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("::1")
+    )
+    with _pytest.raises(ValueError, match="blocked range"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_ipv6_unique_local(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("fc00::1")
+    )
+    with _pytest.raises(ValueError, match="blocked range"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_dns_failure(monkeypatch):
+    def _boom(*_a, **_kw):
+        raise _socket.gaierror("temporary failure in name resolution")
+
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", _boom)
+    with _pytest.raises(ValueError, match="cannot resolve"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_rejects_when_any_resolved_ip_is_blocked(monkeypatch):
+    # An attacker who controls DNS could rebind a hostname to multiple IPs:
+    # one public, one private. We must reject the whole hostname.
+    mixed = [
+        (_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("8.8.8.8", 0)),
+        (_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("10.0.0.1", 0)),
+    ]
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: mixed)
+    with _pytest.raises(ValueError, match="10.0.0.1"):
+        _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+
+def test_validate_url_safe_accepts_public_srgssr_host(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("63.178.6.210")
+    )
+    # No exception means the URL passed all three controls.
+    _server._validate_url_safe("https://api.srgssr.ch/forecasts/v2.0/weather/current")
+
+
+async def test_api_get_blocks_non_https_url():
+    with _pytest.raises(ValueError, match="HTTPS"):
+        await _server._api_get("http://api.srgssr.ch/foo")
+
+
+async def test_api_get_blocks_disallowed_host():
+    with _pytest.raises(ValueError, match="egress allowlist"):
+        await _server._api_get("https://attacker.example.com/exfil")
+
+
+async def test_safe_api_get_returns_localized_message_on_ssrf_block():
+    """SSRF rejections surface as `Konfigurationsfehler` via _handle_error."""
+    msg = await _server._safe_api_get("http://api.srgssr.ch/foo")
+    assert isinstance(msg, str)
+    assert msg.startswith("Konfigurationsfehler")
+    assert "SSRF" in msg or "HTTPS" in msg
+
+
+def test_handle_error_maps_ssrf_value_error_to_config_message():
+    msg = _server._handle_error(ValueError("SSRF blocked: only HTTPS is permitted"))
+    assert msg.startswith("Konfigurationsfehler")
+    assert "SSRF" in msg
+
+
+def test_token_url_is_https_and_in_allowlist():
+    # The hard-coded TOKEN_URL must itself satisfy the SSRF policy.
+    parsed = urlparse(_server.TOKEN_URL)
+    assert parsed.scheme == "https"
+    assert parsed.hostname in _server.ALLOWED_HOSTS
+
+
+def test_all_base_urls_are_https_and_in_allowlist():
+    for base in (
+        _server.BASE_URL,
+        _server.WEATHER_BASE,
+        _server.VIDEO_BASE,
+        _server.AUDIO_BASE,
+        _server.EPG_BASE,
+        _server.POLIS_BASE,
+        _server.TOKEN_URL,
+    ):
+        parsed = urlparse(base)
+        assert parsed.scheme == "https", f"{base} must use HTTPS"
+        assert parsed.hostname in _server.ALLOWED_HOSTS, (
+            f"{base} hostname must be in ALLOWED_HOSTS"
+        )
