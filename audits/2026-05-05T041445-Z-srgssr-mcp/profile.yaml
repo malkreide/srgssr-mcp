@@ -16,3 +16,4 @@ enterprise_context: false
 data_source:
   is_swiss_open_data: true
 is_cloud_deployed: false
+sdk_language: Python
