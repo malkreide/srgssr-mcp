@@ -1,0 +1,19 @@
+transport: dual
+auth_model: none
+data_class: Public Open Data
+write_capable: false
+deployment:
+  - local-stdio
+  - Kubernetes
+uses_sampling: false
+uses_sequential_thinking: false
+tools_include_filesystem: false
+tools_make_external_requests: true
+stadt_zuerich_context: false
+schulamt_context: false
+volksschule_context: false
+enterprise_context: false
+data_source:
+  is_swiss_open_data: true
+is_cloud_deployed: false
+sdk_language: Python
