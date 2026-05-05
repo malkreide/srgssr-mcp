@@ -1,0 +1,13 @@
+{
+  "audit_meta": {
+    "server_name": "srgssr-mcp",
+    "run_id": "2026-05-05T041445-Z-srgssr-mcp",
+    "started_at": "2026-05-05T04:14:45.523191+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "0.9.x",
+    "output_dir": "/home/user/srgssr-mcp/audits/2026-05-05T041445-Z-srgssr-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/home/user/mcp-audit-skill/checks"
+  },
+  "agent_runs": []
+}
