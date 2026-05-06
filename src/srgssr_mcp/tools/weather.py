@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
 from srgssr_mcp._http import WEATHER_BASE, _api_get, _handle_error, _query_variants
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.weather")
@@ -127,6 +128,13 @@ async def srgssr_weather_search_location(
         variants_tried=len(tried),
     )
 
+    if params.response_format == ResponseFormat.JSON:
+        return json.dumps(
+            with_provenance(locations, list_key="locations"),
+            indent=2,
+            ensure_ascii=False,
+        )
+
     if not locations:
         tried_str = ", ".join(f"'{t}'" for t in tried)
         return (
@@ -135,10 +143,7 @@ async def srgssr_weather_search_location(
             f"Vorschläge: deutsche Schreibweise mit Diakritika (z.B. 'Zürich', "
             f"'Genève', 'Bern'), die offizielle PLZ (z.B. '8001', '1003'), oder "
             f"einen kürzeren Namensbestandteil verwenden."
-        )
-
-    if params.response_format == ResponseFormat.JSON:
-        return json.dumps(locations, indent=2, ensure_ascii=False)
+        ) + provenance_footer()
 
     header = f"## Gefundene Standorte für '{params.query}'"
     if matched_variant != params.query:
@@ -150,7 +155,7 @@ async def srgssr_weather_search_location(
             f"({loc.get('canton', '')}), PLZ {loc.get('postalCode', '-')} "
             f"— ID: `{loc.get('id', '')}`"
         )
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
 
 
 @mcp.tool(
@@ -224,9 +229,9 @@ async def srgssr_weather_current(
     log.info("tool_succeeded")
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(data, indent=2, ensure_ascii=False)
+        return json.dumps(with_provenance(data), indent=2, ensure_ascii=False)
 
-    return _format_current_weather(data)
+    return _format_current_weather(data) + provenance_footer()
 
 
 def _format_current_weather(data: dict) -> str:
@@ -308,9 +313,9 @@ async def srgssr_weather_forecast_24h(
     log.info("tool_succeeded", hours=len(data.get("list", data.get("hour", []))))
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(data, indent=2, ensure_ascii=False)
+        return json.dumps(with_provenance(data), indent=2, ensure_ascii=False)
 
-    return _format_hourly_forecast(data)
+    return _format_hourly_forecast(data) + provenance_footer()
 
 
 def _format_hourly_forecast(data: dict) -> str:
@@ -399,9 +404,9 @@ async def srgssr_weather_forecast_7day(
     log.info("tool_succeeded", days=len(data.get("list", data.get("day", []))))
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(data, indent=2, ensure_ascii=False)
+        return json.dumps(with_provenance(data), indent=2, ensure_ascii=False)
 
-    return _format_7day_forecast(data)
+    return _format_7day_forecast(data) + provenance_footer()
 
 
 def _format_7day_forecast(data: dict) -> str:

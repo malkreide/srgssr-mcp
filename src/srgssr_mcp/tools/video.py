@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import VALID_BU, BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import VIDEO_BASE, _api_get, _handle_error
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.video")
@@ -145,7 +146,11 @@ async def srgssr_video_get_shows(
     log.info("tool_succeeded", result_count=len(shows), total=total)
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps({"total": total, "shows": shows}, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance({"total": total, "shows": shows}),
+            indent=2,
+            ensure_ascii=False,
+        )
 
     bu_label = params.business_unit.value.upper()
     if not shows:
@@ -154,7 +159,7 @@ async def srgssr_video_get_shows(
             f"(Seite {params.page}). Vorschläge: andere Unternehmenseinheit "
             f"({', '.join(b for b in VALID_BU if b != bu)}) probieren, oder "
             f"page=1 setzen falls die Seitennummer zu hoch ist."
-        )
+        ) + provenance_footer()
     lines = [f"## TV-Sendungen – {bu_label} (Seite {params.page})\n", f"*Total: {total} Sendungen*\n"]
     for show in shows:
         title = show.get("title", show.get("name", "Unbekannt"))
@@ -165,7 +170,7 @@ async def srgssr_video_get_shows(
     offset = (params.page - 1) * params.page_size + len(shows)
     if offset < total:
         lines.append(f"\n*Weitere Seiten verfügbar. Nächste Seite: page={params.page + 1}*")
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
 
 
 @mcp.tool(
@@ -248,7 +253,11 @@ async def srgssr_video_get_episodes(
     log.info("tool_succeeded", result_count=len(episodes), total=total)
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps({"total": total, "episodes": episodes}, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance({"total": total, "episodes": episodes}),
+            indent=2,
+            ensure_ascii=False,
+        )
 
     if not episodes:
         return (
@@ -257,7 +266,7 @@ async def srgssr_video_get_episodes(
             f"Möglich: Sendung existiert ohne aktuelle Episoden, oder die show_id ist "
             f"ungültig. Vorschlag: srgssr_video_get_shows aufrufen, um die show_id zu "
             f"verifizieren."
-        )
+        ) + provenance_footer()
 
     lines = [f"## Episoden: {params.show_id} ({params.business_unit.value.upper()})\n"]
     for ep in episodes:
@@ -273,7 +282,7 @@ async def srgssr_video_get_episodes(
             f"- **Video-ID:** `{ep_id}`\n"
             f"- {description}\n"
         )
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
 
 
 @mcp.tool(
@@ -330,7 +339,11 @@ async def srgssr_video_get_livestreams(
     log.info("tool_succeeded", result_count=len(channels))
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(channels, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance(channels, list_key="channels"),
+            indent=2,
+            ensure_ascii=False,
+        )
 
     bu_label = params.business_unit.value.upper()
     if not channels:
@@ -339,10 +352,10 @@ async def srgssr_video_get_livestreams(
             f"verfügbar. RTR und SWI haben weniger oder keine Live-Kanäle; eine "
             f"andere Unternehmenseinheit ({', '.join(b for b in VALID_BU if b != params.business_unit.value)}) "
             f"liefert in der Regel mehr Resultate."
-        )
+        ) + provenance_footer()
     lines = [f"## Live-TV-Sender – {bu_label}\n"]
     for ch in channels:
         name = ch.get("title", ch.get("name", "Unbekannt"))
         ch_id = ch.get("id", "?")
         lines.append(f"- **{name}** — ID: `{ch_id}`")
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()

@@ -454,6 +454,31 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
+## Data Sources & Licenses
+
+All data exposed by this server is fetched live from a single upstream
+provider, **SRG SSR Public API V2** (`https://api.srgssr.ch`). Every tool
+result — both Markdown and JSON — carries a provenance attribution
+(`source` / `license` / `provenance_url` / `fetched_at`) so downstream
+consumers can record the data origin without round-tripping through this
+README.
+
+| Cluster | Provider | License | Notes |
+|---|---|---|---|
+| Weather | SRF Meteo (api.srgssr.ch) | SRG SSR Terms of Use | Geo-restricted to Switzerland |
+| Video / Audio / EPG | SRF · RTS · RSI · RTR · SWI | SRG SSR Terms of Use | Metadata only — stream URLs are not redistributed |
+| Polis (Votations / Elections) | SRG SSR Polis | SRG SSR Terms of Use | Historical data since 1900 |
+
+**Use of the SRG SSR APIs**
+
+- Non-commercial use: free, no application required.
+- Commercial use: written permission required via [api@srgssr.ch](mailto:api@srgssr.ch).
+
+This server's MIT license covers the source code only; it does **not**
+relicense the upstream data.
+
+---
+
 ## License
 
 MIT License — see [LICENSE](LICENSE)

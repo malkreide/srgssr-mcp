@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import EPG_BASE, WEATHER_BASE, _safe_api_get
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.epg import _format_epg_programs
 from srgssr_mcp.tools.weather import _format_hourly_forecast
@@ -170,17 +171,19 @@ async def srgssr_daily_briefing(
 
     if params.response_format == ResponseFormat.JSON:
         return json.dumps(
-            {
-                "date": params.date,
-                "channel_id": params.channel_id,
-                "business_unit": params.business_unit.value,
-                "weather": weather_result,
-                "epg": (
-                    epg_result.get("programList", epg_result.get("programs", []))
-                    if isinstance(epg_result, dict)
-                    else epg_result
-                ),
-            },
+            with_provenance(
+                {
+                    "date": params.date,
+                    "channel_id": params.channel_id,
+                    "business_unit": params.business_unit.value,
+                    "weather": weather_result,
+                    "epg": (
+                        epg_result.get("programList", epg_result.get("programs", []))
+                        if isinstance(epg_result, dict)
+                        else epg_result
+                    ),
+                }
+            ),
             indent=2,
             ensure_ascii=False,
         )
@@ -202,4 +205,4 @@ async def srgssr_daily_briefing(
     else:
         lines.append(epg_result)
 
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
