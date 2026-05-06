@@ -11,11 +11,16 @@ Aligned with the SEC-013 entry of the [`mcp-audit-skill`][skill] catalog.
 `SRGSSR_CONSUMER_KEY` and `SRGSSR_CONSUMER_SECRET` are loaded from process
 environment variables (or, for local development, from a `.env` file)
 via `pydantic-settings.BaseSettings` (see `src/srgssr_mcp/config.py`).
-Values are typed as `pydantic.SecretStr` so they are masked in `repr`,
-`str`, and accidental structured-log emissions (ARCH-005).
 
 The cached `Settings` instance has a bounded **5-minute TTL** so rotated
 upstream credentials take effect without a process restart.
+
+> **In-flight hardening (ARCH-005, separate PR):** the `consumer_key` and
+> `consumer_secret` fields will move from `str` to `pydantic.SecretStr` so
+> values are masked in `repr`, `str`, and accidental structured-log
+> emissions. **As of this PR alone, the fields are still plain `str`** —
+> consumers of this doc should not assume masking is enforced until both
+> changes are merged. Tracking PR: malkreide/srgssr-mcp#24.
 
 ### Why Stage 1 is acceptable here
 
