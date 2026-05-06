@@ -188,7 +188,12 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
         return f"API-Fehler {sc}: {e.response.text[:200]}"
     if isinstance(e, httpx.TimeoutException):
         return "Fehler: Anfrage hat das Timeout überschritten. Bitte erneut versuchen."
-    return f"Unerwarteter Fehler ({type(e).__name__}): {e}"
+    # Defense-in-Depth (OBS-002): never include str(e) in the user-facing
+    # message — internals like resolved hostnames or socket details (gaierror)
+    # would otherwise reach the LLM. Full exception incl. stacktrace is logged
+    # to stderr via structlog.
+    logger.error("unhandled_exception", exc_type=type(e).__name__, exc_info=e)
+    return f"Unerwarteter Fehler. Details siehe Server-Log (Typ: {type(e).__name__})."
 
 
 def _query_variants(query: str) -> list[str]:
