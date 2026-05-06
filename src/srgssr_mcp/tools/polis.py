@@ -2,6 +2,7 @@
 
 import json
 
+from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
@@ -86,7 +87,10 @@ class PolisResultInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def srgssr_polis_get_votations(params: PolisListInput) -> str:
+async def srgssr_polis_get_votations(
+    params: PolisListInput,
+    ctx: Context | None = None,
+) -> str:
     """Ruft Schweizer Volksabstimmungen und Referenden aus dem Polis-System ab.
     Daten reichen zurück bis 1900. Kann nach Jahr und Kanton gefiltert werden.
     Ideal für historische Analysen, Bildungszwecke und journalistische Recherchen.
@@ -99,6 +103,7 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
             - page_size (int): Einträge pro Seite
             - page (int): Seitennummer
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Liste von Abstimmungen mit Datum, Titel und Abstimmungs-ID
@@ -112,6 +117,13 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
         page_size=params.page_size,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_polis_get_votations invoked",
+            year_from=params.year_from,
+            year_to=params.year_to,
+            canton=params.canton,
+        )
     try:
         query_params: dict = {
             "pageSize": params.page_size,
@@ -200,7 +212,10 @@ async def srgssr_polis_get_votations(params: PolisListInput) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
+async def srgssr_polis_get_votation_results(
+    params: PolisResultInput,
+    ctx: Context | None = None,
+) -> str:
     """Ruft detaillierte Resultate einer Schweizer Volksabstimmung ab.
     Liefert Ja/Nein-Anteile, Stimmbeteiligung und kantonale Ergebnisse.
     Benötigt eine votation_id aus srgssr_polis_get_votations.
@@ -209,6 +224,7 @@ async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
         params (PolisResultInput): Enthält:
             - votation_id (str): Abstimmungs-ID
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Detaillierte Abstimmungsresultate mit Ja/Nein-Anteilen und kantonalen Ergebnissen
@@ -218,6 +234,11 @@ async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
         votation_id=params.votation_id,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_polis_get_votation_results invoked",
+            votation_id=params.votation_id,
+        )
     try:
         data = await _api_get(f"{POLIS_BASE}/votations/{params.votation_id}")
     except Exception as e:
@@ -298,7 +319,10 @@ def _format_votation_result(data: dict) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_polis_get_elections(params: PolisListInput) -> str:
+async def srgssr_polis_get_elections(
+    params: PolisListInput,
+    ctx: Context | None = None,
+) -> str:
     """Ruft Schweizer Nationalrats- und Ständeratswahlen sowie Regierungsratswahlen aus dem Polis-System ab.
     Daten reichen zurück bis 1900.
 
@@ -310,6 +334,7 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
             - page_size (int): Einträge pro Seite
             - page (int): Seitennummer
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Liste von Wahlen mit Datum, Bezeichnung und Wahl-ID
@@ -323,6 +348,13 @@ async def srgssr_polis_get_elections(params: PolisListInput) -> str:
         page_size=params.page_size,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_polis_get_elections invoked",
+            year_from=params.year_from,
+            year_to=params.year_to,
+            canton=params.canton,
+        )
     try:
         query_params: dict = {
             "pageSize": params.page_size,

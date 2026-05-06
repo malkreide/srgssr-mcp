@@ -11,6 +11,7 @@ rendered so the response degrades gracefully.
 import asyncio
 import json
 
+from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
@@ -97,11 +98,18 @@ class DailyBriefingInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
+async def srgssr_daily_briefing(
+    params: DailyBriefingInput,
+    ctx: Context | None = None,
+) -> str:
     """Combines weather forecast (24h) and EPG programs for a day in a single call.
 
     Both upstream calls run concurrently via :func:`asyncio.gather`. If one of
     them fails the other is still returned, with the failure surfaced inline.
+
+    SDK-003: emits ``ctx.info`` on entry and ``ctx.report_progress`` around the
+    parallel fan-out so MCP clients see liveness during the (potentially
+    >1 s) cross-domain aggregation.
     """
     log = logger.bind(
         tool="srgssr_daily_briefing",
@@ -113,6 +121,13 @@ async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_daily_briefing invoked",
+            business_unit=params.business_unit.value,
+            channel_id=params.channel_id,
+            date=params.date,
+        )
     weather_query: dict = {
         "latitude": params.latitude,
         "longitude": params.longitude,
@@ -132,10 +147,20 @@ async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
         f"srgssr_audio_get_livestreams verifizieren."
     )
 
+    if ctx is not None:
+        await ctx.report_progress(
+            0.0, total=2.0, message="Wetter und EPG parallel abrufen"
+        )
+
     weather_result, epg_result = await asyncio.gather(
         _safe_api_get(f"{WEATHER_BASE}/24hour", params=weather_query),
         _safe_api_get(f"{EPG_BASE}/programs", params=epg_query, not_found_hint=epg_hint),
     )
+
+    if ctx is not None:
+        await ctx.report_progress(
+            2.0, total=2.0, message="Beide Quellen geladen, Antwort rendern"
+        )
 
     log.info(
         "tool_succeeded",

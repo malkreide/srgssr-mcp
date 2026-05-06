@@ -2,6 +2,7 @@
 
 import json
 
+from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
@@ -62,7 +63,10 @@ class EpgProgramsInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
+async def srgssr_epg_get_programs(
+    params: EpgProgramsInput,
+    ctx: Context | None = None,
+) -> str:
     """Ruft den Programmplan (Electronic Program Guide) für einen SRG SSR TV- oder Radiosender ab.
     Gibt alle Sendungen für einen bestimmten Tag zurück (Startzeit, Titel, Beschreibung).
     Unterstützt: SRF, RTS, RSI.
@@ -73,6 +77,7 @@ async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
             - channel_id (str): Kanal-ID (z.B. 'srf1', 'rts1')
             - date (str): Datum YYYY-MM-DD
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Programmliste des Tages mit Startuhrzeit, Titel und Beschreibung
@@ -85,6 +90,13 @@ async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
         date=params.date,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_epg_get_programs invoked",
+            business_unit=bu,
+            channel_id=params.channel_id,
+            date=params.date,
+        )
     try:
         data = await _api_get(
             f"{EPG_BASE}/programs",

@@ -957,6 +957,64 @@ async def test_daily_briefing_combines_weather_and_epg():
 
 
 @respx.mock
+async def test_daily_briefing_emits_ctx_progress_and_info():
+    """SDK-003: when invoked with a Context, the aggregator emits structured
+    log + progress events that an MCP client can surface as activity."""
+    respx.get(f"{WEATHER_BASE}/24hour").mock(
+        return_value=httpx.Response(200, json={"list": []})
+    )
+    respx.get(f"{EPG_BASE}/programs").mock(
+        return_value=httpx.Response(200, json={"programList": []})
+    )
+
+    info_events: list[tuple[str, dict]] = []
+    progress_events: list[tuple[float, float | None, str | None]] = []
+
+    class _StubCtx:
+        async def info(self, message: str, **extra):
+            info_events.append((message, extra))
+
+        async def report_progress(
+            self, progress: float, total: float | None = None, message: str | None = None
+        ):
+            progress_events.append((progress, total, message))
+
+    await srgssr_daily_briefing(
+        DailyBriefingInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id="srf1",
+            date="2026-04-30",
+            latitude=47.0,
+            longitude=8.0,
+        ),
+        ctx=_StubCtx(),
+    )
+
+    # At least one info event with the tool name
+    assert any("srgssr_daily_briefing" in msg for msg, _ in info_events)
+    # Two progress events: 0/2 (start of fan-out) and 2/2 (after gather)
+    assert len(progress_events) == 2
+    assert progress_events[0][0] == 0.0
+    assert progress_events[1][0] == 2.0
+
+
+@respx.mock
+async def test_tools_accept_no_ctx_unchanged():
+    """SDK-003: omitting ``ctx`` (the existing call shape) must keep working —
+    no test in the suite passes ctx, and the optional default must not break."""
+    respx.get(f"{WEATHER_BASE}/current").mock(
+        return_value=httpx.Response(
+            200,
+            json={"currentForecast": {"values": {"ttt": {"value": 10.0}}}},
+        )
+    )
+    result = await srgssr_weather_current(
+        WeatherForecastInput(latitude=47.0, longitude=8.0)
+    )
+    assert "Aktuelles Wetter" in result
+
+
+@respx.mock
 async def test_daily_briefing_runs_upstreams_in_parallel():
     """asyncio.gather should kick off both calls before either resolves."""
     inflight = 0
