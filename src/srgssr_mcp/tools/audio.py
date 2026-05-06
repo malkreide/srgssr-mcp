@@ -187,6 +187,9 @@ async def srgssr_audio_get_episodes(
         "Voraussetzung für srgssr_epg_get_programs (das eine channel_id "
         "benötigt). Für Live-TV stattdessen srgssr_video_get_livestreams "
         "verwenden, für Sendungsverzeichnisse srgssr_audio_get_shows.</use_case>\n\n"
+        "<important_notes>RTR und SWI haben weniger oder keine Live-Kanäle; "
+        "eine andere Unternehmenseinheit liefert in der Regel mehr "
+        "Resultate.</important_notes>\n\n"
         "<example>business_unit='srf'</example>"
     ),
     annotations={
