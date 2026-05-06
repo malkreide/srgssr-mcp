@@ -1,0 +1,35 @@
+# SDK-001 — FastMCP Lifespan via @asynccontextmanager + AsyncExitStack
+# Status: FAIL
+# Reasoning: KEIN @asynccontextmanager-Lifespan definiert. KEIN lifespan= Argument bei FastMCP-Konstruktor (siehe src/srgssr_mcp/_app.py — `mcp = FastMCP("srgssr_mcp", instructions=...)`). httpx.AsyncClient wird PRO API-Call neu erstellt (in _api_get und _get_access_token via `async with httpx.AsyncClient(timeout=TIMEOUT) as client:`) — kein Connection-Pooling, kein Resource-Reuse zwischen Tool-Calls. Klassisches Fail-Pattern aus dem Check.
+
+## Modus: code_review (Lifespan-Funktion vorhanden)
+$ grep -rE "@asynccontextmanager|@contextlib\.asynccontextmanager" src/
+(no output)
+=> FAIL: keine Lifespan-Funktion definiert.
+
+$ grep -rE "FastMCP\([^)]*lifespan=" src/
+(no output)
+=> FAIL: FastMCP-Konstruktor erhält kein lifespan=.
+
+## Modus: code_review (Resource-Reuse)
+$ grep -rnE 'httpx\.AsyncClient' src/
+src/srgssr_mcp/_http.py:122:    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+src/srgssr_mcp/_http.py:151:    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+=> FAIL: HTTP-Client wird PRO Call erzeugt (in _get_access_token + _api_get). Klassisches Fail-Pattern: kein Connection-Pooling, langsam, Leak-Gefahr bei Exception.
+
+## Modus: code_review (AsyncExitStack)
+$ grep -rE 'AsyncExitStack' src/
+(no output)
+=> n/a (Multi-Server-Setup nicht vorgesehen).
+
+## Modus: documentation (Token-Cache als Mitigant)
+_token_cache (dict) in _http.py cached den OAuth-Token (TTL via expires_at). Das mitigiert den Auth-Roundtrip-Cost teilweise — aber HTTP-Connection-Pooling ist trotzdem nicht aktiv, da neuer AsyncClient pro Call.
+
+## Empfehlung
+1. @asynccontextmanager-Lifespan in _app.py definieren mit shared httpx.AsyncClient
+2. mcp = FastMCP("srgssr_mcp", lifespan=lifespan, ...) erweitern
+3. _api_get / _get_access_token aus ctx.fastmcp.state.http nutzen
+4. Cleanup im finally-Block via async with-context-manager
+
+## NOTE
+Der httpx-Default-Pool ist bei pro-Call-AsyncClient effektiv deaktiviert. Bei aggregation-Tool (DailyBriefing fan-out via gather) macht das den TCP-Handshake-Overhead pro Sub-Call. Empfehlung dringend für SDK-Konformität.

@@ -1,0 +1,57 @@
+# OPS-002 — Doku-Standard: bilingualer README, ASCII-Diagramm, Limits-Sektion
+# Status: PASS
+# Reasoning: Bilingual READMEs (EN+DE) mit 22 Top-Level-Sektionen je. Alle Pflicht-Sektionen vorhanden: Anchor-Demo-Query (explizit als "Anchor demo query"), Installation, Quickstart, Configuration, MCP Primitives, Available Tools, Architecture (mit ASCII-Diagramm an Z. 257-...), Development Phase, Known Limits (mind. 7 Limits), Security: Egress Allowlist, Logging, Testing, Contributing, Changelog, License. Keep-a-Changelog-Format mit Sektionen Added/Changed/Security explizit. CONTRIBUTING.md + CONTRIBUTING.de.md vorhanden.
+
+## Modus: documentation_check (Pflicht-Sektionen)
+$ for readme in README.md README.de.md; do echo "=== $readme ==="; grep -cE '^## ' "$readme"; done
+README.md: 22 sections
+README.de.md: 22 sections
+Sektionen-Inventar deckt alle 8 Pflicht-Sektionen ab:
+- Demo/Anchor: ✓ "Anchor demo query" auf Zeile 7 (README.md)
+- Installation: ✓
+- Tools: ✓ "Available Tools" / "Verfügbare Tools"
+- Konfiguration: ✓ "Configuration" / "Konfiguration"
+- Sicherheit: ✓ "Security: Egress Allowlist" / "Sicherheit: Egress-Allowlist"
+- Architektur: ✓ "Architecture" / "Architektur"
+- Limits: ✓ "Known Limits" / "Bekannte Limits"
+- Lizenz: ✓ "License" / "Lizenz"
+
+## Modus: code_review (Anchor-Demo-Query)
+$ grep -B1 -A5 -iE 'anchor.demo' README.md
+README.md:**Anchor demo query:** "What were the cantonal results of the popular vote on initiative X in Zurich?" – answered with historical real-time data from the Polis system, not a hallucination.
+=> PASS: konkrete natürlich-sprachliche Frage.
+
+## Modus: code_review (ASCII-Architekturdiagramm)
+$ grep -nE '─|│|┌|└' README.md | head -10
+README.md:257:┌─────────────┐
+README.md:258:│ Claude / LLM│
+README.md:259:└──────┬──────┘
+README.md:262:│ srgssr-mcp Server        │
+README.md:263:│  ├─ Weather Tools (4)    │
+README.md:264:│  ├─ EPG Tools (1)        │
+README.md:265:│  ├─ Polis Tools (3)      │
+=> PASS: ASCII-Box-Drawing-Architekturdiagramm mit Tool-Cluster-Layout.
+
+## Modus: documentation_check (Limits-Sektion)
+$ grep -A10 "## Known Limits" README.md
+- **Rate Limits:** SRG SSR APIs enforce rate limits — see developer.srgssr.ch
+- **Data Freshness:** EPG data may be delayed by up to 6 hours
+- **Historical Data:** Polis data goes back to 1900
+- **Geo-Restriction:** Some streaming APIs only available within Switzerland
+- **API keys required:** OAuth2 credentials needed
+- **Non-commercial use:** API terms restrict commercial use
+- **Weather coverage:** SRF Meteo covers Switzerland only
+=> PASS: 7 explizite Limits — weit über Mindestgrenze von 3.
+
+## Modus: documentation_check (CHANGELOG.md im Keep-a-Changelog)
+$ head -10 CHANGELOG.md
+# Änderungsprotokoll / Changelog
+Format basiert auf Keep a Changelog
+## [Unreleased]
+### Security ... ### Added ... ### Changed
+=> PASS: Keep-a-Changelog-Format, Sektionen Security/Added/Changed explizit.
+
+## Modus: documentation_check (CONTRIBUTING bilingual)
+$ ls CONTRIBUTING*
+CONTRIBUTING.de.md  CONTRIBUTING.md
+=> PASS: bilingual.

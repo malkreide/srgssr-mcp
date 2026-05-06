@@ -1,0 +1,37 @@
+# SEC-019 — Lethal Trifecta vermeiden: Server-Separation Read vs Write/Send
+# Status: PASS
+# Reasoning: Trifecta-Bewertung implizit erfüllt: (1) Private Daten = NEIN (data_class=Public Open Data, README "Personal data: No personal data — all endpoints serve public broadcast metadata, weather observations and historical votation/election results"). (2) Untrusted Content = NEIN (Server fetcht nur api.srgssr.ch, eine vertraute Upstream-API; siehe Egress-Allowlist). (3) Externe Kommunikation = NEIN (write_capable=false, alle Tools read-only — kein send_mail, kein POST nach extern). Trifecta-Score: 0/3. README dokumentiert explizit "Read-only — the server only reads from SRG SSR APIs and cannot post, modify or delete any content". Keine ADR-/Trifecta-Tabelle als eigene Sektion, aber die Safety & Limits-Tabelle deckt die Faktoren ab.
+
+## Modus: code_review (Trifecta-Mapping pro Server)
+$ grep -rE 'data_class|PII|Verwaltungsdaten' README.md docs/ 2>/dev/null
+(no exact matches)
+$ grep -B1 -A2 -iE "Personal data|Datenklasse" README.md
+"Personal data | No personal data — all endpoints serve public broadcast metadata, weather observations and historical votation/election results"
+=> Score-Beitrag (1) "private Daten": NEIN. +0.
+
+$ grep -rE 'fetch|requests\.get|httpx\.|web_search|scrape' src/ | head
+src/srgssr_mcp/_http.py: nur httpx.AsyncClient gegen ALLOWED_HOSTS={"api.srgssr.ch"}
+=> Score-Beitrag (2) "untrusted Content": NEIN (single trusted upstream). +0.
+
+$ grep -rE 'send_mail|smtplib|requests\.post|httpx\.post|slack|webhook' src/
+(no output)
+=> Score-Beitrag (3) "externe Kommunikation": NEIN (write_capable=false). +0.
+
+## Trifecta-Score: 0/3 — sicher.
+
+## Modus: documentation_check (Bewertung im README)
+$ grep -A10 "## 🛡️ Safety & Limits" README.md
+| Access | Read-only — the server only reads from SRG SSR APIs and cannot post, modify or delete any content |
+| Personal data | No personal data ... |
+| Rate limits | ... per-query caps (e.g. max 100 episodes, 50 shows per list call) |
+| Authentication | OAuth2 Client Credentials (free registration); secrets stay local, never logged |
+=> PASS: explizite Safety-Tabelle deckt alle drei Trifecta-Achsen ab.
+
+## Modus: documentation_check (ADR / Trifecta-Sektion)
+$ find . -iname '*adr*' -o -iname '*trifecta*'
+(no output)
+NOTE: Keine eigene "Lethal Trifecta Bewertung"-Tabelle und keine ADR. Dies wäre best-practice für strikte Audit-Konformität. Da Score 0/3 (kein Risiko), ist das aber nicht zwingend.
+
+## NOTE
+- Bei Phase 1 (Read-only Wrapper, OPS-003) ist Score 0/3 strukturell. SEC-019 wird kritisch, wenn Phase 2/3 kommt — dann muss eine explizite Trifecta-ADR erstellt werden.
+- Empfehlung: kleine Tabelle "Lethal Trifecta" in README oder docs/security.md hinzufügen, um den Score 0/3 explizit zu machen (Maintainer-Wechsel-Schutz).

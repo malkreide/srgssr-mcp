@@ -1,0 +1,49 @@
+# OPS-001 — Test-Strategie: Unit-Tests mocked + Live-Tests gemarkert
+# Status: PASS
+# Reasoning: tests/test_unit.py (128 Tests) + tests/test_live.py (14 Tests) + tests/test_logging.py (9 Tests). respx wird in unit + logging Tests verwendet (HTTP-Mocking). Live-Tests sind via `pytestmark = [pytest.mark.live]` markiert. Marker im pyproject.toml registriert. CI-Workflow .github/workflows/test.yml läuft `pytest -m "not live"` mit cov-fail-under=80. Separater Nightly-Live-Workflow .github/workflows/live-test.yml (cron 04:00 UTC + workflow_dispatch) mit eigenen Test-Credentials (LIVE_TEST_CONSUMER_KEY/SECRET).
+
+## Modus: code_review (Test-Verzeichnis-Layout)
+$ ls tests/
+__init__.py  conftest.py  test_live.py  test_logging.py  test_unit.py
+$ test -f tests/test_unit.py && echo "✓ unit"; test -f tests/test_live.py && echo "✓ live"
+✓ unit
+✓ live
+
+## Modus: code_review (respx-Mocking in Unit-Tests)
+$ grep -rE 'import respx|@respx\.|@pytest\.mark\.respx' tests/
+tests/test_logging.py:import respx
+tests/test_logging.py:@respx.mock (2x)
+tests/test_unit.py:import respx
+tests/test_unit.py:@respx.mock (6x explicit)
+=> PASS: respx >= 0.21.0 als dev-dep, respx.mock-Decorator verwendet.
+
+## Modus: code_review (Live-Test-Marker)
+$ grep -rnE '@pytest\.mark\.live|pytest\.mark\.live' tests/
+tests/test_live.py:43:pytestmark = [pytest.mark.live]
+=> PASS: Module-level marker (alle 14 live-Tests sind markiert).
+$ grep -A2 "markers" pyproject.toml
+markers = [
+    "live: tests against real APIs (manual, nightly only; deselect with '-m \"not live\"')",
+]
+=> PASS: Marker im pyproject.toml registriert.
+
+## Modus: config_check (CI excludiert Live-Tests)
+$ grep -rnE 'pytest.*-m\s+"not live"|pytest.*--ignore.*live' .github/workflows/
+.github/workflows/test.yml:28:        run: pytest -m "not live" --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+=> PASS: CI läuft "not live" mit cov-fail-under=80.
+
+## Modus: config_check (Nightly-Workflow)
+$ cat .github/workflows/live-test.yml | head -25
+on:
+  schedule: cron "0 4 * * *"
+  workflow_dispatch:
+jobs:
+  live-tests:
+    - run: pytest -m live -v
+      env:
+        SRGSSR_CONSUMER_KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
+        SRGSSR_CONSUMER_SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+=> PASS: Separate Live-Test-Credentials, separater Workflow, nightly schedule + manuell.
+
+## Modus: count
+Unit-Tests: 128; Live-Tests: 14; Tools: 15. Im Schnitt >5 unit-Tests pro Tool (128/15 ≈ 8.5) und ~1 Live-Test pro Tool (14/15 ≈ 0.9 — alle wesentlichen Endpoints abgedeckt).

@@ -1,0 +1,46 @@
+# SDK-002 — Pydantic v2 / TypedDict / Dataclass als Tool-Returns
+# Status: PARTIAL
+# Reasoning: Pydantic >= 2.0 in dependencies (PASS). Tool-INPUTS sind alle als Pydantic-BaseModel-Subklassen typisiert (10 Input-Modelle: EpgProgramsInput, AudioEpisodesInput, PolisListInput/ResultInput, VideoShowsInput/EpisodesInput/LivestreamsInput, WeatherSearchInput/ForecastInput, DailyBriefingInput). Tool-OUTPUTS sind allerdings durchgehend `-> str` (Markdown-formatierte Strings), KEIN strukturierter BaseModel/TypedDict-Response-Envelope mit `source`/`provenance`/`results`/`count`. Damit fehlt der konsistente Provenance-Envelope, den der Check fordert. ResponseFormat-Enum (markdown/json) existiert in _app.py — aber als StrEnum-Hint, nicht als Output-Schema.
+
+## Modus: code_review (Return-Type-Annotations)
+$ grep -rnE 'async def srgssr_' src/ | head
+src/srgssr_mcp/tools/polis.py:89:async def srgssr_polis_get_votations(params: PolisListInput) -> str:
+src/srgssr_mcp/tools/polis.py:203:async def srgssr_polis_get_votation_results(params: PolisResultInput) -> str:
+src/srgssr_mcp/tools/polis.py:301:async def srgssr_polis_get_elections(params: PolisListInput) -> str:
+src/srgssr_mcp/tools/epg.py:65:async def srgssr_epg_get_programs(params: EpgProgramsInput) -> str:
+src/srgssr_mcp/tools/weather.py:80,170,249,330: alle -> str
+src/srgssr_mcp/tools/audio.py: alle -> str
+src/srgssr_mcp/tools/video.py: alle -> str
+src/srgssr_mcp/tools/aggregation.py:100:async def srgssr_daily_briefing(params: DailyBriefingInput) -> str:
+=> 15/15 Tools haben `-> str` als Return-Annotation. Explizit, aber nicht strukturiert (kein BaseModel/TypedDict).
+
+## Modus: automated (Pydantic-Version)
+$ grep -E "pydantic\s*[>=~]?=" pyproject.toml
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+=> PASS: Pydantic >= 2.0.
+
+## Modus: code_review (Pydantic Input-Models)
+$ grep -rE "BaseModel|ConfigDict" src/srgssr_mcp/tools/ | head
+10 Input-BaseModel-Klassen mit ConfigDict:
+- EpgProgramsInput, AudioEpisodesInput
+- PolisListInput, PolisResultInput
+- VideoShowsInput, VideoEpisodesInput, VideoLivestreamsInput
+- WeatherSearchInput, WeatherForecastInput
+- DailyBriefingInput
+=> PASS: Inputs sind alle strikt typisiert (siehe SEC-018: ConfigDict mit strict=True + extra=forbid).
+
+## Modus: code_review (Output-Envelope mit source/provenance)
+$ grep -rE "source|provenance|envelope" src/srgssr_mcp/tools/ | head
+(no output for "source"/"provenance" in tools)
+=> FAIL für diesen Punkt: kein konsistenter Output-Envelope. Tools liefern Markdown-Strings (formatiert via _format_*-Helpers), die keine maschinenlesbaren Provenance-Felder haben.
+
+## Modus: ResponseFormat-Hint
+$ grep -A2 "class ResponseFormat" src/srgssr_mcp/_app.py
+class ResponseFormat(StrEnum):
+    MARKDOWN = "markdown"
+    JSON = "json"
+=> NOTE: ResponseFormat-Enum existiert, wird aber nicht von Tool-Returns konsumiert (alle Tools fix `-> str`).
+
+## Empfehlung
+Strukturierten Output-Envelope (z.B. `class SearchResponse(BaseModel): source: str; provenance: Literal["live_api", "cached"]; results: list; count: int`) einführen, damit FastMCP das output-Schema im tools/list-Manifest exponieren kann und das LLM Folge-Calls präziser planen kann. Aktuell rät das LLM aus dem Markdown-String.

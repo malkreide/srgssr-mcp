@@ -1,0 +1,36 @@
+# SEC-006 — Lokaler Server: stdio-Transport zwingend (Netzwerk-Isolation)
+# Status: PASS
+# Reasoning: Default-Transport ist `stdio` (siehe src/srgssr_mcp/config.py:transport=Field(default="stdio")). SSE/streamable-http nur via expliziter ENV-Var SRGSSR_MCP_TRANSPORT aktivierbar. server.py main() routiert: if stdio → stdio, sonst expliziter Transport. README.md dokumentiert "stdio for the developer laptop, SSE for the browser" und zeigt Claude-Desktop-Setup mit stdio prominent. Ohne ENV-Var öffnet der Server keinen TCP-Port.
+
+## Modus: code_review (Default-Transport ist stdio)
+$ grep -rnE 'MCP_TRANSPORT|transport.*=.*stdio' src/
+src/srgssr_mcp/config.py: transport: Transport = Field(default="stdio", validation_alias="SRGSSR_MCP_TRANSPORT", ...)
+src/srgssr_mcp/server.py:174: if settings.transport == "stdio":
+src/srgssr_mcp/server.py:175:     server.run(transport="stdio")
+=> PASS: Default ist stdio.
+
+$ grep -B2 -A5 "transport: Transport" src/srgssr_mcp/config.py
+    transport: Transport = Field(
+        default="stdio",
+        validation_alias="SRGSSR_MCP_TRANSPORT",
+        description="MCP transport: 'stdio' (local), 'sse' or 'streamable-http' (remote).",
+    )
+    host: str = Field(default="127.0.0.1", ...)
+=> PASS: stdio default + 127.0.0.1 host default (auch bei sse/http).
+
+## Modus: documentation_check (README-Empfehlung)
+$ grep -nE 'stdio|claude desktop|local' README.md | head
+README.md:41: - ☁️ Dual transport – stdio for Claude Desktop, Streamable HTTP/SSE for cloud deployment
+README.md:90: # Start the server (stdio mode for Claude Desktop)
+README.md:148: are stdio (default), sse, and streamable-http.
+README.md:150: > 💡 "stdio for the developer laptop, SSE for the browser."
+=> PASS: README dokumentiert klar lokalen stdio-Use-Case primär.
+
+## Modus: runtime_test (Default-Start öffnet keinen Port)
+NOTE: Nicht ausgeführt. Code-Pfad ist klar:
+- if settings.transport == "stdio": server.run(transport="stdio")  [no port]
+- else: server.run(transport=settings.transport, mount_path=...)  [ENV-explicit]
+=> Statisch validiert: keine Hartcodierte Port-Bindung im Default-Pfad.
+
+## NOTE
+Transport-Validation erfolgt durch Pydantic-Literal["stdio", "sse", "streamable-http"] — invalide Werte werden bei Settings-Init abgewiesen.

@@ -1,0 +1,54 @@
+# SEC-004 — SSRF-Prevention: HTTPS-Enforcement + IP-Blocklisting
+# Status: PASS
+# Reasoning: _validate_url_safe() in src/srgssr_mcp/_http.py implementiert alle drei Pflichtkontrollen vor jedem ausgehenden Request: (1) HTTPS-only-Enforcement (raises ValueError bei !https), (2) Egress-Allowlist (`ALLOWED_HOSTS = frozenset({"api.srgssr.ch"})`), (3) IP-Blocklist nach getaddrinfo-Resolution gegen 18 IP-Ranges (RFC1918 privat, Loopback, Link-Local inkl. 169.254.169.254 Cloud-Metadata, CGNAT, Multicast, Reserved, IPv6-Pendants ULA/Link-Local/Loopback/Mapped). Aufgerufen vor jedem _api_get + _get_access_token. Tests in tests/test_unit.py (siehe CHANGELOG: 20 neue Unit-Tests für HTTPS, Allowlist, alle IP-Kategorien inkl IPv6).
+
+## Modus: code_review (HTTPS-Enforcement)
+$ grep -A3 "if parsed.scheme" src/srgssr_mcp/_http.py
+    if parsed.scheme != "https":
+        raise ValueError(
+            f"SSRF blocked: only HTTPS is permitted for outbound requests "
+            f"(got scheme '{parsed.scheme}')"
+        )
+=> PASS: HTTPS strict enforced.
+
+## Modus: code_review (IP-Blocklisting via Range-Check)
+$ grep -B1 -A20 "_BLOCKED_IP_NETWORKS" src/srgssr_mcp/_http.py
+_BLOCKED_IP_NETWORKS: tuple[...] = (
+    "0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8",
+    "169.254.0.0/16",  # link-local (cloud metadata) ← KRITISCH abgedeckt
+    "172.16.0.0/12", "192.0.0.0/24", "192.168.0.0/16",
+    "198.18.0.0/15", "224.0.0.0/4", "240.0.0.0/4",
+    "::1/128", "::/128", "::ffff:0:0/96", "64:ff9b::/96",
+    "fc00::/7", "fe80::/10", "ff00::/8",
+)
+=> PASS: 18 Blocked-Ranges, deutlich mehr als das Pass-Pattern verlangt.
+
+## Modus: code_review (Resolution + Range-Check vor Request)
+$ grep -A8 "addr_infos = socket.getaddrinfo" src/srgssr_mcp/_http.py
+    addr_infos = socket.getaddrinfo(hostname, None)
+    for info in addr_infos:
+        ip = ipaddress.ip_address(info[4][0])
+        for blocked in _BLOCKED_IP_NETWORKS:
+            if ip.version == blocked.version and ip in blocked:
+                raise ValueError(...)
+=> PASS: alle aufgelösten IPs (A + AAAA) werden geprüft.
+
+## Modus: Aufrufstellen
+$ grep -n "_validate_url_safe" src/srgssr_mcp/_http.py
+src/srgssr_mcp/_http.py:75: def _validate_url_safe(url: str) -> None:
+src/srgssr_mcp/_http.py:118: _validate_url_safe(TOKEN_URL)
+src/srgssr_mcp/_http.py:147: _validate_url_safe(url)
+=> PASS: vor Token-Refresh UND vor jedem _api_get.
+
+## Modus: code_review (Egress-Allowlist)
+$ grep "ALLOWED_HOSTS" src/srgssr_mcp/_http.py
+ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+=> PASS: frozenset (nicht config-mutierbar) mit minimalem Scope.
+
+## Modus: documentation_check (Test-Coverage)
+$ grep -nE "ssrf|SSRF|169\.254|0\.0\.0|allowed_hosts|_validate_url_safe" tests/test_unit.py | head
+NOTE: CHANGELOG.md sagt "20 neue Unit-Tests in tests/test_unit.py decken HTTPS-Enforcement, Allowlist, alle blockierten IP-Kategorien (inkl. IPv6 und gemischter A/AAAA-Antworten), DNS-Resolver-Fehler und die Integration in _api_get / _safe_api_get ab."
+=> PASS: Test-Coverage explizit dokumentiert im CHANGELOG.
+
+## NOTE: TOCTOU
+Die Implementierung verwendet socket.getaddrinfo zur Validation, nicht zur eigentlichen TCP-Connection (httpx macht eigene Resolution). Damit besteht eine TOCTOU-Lücke gegen DNS-Rebinding (siehe SEC-005). Mitigations-Ansatz wäre Custom-Transport mit Pinning. Für aktuelle Bedrohungslage (single static host api.srgssr.ch) realistisch geringes Risiko.

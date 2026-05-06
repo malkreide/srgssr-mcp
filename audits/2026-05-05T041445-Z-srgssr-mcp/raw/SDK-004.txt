@@ -1,0 +1,33 @@
+# SDK-004 — CORS Mcp-Session-Id Exposure bei HTTP/SSE
+# Status: TODO
+# Reasoning: Keine CORS-Middleware konfiguriert (kein CORSMiddleware-Import, kein cors_origins/cors_expose_headers an FastMCP-Konstruktor). Da der Server primär für stdio-Transport (Default) gebaut ist und HTTP/SSE als optionaler Cloud-Use-Case dokumentiert sind, ist das aktuell nicht-funktional bei Browser-Clients — würde aber bei tatsächlicher Cloud-Deployment via streamable-http akut: Browser könnten die Mcp-Session-Id nicht auslesen, Folge-Requests landen ohne Session-Header, Session-Lifecycle bricht. Da Profil dual transport deklariert (stdio + sse + streamable-http) UND HTTP/SSE-Pfad nicht stillgelegt ist, ist dieser Punkt als Lücke zu erfassen — wird aber erst kritisch bei Cloud-Browser-Use.
+
+## Modus: code_review (CORS-Middleware-Konfiguration)
+$ grep -rE "CORSMiddleware|cors|allow_origins|expose_headers|Access-Control-Expose" src/
+(no output)
+=> Keine CORS-Konfiguration im Code.
+
+$ grep -rE "cors_origins|cors_expose" src/
+(no output)
+=> Auch keine FastMCP-direct cors_*-Argumente.
+
+## Modus: server.py / _app.py review
+$ grep "FastMCP(" src/srgssr_mcp/_app.py
+mcp = FastMCP("srgssr_mcp", instructions=...)
+=> Nur "instructions" gesetzt — kein CORS, keine Middleware.
+
+## Modus: runtime_test
+NOTE: Nicht ausgeführt (Server läuft nicht). Bei einem Test mit `Origin: https://test.example.com` würde die Response keine `Access-Control-Allow-Origin` und keine `Access-Control-Expose-Headers: Mcp-Session-Id` zurückgeben.
+
+## NOTE
+- Profil sagt: transport=dual, is_cloud_deployed=false. Also: HTTP/SSE-Code-Pfad existiert (siehe server.py main()), wird aber aktuell nicht in Production betrieben.
+- Bei Cloud-Browser-Deployment (Claude.ai-direkt-Web-Connect oder Custom-Web-Frontend): zwingend nachholen, sonst Session-Brüche.
+- Stdio-Transport (Default für Claude Desktop) ist von CORS nicht betroffen.
+
+## Empfehlung
+Wenn HTTP/SSE produktiv genutzt werden soll: CORSMiddleware mit:
+- allow_origins=ENV(ALLOWED_ORIGINS).split(",") (keine Wildcard mit credentials)
+- allow_headers=["Content-Type","Mcp-Session-Id","Authorization"]
+- expose_headers=["Mcp-Session-Id"]  ← KRITISCH
+- allow_credentials=True
+einrichten, in docs/network-egress.md oder neuer docs/cors.md dokumentieren.

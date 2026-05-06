@@ -1,0 +1,34 @@
+# SDK-003 — Context Injection für Progress Reports und Logging
+# Status: FAIL
+# Reasoning: KEIN Tool nutzt den Context-Parameter (ctx: Context). Damit fehlen alle Capabilities, die Context bietet: Progress-Reports (ctx.report_progress), strukturiertes Per-Call-Logging (ctx.info/warning/error), Client-Info, Sampling, Elicitation. Das ist besonders relevant für `srgssr_daily_briefing` (aggregiert via asyncio.gather mehrere API-Calls) und für die EPG/Polis-Tools mit grossen Listen-Iterationen, die als lang laufend zu klassifizieren sind. Tools loggen über den shared structlog-Logger ohne Per-Call-Context-Binding (siehe OBS-003).
+
+## Modus: code_review (Context-Parameter in Tools)
+$ grep -rB1 -A5 "@mcp\.tool" src/ | grep -E "ctx:\s*Context|ctx\s*:|Context\)"
+(no output)
+=> FAIL: kein einziges Tool deklariert ctx: Context als Parameter.
+
+$ grep -rnE 'ctx\.(info|warning|error|debug|report_progress|elicit|sample)' src/
+(no output)
+=> FAIL: keine ctx.*-Methode wird aufgerufen.
+
+## Modus: code_review (Lange Ops ohne Progress)
+$ grep -rnE 'gather|for .+ in ' src/srgssr_mcp/tools/ | head
+src/srgssr_mcp/tools/aggregation.py:135: weather_result, epg_result = await asyncio.gather(...)
+src/srgssr_mcp/tools/epg.py:128: for prog in programs: (Formatierung)
+src/srgssr_mcp/tools/polis.py:168, 265, 367: for-Loops über Listen
+NOTE: srgssr_daily_briefing (aggregation.py) führt 2 parallele API-Calls via gather durch. Bei Slow-Connection oder upstream-Latency >2s sollte ein Progress-Report gesendet werden — aktuell still.
+
+## Modus: Logging
+$ grep -rE "logger\." src/srgssr_mcp/tools/
+(no logger calls in tools)
+=> Tools loggen nicht — auch nicht über shared structlog. Konsequenz: keine Tool-Invocation/Success-Failure-Events sind nachvollziehbar (siehe OBS-003 NOTE).
+
+## Empfehlung
+1. ctx: Context als optionalen Parameter zu allen Tools hinzufügen
+2. await ctx.info("tool_invoked", tool="srgssr_weather_current", ...) am Anfang
+3. await ctx.report_progress(...) bei aggregation und longeren for-Loops
+4. await ctx.error(...) bei _handle_error-Fall (oder ctx.warning für 4xx)
+5. ctx-basierte Logs lösen das stdio-Logging-Problem auf elegante Weise (siehe OBS-004)
+
+## NOTE
+Mit dem aktuellen FastMCP-Setup ist ctx: Context als optionaler Parameter klein-aufwendig hinzuzufügen — Pro-Tool-Refactoring ~10 min. Für ein 15-Tools-Repo somit ein klar abgrenzbares S-Effort-Ticket.
