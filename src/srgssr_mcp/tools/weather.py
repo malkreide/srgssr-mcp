@@ -2,6 +2,7 @@
 
 import json
 
+from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
@@ -77,7 +78,10 @@ class WeatherForecastInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
+async def srgssr_weather_search_location(
+    params: WeatherSearchInput,
+    ctx: Context | None = None,
+) -> str:
     """Sucht Schweizer Standorte für die Wettervorhersage nach Name oder Postleitzahl.
     Gibt eine Liste von Orten mit geolocationId zurück, die für Wetterabfragen benötigt wird.
 
@@ -85,12 +89,19 @@ async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
         params (WeatherSearchInput): Enthält:
             - query (str): Ortsname oder PLZ (z.B. 'Zürich', '8001')
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible
+            progress reports and per-call logging. Auto-injected when
+            invoked through the MCP transport; ``None`` in unit tests.
 
     Returns:
         str: Liste von Standorten mit Name, Kanton, PLZ und geolocationId
     """
     log = logger.bind(tool="srgssr_weather_search_location", query=params.query)
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_weather_search_location invoked", query=params.query
+        )
     locations: list = []
     matched_variant = params.query
     tried: list[str] = []
@@ -167,7 +178,10 @@ async def srgssr_weather_search_location(params: WeatherSearchInput) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_weather_current(params: WeatherForecastInput) -> str:
+async def srgssr_weather_current(
+    params: WeatherForecastInput,
+    ctx: Context | None = None,
+) -> str:
     """Liefert die aktuelle Wettervorhersage von SRF Meteo für einen Schweizer Standort.
     Nutzt Breitengrad, Längengrad und optional eine geolocationId.
 
@@ -177,6 +191,7 @@ async def srgssr_weather_current(params: WeatherForecastInput) -> str:
             - longitude (float): Längengrad (z.B. 8.5417)
             - geolocation_id (Optional[str]): ID aus Standortsuche
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Aktuelle Temperatur, Wetterlage, Wind, Niederschlag
@@ -188,6 +203,12 @@ async def srgssr_weather_current(params: WeatherForecastInput) -> str:
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_weather_current invoked",
+            latitude=params.latitude,
+            longitude=params.longitude,
+        )
     try:
         query_params = {
             "latitude": params.latitude,
@@ -246,11 +267,15 @@ def _format_current_weather(data: dict) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_weather_forecast_24h(params: WeatherForecastInput) -> str:
+async def srgssr_weather_forecast_24h(
+    params: WeatherForecastInput,
+    ctx: Context | None = None,
+) -> str:
     """Liefert die stündliche Wettervorhersage der nächsten 24 Stunden von SRF Meteo.
 
     Args:
         params (WeatherForecastInput): Standortangaben mit Koordinaten und optional geolocationId
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Stündliche Temperatur, Niederschlag, Wind für 24 Stunden
@@ -262,6 +287,12 @@ async def srgssr_weather_forecast_24h(params: WeatherForecastInput) -> str:
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_weather_forecast_24h invoked",
+            latitude=params.latitude,
+            longitude=params.longitude,
+        )
     try:
         query_params = {
             "latitude": params.latitude,
@@ -327,11 +358,15 @@ def _format_hourly_forecast(data: dict) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_weather_forecast_7day(params: WeatherForecastInput) -> str:
+async def srgssr_weather_forecast_7day(
+    params: WeatherForecastInput,
+    ctx: Context | None = None,
+) -> str:
     """Liefert die tägliche Wettervorhersage der nächsten 7 Tage von SRF Meteo.
 
     Args:
         params (WeatherForecastInput): Standortangaben mit Koordinaten und optional geolocationId
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Tagesvorhersage mit Min/Max-Temperatur, Niederschlag und Wetterlage
@@ -343,6 +378,12 @@ async def srgssr_weather_forecast_7day(params: WeatherForecastInput) -> str:
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_weather_forecast_7day invoked",
+            latitude=params.latitude,
+            longitude=params.longitude,
+        )
     try:
         query_params = {
             "latitude": params.latitude,

@@ -2,6 +2,7 @@
 
 import json
 
+from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import VALID_BU, BusinessUnit, ResponseFormat, mcp
@@ -102,7 +103,10 @@ class VideoLivestreamsInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def srgssr_video_get_shows(params: VideoShowsInput) -> str:
+async def srgssr_video_get_shows(
+    params: VideoShowsInput,
+    ctx: Context | None = None,
+) -> str:
     """Listet alle TV-Sendungen einer SRG SSR Unternehmenseinheit auf (SRF, RTS, RSI, RTR, SWI).
     Gibt Sendungstitel, ID und Beschreibung zurück.
 
@@ -112,6 +116,7 @@ async def srgssr_video_get_shows(params: VideoShowsInput) -> str:
             - page_size (int): Einträge pro Seite (Standard: 20)
             - page (int): Seitennummer
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Liste von TV-Sendungen mit Titel, ID und Beschreibung
@@ -124,6 +129,8 @@ async def srgssr_video_get_shows(params: VideoShowsInput) -> str:
         page_size=params.page_size,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info("srgssr_video_get_shows invoked", business_unit=bu)
     try:
         data = await _api_get(
             f"{VIDEO_BASE}/{bu}/showList",
@@ -187,7 +194,10 @@ async def srgssr_video_get_shows(params: VideoShowsInput) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_video_get_episodes(params: VideoEpisodesInput) -> str:
+async def srgssr_video_get_episodes(
+    params: VideoEpisodesInput,
+    ctx: Context | None = None,
+) -> str:
     """Ruft die neuesten Episoden einer TV-Sendung ab. Benötigt die show_id aus srgssr_video_get_shows.
     Gibt Episodentitel, Datum, Dauer und die Video-ID für den Mediaplayer zurück.
 
@@ -198,6 +208,7 @@ async def srgssr_video_get_episodes(params: VideoEpisodesInput) -> str:
             - page_size (int): Episoden pro Seite
             - page (int): Seitennummer
             - response_format (str): 'markdown' oder 'json'
+        ctx (Context, optional): FastMCP context for client-visible logging.
 
     Returns:
         str: Episodenliste mit Titel, Datum, Dauer und Video-ID
@@ -211,6 +222,12 @@ async def srgssr_video_get_episodes(params: VideoEpisodesInput) -> str:
         page_size=params.page_size,
     )
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info(
+            "srgssr_video_get_episodes invoked",
+            business_unit=bu,
+            show_id=params.show_id,
+        )
     try:
         data = await _api_get(
             f"{VIDEO_BASE}/{bu}/showEpisodesList/{params.show_id}",
@@ -283,7 +300,10 @@ async def srgssr_video_get_episodes(params: VideoEpisodesInput) -> str:
         "openWorldHint": True,
     },
 )
-async def srgssr_video_get_livestreams(params: VideoLivestreamsInput) -> str:
+async def srgssr_video_get_livestreams(
+    params: VideoLivestreamsInput,
+    ctx: Context | None = None,
+) -> str:
     """Listet alle Live-TV-Sender einer SRG SSR Unternehmenseinheit auf.
     Gibt Sendernamen und Kanal-IDs zurück, die mit dem SRG-Mediaplayer (Pillarbox) genutzt werden können.
 
@@ -298,6 +318,8 @@ async def srgssr_video_get_livestreams(params: VideoLivestreamsInput) -> str:
     bu = params.business_unit.value
     log = logger.bind(tool="srgssr_video_get_livestreams", business_unit=bu)
     log.info("tool_invoked")
+    if ctx is not None:
+        await ctx.info("srgssr_video_get_livestreams invoked", business_unit=bu)
     try:
         data = await _api_get(f"{VIDEO_BASE}/{bu}/channels")
     except Exception as e:
