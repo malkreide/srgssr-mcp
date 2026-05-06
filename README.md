@@ -458,10 +458,12 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 All data exposed by this server is fetched live from a single upstream
 provider, **SRG SSR Public API V2** (`https://api.srgssr.ch`). Every tool
-result — both Markdown and JSON — carries a provenance attribution
-(`source` / `license` / `provenance_url` / `fetched_at`) so downstream
-consumers can record the data origin without round-tripping through this
-README.
+return is a typed [Pydantic `BaseModel`](src/srgssr_mcp/_models.py) that
+embeds `source` / `license` / `provenance_url` / `fetched_at` at the top
+level — so downstream consumers can record the data origin without
+round-tripping through this README. FastMCP exposes the corresponding
+`outputSchema` in the `tools/list` manifest so MCP clients can plan
+follow-up calls precisely.
 
 | Cluster | Provider | License | Notes |
 |---|---|---|---|

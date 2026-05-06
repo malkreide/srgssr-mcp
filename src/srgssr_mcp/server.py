@@ -62,15 +62,13 @@ from srgssr_mcp.tools.audio import (
     srgssr_audio_get_livestreams,
     srgssr_audio_get_shows,
 )
-from srgssr_mcp.tools.epg import (  # noqa: F401  (_format_epg_programs re-exported)
+from srgssr_mcp.tools.epg import (
     EpgProgramsInput,
-    _format_epg_programs,
     srgssr_epg_get_programs,
 )
-from srgssr_mcp.tools.polis import (  # noqa: F401  (_format_votation_result re-exported)
+from srgssr_mcp.tools.polis import (
     PolisListInput,
     PolisResultInput,
-    _format_votation_result,
     srgssr_polis_get_elections,
     srgssr_polis_get_votation_results,
     srgssr_polis_get_votations,
@@ -88,12 +86,9 @@ from srgssr_mcp.tools.video import (
     srgssr_video_get_livestreams,
     srgssr_video_get_shows,
 )
-from srgssr_mcp.tools.weather import (  # noqa: F401  (formatters re-exported)
+from srgssr_mcp.tools.weather import (
     WeatherForecastInput,
     WeatherSearchInput,
-    _format_7day_forecast,
-    _format_current_weather,
-    _format_hourly_forecast,
     srgssr_weather_current,
     srgssr_weather_forecast_7day,
     srgssr_weather_forecast_24h,

@@ -3,23 +3,27 @@
 The thin-wrapper tools each cover one upstream endpoint and return atomic
 responses. Aggregation tools fan out across multiple endpoints in parallel via
 :func:`asyncio.gather` and merge the results, so callers don't have to chain
-three roundtrips for cross-domain queries (e.g. "what's the weather and what's
+roundtrips for cross-domain queries (e.g. "what's the weather and what's
 on TV in Zurich tonight?"). When one upstream fails the other section is still
-rendered so the response degrades gracefully.
+returned so the response degrades gracefully.
+
+After SDK-002 Option A: the aggregator delegates to the typed leaf tools
+(``srgssr_weather_forecast_24h`` and ``srgssr_epg_get_programs``) instead of
+calling ``_safe_api_get`` directly. That gives us the per-cluster
+``ToolErrorResponse`` graceful-degradation contract for free, plus typed
+sub-responses inside :class:`DailyBriefingResponse`.
 """
 
 import asyncio
-import json
 
 from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
-from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
-from srgssr_mcp._http import EPG_BASE, WEATHER_BASE, _safe_api_get
-from srgssr_mcp._provenance import provenance_footer, with_provenance
+from srgssr_mcp._app import BusinessUnit, mcp
+from srgssr_mcp._models import DailyBriefingResponse, ToolErrorResponse
 from srgssr_mcp.logging_config import get_logger
-from srgssr_mcp.tools.epg import _format_epg_programs
-from srgssr_mcp.tools.weather import _format_hourly_forecast
+from srgssr_mcp.tools.epg import EpgProgramsInput, srgssr_epg_get_programs
+from srgssr_mcp.tools.weather import WeatherForecastInput, srgssr_weather_forecast_24h
 
 logger = get_logger("mcp.srgssr.aggregation")
 
@@ -31,65 +35,32 @@ class DailyBriefingInput(BaseModel):
         description="SRG SSR Unternehmenseinheit für das EPG: 'srf', 'rts' oder 'rsi' (RTR/SWI ohne EPG)",
     )
     channel_id: str = Field(
-        ...,
-        description="Kanal-ID aus srgssr_video_get_livestreams (z.B. 'srf1', 'rts1', 'rsi-la1')",
-        min_length=1,
-        max_length=100,
-        pattern=r"^[A-Za-z0-9_-]+$",
+        ..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"
     )
-    date: str = Field(
-        ...,
-        description="Datum im Format YYYY-MM-DD (z.B. '2026-04-30')",
-        pattern=r"^\d{4}-\d{2}-\d{2}$",
-    )
-    latitude: float = Field(
-        ...,
-        description="Breitengrad des Schweizer Standorts (45.8–47.9)",
-        ge=45.8,
-        le=47.9,
-    )
-    longitude: float = Field(
-        ...,
-        description="Längengrad des Schweizer Standorts (5.9–10.5)",
-        ge=5.9,
-        le=10.5,
-    )
+    date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    latitude: float = Field(..., ge=45.8, le=47.9)
+    longitude: float = Field(..., ge=5.9, le=10.5)
     geolocation_id: str | None = Field(
-        default=None,
-        description="Optionale geolocationId aus srgssr_weather_search_location für präzisere Vorhersagen",
-        min_length=1,
-        max_length=50,
-        pattern=r"^[A-Za-z0-9_-]+$",
-    )
-    response_format: ResponseFormat = Field(
-        default=ResponseFormat.MARKDOWN,
-        description="Ausgabeformat: 'markdown' oder 'json'",
+        default=None, min_length=1, max_length=50, pattern=r"^[A-Za-z0-9_-]+$"
     )
 
 
 @mcp.tool(
     name="srgssr_daily_briefing",
     description=(
-        "Aggregiertes Tagesbriefing: kombiniert die 24-Stunden-Wettervorhersage von "
-        "SRF Meteo mit dem EPG-Tagesprogramm eines SRG SSR TV- oder Radiosenders. "
-        "Beide Datenquellen werden parallel abgerufen (asyncio.gather), so dass "
-        "ein einzelner Tool-Call genügt statt zweier sequentieller Roundtrips.\n\n"
-        "<use_case>«Wetter + Programm für heute Abend»: Abendplanung, redaktionelle "
-        "Tages-Briefings, Newsletter-Generierung oder Voice-Assistant-Antworten, "
-        "die Wetterlage und TV-/Radio-Programm in einem Schwung benötigen. Spart "
-        "gegenüber den Einzeltools srgssr_weather_forecast_24h und "
-        "srgssr_epg_get_programs einen Roundtrip und liefert ein konsistent "
-        "formatiertes Ergebnis.</use_case>\n\n"
-        "<important_notes>EPG nur für SRF, RTS und RSI verfügbar — RTR/SWI führen "
-        "in einer Teil-Fehlermeldung. Wetterdaten beschränkt auf Schweizer "
-        "Koordinaten (Latitude 45.8–47.9, Longitude 5.9–10.5). Bei Ausfall einer "
-        "der beiden Quellen wird die andere Sektion trotzdem gerendert (Graceful "
-        "Degradation); die Fehlerursache wird in der entsprechenden Sektion "
-        "gemeldet.</important_notes>\n\n"
+        "Aggregiertes Tagesbriefing: kombiniert die 24-Stunden-Wettervorhersage "
+        "von SRF Meteo mit dem EPG-Tagesprogramm eines SRG SSR TV- oder "
+        "Radiosenders. Beide Datenquellen werden parallel abgerufen "
+        "(asyncio.gather), so dass ein einzelner Tool-Call genügt statt "
+        "zweier sequentieller Roundtrips.\n\n"
+        "<use_case>«Wetter + Programm für heute Abend»: Abendplanung, "
+        "redaktionelle Tages-Briefings.</use_case>\n\n"
+        "<important_notes>EPG nur für SRF, RTS und RSI. Bei Ausfall einer "
+        "der beiden Quellen wird die andere Sektion trotzdem geliefert "
+        "(Graceful Degradation) — das Feld enthält dann ein "
+        "ToolErrorResponse.</important_notes>\n\n"
         "<example>business_unit='srf', channel_id='srf1', date='2026-04-30', "
-        "latitude=47.3769, longitude=8.5417 | business_unit='rts', "
-        "channel_id='rts1', date='2026-05-01', latitude=46.5197, longitude=6.6323, "
-        "geolocation_id='100456'</example>"
+        "latitude=47.3769, longitude=8.5417</example>"
     ),
     annotations={
         "title": "SRG SSR – Tagesbriefing (Wetter + EPG)",
@@ -102,15 +73,13 @@ class DailyBriefingInput(BaseModel):
 async def srgssr_daily_briefing(
     params: DailyBriefingInput,
     ctx: Context | None = None,
-) -> str:
-    """Combines weather forecast (24h) and EPG programs for a day in a single call.
+) -> DailyBriefingResponse:
+    """Compose a day's weather + EPG into one typed response.
 
-    Both upstream calls run concurrently via :func:`asyncio.gather`. If one of
-    them fails the other is still returned, with the failure surfaced inline.
-
-    SDK-003: emits ``ctx.info`` on entry and ``ctx.report_progress`` around the
-    parallel fan-out so MCP clients see liveness during the (potentially
-    >1 s) cross-domain aggregation.
+    The two leaf tools each catch their own exceptions and return either a
+    success Response or a :class:`ToolErrorResponse`, so this aggregator
+    never raises and always assembles a DailyBriefingResponse — keeping the
+    Graceful-Degradation contract from before the typed-model migration.
     """
     log = logger.bind(
         tool="srgssr_daily_briefing",
@@ -129,33 +98,24 @@ async def srgssr_daily_briefing(
             channel_id=params.channel_id,
             date=params.date,
         )
-    weather_query: dict = {
-        "latitude": params.latitude,
-        "longitude": params.longitude,
-    }
-    if params.geolocation_id:
-        weather_query["geolocationId"] = params.geolocation_id
-
-    epg_query = {
-        "bu": params.business_unit.value,
-        "channel": params.channel_id,
-        "date": params.date,
-    }
-    epg_hint = (
-        f"channel_id='{params.channel_id}' nicht gefunden für "
-        f"business_unit='{params.business_unit.value}'. EPG ist nur für SRF, RTS "
-        f"und RSI verfügbar; Kanal-IDs über srgssr_video_get_livestreams oder "
-        f"srgssr_audio_get_livestreams verifizieren."
-    )
-
-    if ctx is not None:
         await ctx.report_progress(
             0.0, total=2.0, message="Wetter und EPG parallel abrufen"
         )
 
-    weather_result, epg_result = await asyncio.gather(
-        _safe_api_get(f"{WEATHER_BASE}/24hour", params=weather_query),
-        _safe_api_get(f"{EPG_BASE}/programs", params=epg_query, not_found_hint=epg_hint),
+    weather_input = WeatherForecastInput(
+        latitude=params.latitude,
+        longitude=params.longitude,
+        geolocation_id=params.geolocation_id,
+    )
+    epg_input = EpgProgramsInput(
+        business_unit=params.business_unit,
+        channel_id=params.channel_id,
+        date=params.date,
+    )
+
+    weather_resp, epg_resp = await asyncio.gather(
+        srgssr_weather_forecast_24h(weather_input),
+        srgssr_epg_get_programs(epg_input),
     )
 
     if ctx is not None:
@@ -165,44 +125,14 @@ async def srgssr_daily_briefing(
 
     log.info(
         "tool_succeeded",
-        weather_ok=isinstance(weather_result, dict),
-        epg_ok=isinstance(epg_result, dict),
+        weather_ok=not isinstance(weather_resp, ToolErrorResponse),
+        epg_ok=not isinstance(epg_resp, ToolErrorResponse),
     )
 
-    if params.response_format == ResponseFormat.JSON:
-        return json.dumps(
-            with_provenance(
-                {
-                    "date": params.date,
-                    "channel_id": params.channel_id,
-                    "business_unit": params.business_unit.value,
-                    "weather": weather_result,
-                    "epg": (
-                        epg_result.get("programList", epg_result.get("programs", []))
-                        if isinstance(epg_result, dict)
-                        else epg_result
-                    ),
-                }
-            ),
-            indent=2,
-            ensure_ascii=False,
-        )
-
-    bu = params.business_unit.value
-    lines = [
-        f"# Tagesbriefing – {params.channel_id.upper()} ({bu.upper()}) am {params.date}\n",
-        "## Wetter (24h)",
-    ]
-    if isinstance(weather_result, dict):
-        lines.append(_format_hourly_forecast(weather_result))
-    else:
-        lines.append(weather_result)
-
-    lines.append("\n## TV-/Radioprogramm")
-    if isinstance(epg_result, dict):
-        programs = epg_result.get("programList", epg_result.get("programs", []))
-        lines.append(_format_epg_programs(programs, params.channel_id, bu, params.date))
-    else:
-        lines.append(epg_result)
-
-    return "\n".join(lines) + provenance_footer()
+    return DailyBriefingResponse(
+        business_unit=params.business_unit.value,
+        channel_id=params.channel_id,
+        date=params.date,
+        weather=weather_resp,
+        epg=epg_resp,
+    )
