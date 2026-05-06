@@ -1,0 +1,44 @@
+# ARCH-005 — Keine Hardcoded Secrets
+# Status: PARTIAL
+# Reasoning: Pydantic-Settings-Pattern mit env_prefix=SRGSSR_, kein Klartext-Secret im Code, .env nicht im Repo. Aber: consumer_secret als `str` (nicht SecretStr), `.gitignore` fehlt `.env`, `.env.example` fehlt, kein gitleaks/trufflehog in CI.
+
+## Modus: automated (generic patterns)
+$ grep -rE "(api[_-]?key|password|secret|token).*=.*[\"'][^\"']{16,}[\"']" /home/user/srgssr-mcp/src/ --include="*.py" --exclude-dir=tests
+(no actual hardcoded secrets — only the field definition `consumer_secret: str = Field(default="", validation_alias="SRGSSR_CONSUMER_SECRET")`)
+
+## Modus: automated (connection strings / AWS keys)
+$ grep -rE "(postgres|mysql|mongodb)://[^:]+:[^@]+@" /home/user/srgssr-mcp/src/
+(no matches)
+$ grep -rE "AKIA[0-9A-Z]{16}" /home/user/srgssr-mcp/src/
+(no matches)
+
+## Modus: code_review (env-var loading)
+$ grep -rE "os\.environ|process\.env|dotenv" /home/user/srgssr-mcp/src/
+src/srgssr_mcp/logging_config.py:        env = os.environ.get("SRGSSR_LOG_LEVEL", "info")  # safe: log-level only
+src/srgssr_mcp/config.py: pydantic_settings.BaseSettings + SettingsConfigDict (env_prefix="SRGSSR_", env_file=".env")
+NOTE: consumer_secret is typed `str`, NOT `SecretStr` — common-failure flag from Pass-Criteria.
+
+## Modus: code_review (.gitignore + .env)
+$ cat /home/user/srgssr-mcp/.gitignore
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+build/
+dist/
+NOTE: `.env`/`.env.local`/`secrets`/`credentials` NOT listed — gap.
+
+$ ls -la /home/user/srgssr-mcp/ | grep -E "\.env"
+(no .env / .env.example present)
+NOTE: .env.example with placeholders is missing per Pass-Criteria.
+
+## Modus: config_check (secret scan in CI)
+$ grep -rE "gitleaks|trufflehog|secret.scan" /home/user/srgssr-mcp/.github/workflows/
+(no matches)
+$ ls /home/user/srgssr-mcp/.github/workflows/
+ci.yml live-test.yml publish.yml test.yml
+NOTE: No automated gitleaks / trufflehog scan configured.

@@ -1,0 +1,27 @@
+# ARCH-001 — Tool Naming Convention
+# Status: PASS
+# Reasoning: Alle 15 Tools folgen einheitlich snake_case mit Prefix "srgssr_<domain>_". Keine Spaces, Punkte oder Sonderzeichen. snake_case ist akzeptabel (camelCase wäre bevorzugt, aber explizit erlaubt). Beschreibungen sind ausführlich (mehrsätzig, mit Use-Cases) — Stichprobe zeigt Qualität. code_review Aspekt wirkt erfüllt.
+
+## Modus: automated
+$ grep -rA 3 "@mcp\.tool(" /home/user/srgssr-mcp/src/ | grep -oP 'name="[^"]*"' | sort -u
+name="srgssr_audio_get_episodes"
+name="srgssr_audio_get_livestreams"
+name="srgssr_audio_get_shows"
+name="srgssr_daily_briefing"
+name="srgssr_epg_get_programs"
+name="srgssr_polis_get_elections"
+name="srgssr_polis_get_votation_results"
+name="srgssr_polis_get_votations"
+name="srgssr_video_get_episodes"
+name="srgssr_video_get_livestreams"
+name="srgssr_video_get_shows"
+name="srgssr_weather_current"
+name="srgssr_weather_forecast_24h"
+name="srgssr_weather_forecast_7day"
+name="srgssr_weather_search_location"
+
+## Modus: code_review
+Stichproben der Beschreibungen zeigen mehrsätzige Texte mit Use-Case + Returnt-Feldern,
+z.B. polis_get_votations: "Ruft Schweizer Volksabstimmungen und Referenden (national und kantonal)
+aus dem Polis-System ab. Liefert Datum, Titel und votation_id pro Eintrag."
+Erfüllt Pass Criteria.

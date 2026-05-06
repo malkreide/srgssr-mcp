@@ -1,0 +1,25 @@
+# ARCH-006 — Tool-Budget: High-Level-Use-Cases statt API-Mapping 1:1
+# Status: PASS
+# Reasoning: 15 echte Tools (16 grep-Treffer inkl. Dokumentation/Imports). Liegt mit 15 in der "9-15 Tools: Use-Case-Cluster prüfen"-Zone, aber Tools sind klar nach Domains (audio/video/epg/polis/weather) strukturiert und decken atomare Anwendungsfälle ab. Mit srgssr_daily_briefing existiert ein Aggregations-Tool. Keine offensichtlichen 1:1-CRUD-Mappings.
+
+## Modus: automated (tool count)
+$ grep -rE "@mcp\.tool|registerTool\(" /home/user/srgssr-mcp/src/ | wc -l
+16
+(15 unique @mcp.tool registrations + 1 doc-string mention; 15 echte Tools)
+
+## Modus: code_review (1:1 API-mapping check)
+$ grep -rE "@mcp\.tool" /home/user/srgssr-mcp/src/ -A2 | grep -E "name=" | sort -u
+15 Tools nach Domains gegliedert:
+- aggregation: srgssr_daily_briefing  (1 — explizites Aggregations-Tool)
+- audio: get_episodes, get_livestreams, get_shows  (3)
+- video: get_episodes, get_livestreams, get_shows  (3)
+- weather: current, forecast_24h, forecast_7day, search_location  (4)
+- polis: get_elections, get_votations, get_votation_results  (3)
+- epg: get_programs  (1)
+
+Keine "getXById/getXByName/getXByY"-Triplets — Tools sind nach Use-Cases (shows vs. episodes vs. livestreams) gegliedert, nicht nach REST-Endpoints.
+
+## Modus: code_review (anchor demo query)
+"Was läuft heute Abend auf SRF1 und wie wird das Wetter in Zürich?"
+→ srgssr_daily_briefing (1 Call, intern asyncio.gather von Weather + EPG)
+✓ ≤2 Tool-Calls erfüllt.

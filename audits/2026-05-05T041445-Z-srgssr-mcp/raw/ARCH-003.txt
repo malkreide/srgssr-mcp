@@ -1,0 +1,27 @@
+# ARCH-003 — «Not Found» Anti-Pattern
+# Status: PASS
+# Reasoning: Empty-Result-Pfade sind im gesamten Repo abgedeckt. Tools liefern aktionable Hinweise mit Vorschlägen (z.B. polis: konkrete Filter-Vorschläge wie year_from senken; weather: Locations vorschlagen; audio: "Vorschlag: srgssr_audio_get_shows aufrufen"). Kein leeres "[]" oder "No results found" String erkennbar.
+
+## Modus: code_review (empty result detection)
+$ grep -rE "no results|not found|empty|return \[\]|return None|no matches" /home/user/srgssr-mcp/src/
+(no anti-pattern matches)
+
+## Modus: code_review (suggestions/fuzzy)
+$ grep -rE "if not (programs|shows|episodes|channels|votations|elections|locations|hours|days):" src/srgssr_mcp/tools/
+src/srgssr_mcp/tools/epg.py:    if not programs:
+src/srgssr_mcp/tools/audio.py:    if not shows:
+src/srgssr_mcp/tools/audio.py:    if not episodes:
+src/srgssr_mcp/tools/audio.py:    if not channels:
+src/srgssr_mcp/tools/polis.py:    if not votations:
+src/srgssr_mcp/tools/polis.py:    if not elections:
+src/srgssr_mcp/tools/weather.py:    if not locations:
+src/srgssr_mcp/tools/weather.py:    if not hours:
+src/srgssr_mcp/tools/weather.py:    if not days:
+src/srgssr_mcp/tools/video.py:    if not shows:
+src/srgssr_mcp/tools/video.py:    if not episodes:
+src/srgssr_mcp/tools/video.py:    if not channels:
+
+In allen Pfaden werden anschliessend strukturierte deutsche Hinweise generiert
+("Keine ... gefunden. Vorschlag: ..."), incl. konkreter alternativer Tools.
+Beispiel polis.py: bietet aktiv year_from/year_to Anpassungs-Vorschläge.
+_http.py erwähnt explizit "fuzzy retry" Variants → match_type-artige Funktionalität.
