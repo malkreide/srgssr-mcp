@@ -353,7 +353,7 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
 
 def _build_error_response(
     e: Exception, not_found_hint: str | None = None
-) -> "ToolErrorResponse":
+) -> "ToolErrorResponse":  # noqa: F821 — lazy import to keep _models -> _http acyclic
     """Wrap :func:`_handle_error`'s localised message in the typed
     :class:`ToolErrorResponse` model (SDK-002 Option A).
 
