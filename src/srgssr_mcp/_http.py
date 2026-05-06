@@ -229,10 +229,22 @@ def _validate_url_safe(url: str) -> None:
             f"SSRF blocked: host '{hostname}' is not in the egress allowlist "
             f"({sorted(ALLOWED_HOSTS)})"
         )
-    # Single resolution + validation. Populate _dns_pin_cache so the transport
-    # uses the SAME IP — both layers agree on a single source of truth.
+    # SEC-005: hit the TTL'd cache first. A cached entry has already passed
+    # the IP-allowlist check, so we re-trust it for the rest of the TTL
+    # window — eliminating the per-request getaddrinfo call that the audit
+    # finding flagged as the duplicate-resolution problem. On a miss (or
+    # past-TTL) we resolve fresh, validate, and repopulate the cache.
+    #
+    # No asyncio.Lock here because _validate_url_safe is sync and runs in
+    # event-loop coroutines. Concurrent first-time resolutions are benign:
+    # both will produce the same IP from the same OS DNS layer, both will
+    # validate it against _BLOCKED_IP_NETWORKS, and the last write wins.
+    now = time.monotonic()
+    cached = _dns_pin_cache.get(hostname)
+    if cached and (now - cached["resolved_at"]) < DNS_PIN_TTL_SECONDS:
+        return
     ip = _resolve_and_validate_addrinfo(hostname)
-    _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": time.monotonic()}
+    _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": now}
 
 
 def _get_credentials() -> tuple[str, str]:

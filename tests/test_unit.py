@@ -1448,6 +1448,7 @@ def test_handle_error_404_with_hint_appends_recovery_tip():
 # ---------------------------------------------------------------------------
 
 import socket as _socket  # noqa: E402
+import time  # noqa: E402
 from urllib.parse import urlparse  # noqa: E402
 
 from srgssr_mcp import _http as _http_mod  # noqa: E402
@@ -1809,6 +1810,54 @@ async def test_validate_url_safe_populates_dns_pin_cache(monkeypatch):
     cached = _http._dns_pin_cache.get("api.srgssr.ch")
     assert cached is not None
     assert cached["ip"] == "1.2.3.4"
+    _http._dns_pin_cache.clear()
+
+
+async def test_validate_url_safe_skips_dns_when_cache_warm(monkeypatch):
+    """SEC-005 (codex review): a TTL-warm cache entry must short-circuit
+    _validate_url_safe so a per-request getaddrinfo is NOT issued."""
+    from srgssr_mcp import _http
+
+    _http._dns_pin_cache["api.srgssr.ch"] = {
+        "ip": "9.9.9.9",
+        "resolved_at": time.monotonic(),
+    }
+
+    call_count = {"n": 0}
+
+    def boom(*_a, **_kw):
+        call_count["n"] += 1
+        # If the cache short-circuit fails, we DO touch DNS — fail loudly.
+        raise AssertionError("getaddrinfo must not be called on a warm cache")
+
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", boom)
+
+    _server._validate_url_safe("https://api.srgssr.ch/foo")
+    assert call_count["n"] == 0
+    _http._dns_pin_cache.clear()
+
+
+async def test_validate_url_safe_re_resolves_after_ttl(monkeypatch):
+    """SEC-005: a stale cache entry (past TTL) must trigger a fresh
+    resolution + IP-allowlist re-check on the next validate call."""
+    from srgssr_mcp import _http
+
+    # Pre-populate with an entry that is just past its TTL.
+    _http._dns_pin_cache["api.srgssr.ch"] = {
+        "ip": "9.9.9.9",
+        "resolved_at": time.monotonic() - _http.DNS_PIN_TTL_SECONDS - 1.0,
+    }
+
+    monkeypatch.setattr(
+        _http_mod.socket,
+        "getaddrinfo",
+        lambda *_a, **_kw: _fake_addrinfo("4.4.4.4"),
+    )
+
+    _server._validate_url_safe("https://api.srgssr.ch/foo")
+    cached = _http._dns_pin_cache.get("api.srgssr.ch")
+    assert cached is not None
+    assert cached["ip"] == "4.4.4.4", "expired entry must be replaced by fresh resolution"
     _http._dns_pin_cache.clear()
 
 

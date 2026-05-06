@@ -22,6 +22,22 @@ def _preseed_oauth_token():
     server._token_cache["expires_at"] = 0.0
 
 
+@pytest.fixture(autouse=True)
+def _reset_dns_pin_cache():
+    """SEC-005: drop any cached DNS pins between tests.
+
+    Tests that monkeypatch ``socket.getaddrinfo`` to return a blocked IP
+    (e.g. ``test_validate_url_safe_rejects_private_rfc1918_ip``) would see
+    a stale cache hit from a previous test and bypass the monkeypatched
+    resolver, masking the regression we are trying to detect.
+    """
+    from srgssr_mcp import _http as _http_mod
+
+    _http_mod._dns_pin_cache.clear()
+    yield
+    _http_mod._dns_pin_cache.clear()
+
+
 @pytest.fixture
 def live_credentials():
     """Skip live tests unless real SRG SSR credentials are present."""
