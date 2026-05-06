@@ -128,6 +128,13 @@ async def srgssr_weather_search_location(
         variants_tried=len(tried),
     )
 
+    if params.response_format == ResponseFormat.JSON:
+        return json.dumps(
+            with_provenance(locations, list_key="locations"),
+            indent=2,
+            ensure_ascii=False,
+        )
+
     if not locations:
         tried_str = ", ".join(f"'{t}'" for t in tried)
         return (
@@ -136,14 +143,7 @@ async def srgssr_weather_search_location(
             f"Vorschläge: deutsche Schreibweise mit Diakritika (z.B. 'Zürich', "
             f"'Genève', 'Bern'), die offizielle PLZ (z.B. '8001', '1003'), oder "
             f"einen kürzeren Namensbestandteil verwenden."
-        )
-
-    if params.response_format == ResponseFormat.JSON:
-        return json.dumps(
-            with_provenance(locations, list_key="locations"),
-            indent=2,
-            ensure_ascii=False,
-        )
+        ) + provenance_footer()
 
     header = f"## Gefundene Standorte für '{params.query}'"
     if matched_variant != params.query:

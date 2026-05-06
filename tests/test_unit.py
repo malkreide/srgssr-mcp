@@ -1066,6 +1066,37 @@ async def test_markdown_response_carries_provenance_footer():
 
 
 @respx.mock
+async def test_empty_markdown_result_still_carries_footer():
+    """SDK-002/CH-004 (codex review #31): empty-result Markdown paths must
+    also carry the provenance footer — every tool result, including no-hit
+    cases, has to surface attribution."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json={"geolocationList": []})
+    )
+    result = await srgssr_weather_search_location(
+        WeatherSearchInput(query="Atlantis")
+    )
+    assert "Keine Standorte gefunden" in result
+    assert "Quelle: SRG SSR Public API V2" in result
+
+
+@respx.mock
+async def test_empty_json_result_returns_envelope_not_plaintext():
+    """SDK-002/CH-004 (codex P1 review #31): no-hit case in JSON mode must
+    still produce a JSON envelope, not a plain-text German fallback."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json={"geolocationList": []})
+    )
+    raw = await srgssr_weather_search_location(
+        WeatherSearchInput(query="Atlantis", response_format=ResponseFormat.JSON)
+    )
+    payload = json.loads(raw)
+    assert payload["source"] == "SRG SSR Public API V2"
+    assert payload["count"] == 0
+    assert payload["locations"] == []
+
+
+@respx.mock
 async def test_json_envelope_preserves_existing_top_level_keys():
     """SDK-002: existing JSON consumers that look up upstream keys
     (currentForecast, etc.) must still find them at the top level."""

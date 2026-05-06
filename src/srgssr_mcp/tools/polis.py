@@ -176,7 +176,7 @@ async def srgssr_polis_get_votations(
         return (
             f"Keine Volksabstimmungen gefunden ({filter_str}). "
             f"Vorschläge: " + "; ".join(suggestions) + "."
-        )
+        ) + provenance_footer()
 
     lines = [
         f"## Schweizer Volksabstimmungen ({filter_str})\n",
@@ -402,7 +402,7 @@ async def srgssr_polis_get_elections(
         return (
             "Keine Wahlen gefunden mit den angegebenen Filtern. "
             "Vorschläge: " + "; ".join(suggestions) + "."
-        )
+        ) + provenance_footer()
 
     lines = ["## Schweizer Wahlen\n", f"*Total: {total} Wahlen, Seite {params.page}*\n"]
     for el in elections:

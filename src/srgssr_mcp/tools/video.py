@@ -159,7 +159,7 @@ async def srgssr_video_get_shows(
             f"(Seite {params.page}). Vorschläge: andere Unternehmenseinheit "
             f"({', '.join(b for b in VALID_BU if b != bu)}) probieren, oder "
             f"page=1 setzen falls die Seitennummer zu hoch ist."
-        )
+        ) + provenance_footer()
     lines = [f"## TV-Sendungen – {bu_label} (Seite {params.page})\n", f"*Total: {total} Sendungen*\n"]
     for show in shows:
         title = show.get("title", show.get("name", "Unbekannt"))
@@ -266,7 +266,7 @@ async def srgssr_video_get_episodes(
             f"Möglich: Sendung existiert ohne aktuelle Episoden, oder die show_id ist "
             f"ungültig. Vorschlag: srgssr_video_get_shows aufrufen, um die show_id zu "
             f"verifizieren."
-        )
+        ) + provenance_footer()
 
     lines = [f"## Episoden: {params.show_id} ({params.business_unit.value.upper()})\n"]
     for ep in episodes:
@@ -352,7 +352,7 @@ async def srgssr_video_get_livestreams(
             f"verfügbar. RTR und SWI haben weniger oder keine Live-Kanäle; eine "
             f"andere Unternehmenseinheit ({', '.join(b for b in VALID_BU if b != params.business_unit.value)}) "
             f"liefert in der Regel mehr Resultate."
-        )
+        ) + provenance_footer()
     lines = [f"## Live-TV-Sender – {bu_label}\n"]
     for ch in channels:
         name = ch.get("title", ch.get("name", "Unbekannt"))
