@@ -1014,6 +1014,80 @@ async def test_tools_accept_no_ctx_unchanged():
     assert "Aktuelles Wetter" in result
 
 
+# ---------------------------------------------------------------------------
+# SDK-002 + CH-004: provenance envelope on JSON responses, attribution footer
+# on Markdown responses.
+# ---------------------------------------------------------------------------
+
+@respx.mock
+async def test_json_response_carries_provenance_envelope():
+    """SDK-002 / CH-004: every JSON-mode tool emits source/license/fetched_at."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "geolocationList": [
+                    {"id": "1", "name": "Zürich", "canton": "ZH", "postalCode": "8001"}
+                ]
+            },
+        )
+    )
+    raw = await srgssr_weather_search_location(
+        WeatherSearchInput(query="Zürich", response_format=ResponseFormat.JSON)
+    )
+    payload = json.loads(raw)
+    assert payload["source"] == "SRG SSR Public API V2"
+    assert "license" in payload and "SRG SSR" in payload["license"]
+    assert payload["provenance_url"] == "https://developer.srgssr.ch"
+    assert "fetched_at" in payload
+    # List payload was wrapped with "locations" + count
+    assert payload["count"] == 1
+    assert payload["locations"][0]["id"] == "1"
+
+
+@respx.mock
+async def test_markdown_response_carries_provenance_footer():
+    """CH-004: Markdown-mode tools append an attribution footer."""
+    respx.get(f"{WEATHER_BASE}/current").mock(
+        return_value=httpx.Response(
+            200,
+            json={"currentForecast": {"values": {"ttt": {"value": 5.0}}}},
+        )
+    )
+    result = await srgssr_weather_current(
+        WeatherForecastInput(latitude=47.0, longitude=8.0)
+    )
+    # Body still rendered
+    assert "Aktuelles Wetter" in result
+    # Footer present and clearly separated by horizontal rule
+    assert "---" in result
+    assert "Quelle: SRG SSR Public API V2" in result
+    assert "developer.srgssr.ch" in result
+
+
+@respx.mock
+async def test_json_envelope_preserves_existing_top_level_keys():
+    """SDK-002: existing JSON consumers that look up upstream keys
+    (currentForecast, etc.) must still find them at the top level."""
+    respx.get(f"{WEATHER_BASE}/current").mock(
+        return_value=httpx.Response(
+            200,
+            json={"currentForecast": {"values": {"ttt": {"value": 5.0}}}},
+        )
+    )
+    raw = await srgssr_weather_current(
+        WeatherForecastInput(
+            latitude=47.0, longitude=8.0, response_format=ResponseFormat.JSON
+        )
+    )
+    payload = json.loads(raw)
+    # provenance fields added
+    assert "source" in payload
+    # but the upstream payload key is still at top level
+    assert "currentForecast" in payload
+    assert payload["currentForecast"]["values"]["ttt"]["value"] == 5.0
+
+
 @respx.mock
 async def test_daily_briefing_runs_upstreams_in_parallel():
     """asyncio.gather should kick off both calls before either resolves."""

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import EPG_BASE, _api_get, _handle_error
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.epg")
@@ -119,11 +120,16 @@ async def srgssr_epg_get_programs(
     log.info("tool_succeeded", program_count=len(programs))
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(programs, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance(programs, list_key="programs"),
+            indent=2,
+            ensure_ascii=False,
+        )
 
-    return _format_epg_programs(
+    body = _format_epg_programs(
         programs, params.channel_id, params.business_unit.value, params.date
     )
+    return body + provenance_footer()
 
 
 def _format_epg_programs(programs: list, channel_id: str, bu: str, date: str) -> str:

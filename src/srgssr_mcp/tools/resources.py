@@ -10,6 +10,7 @@ searches (year ranges, free-text, paginated listings).
 
 from srgssr_mcp._app import mcp
 from srgssr_mcp._http import EPG_BASE, POLIS_BASE, _api_get, _handle_error
+from srgssr_mcp._provenance import provenance_footer
 from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.epg import _format_epg_programs
 from srgssr_mcp.tools.polis import _format_votation_result
@@ -78,7 +79,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
 
     programs = data.get("programList", data.get("programs", []))
     log.info("resource_succeeded", program_count=len(programs))
-    return _format_epg_programs(programs, channel_id, bu_norm, date)
+    return _format_epg_programs(programs, channel_id, bu_norm, date) + provenance_footer()
 
 
 @mcp.resource(
@@ -111,4 +112,4 @@ async def votation_resource(votation_id: str) -> str:
             ),
         )
     log.info("resource_succeeded")
-    return _format_votation_result(data)
+    return _format_votation_result(data) + provenance_footer()

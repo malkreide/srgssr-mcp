@@ -6,6 +6,7 @@ from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import ResponseFormat, mcp
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp._http import POLIS_BASE, _api_get, _handle_error
 from srgssr_mcp.logging_config import get_logger
 
@@ -146,7 +147,11 @@ async def srgssr_polis_get_votations(
     log.info("tool_succeeded", result_count=len(votations), total=total)
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps({"total": total, "votations": votations}, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance({"total": total, "votations": votations}),
+            indent=2,
+            ensure_ascii=False,
+        )
 
     filter_desc = []
     if params.year_from or params.year_to:
@@ -183,7 +188,7 @@ async def srgssr_polis_get_votations(
         v_id = v.get("id", "?")
         lines.append(f"- **{v_date}** — {title} (ID: `{v_id}`)")
 
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
 
 
 @mcp.tool(
@@ -255,9 +260,9 @@ async def srgssr_polis_get_votation_results(
     log.info("tool_succeeded")
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps(data, indent=2, ensure_ascii=False)
+        return json.dumps(with_provenance(data), indent=2, ensure_ascii=False)
 
-    return _format_votation_result(data)
+    return _format_votation_result(data) + provenance_footer()
 
 
 def _format_votation_result(data: dict) -> str:
@@ -377,7 +382,11 @@ async def srgssr_polis_get_elections(
     log.info("tool_succeeded", result_count=len(elections), total=total)
 
     if params.response_format == ResponseFormat.JSON:
-        return json.dumps({"total": total, "elections": elections}, indent=2, ensure_ascii=False)
+        return json.dumps(
+            with_provenance({"total": total, "elections": elections}),
+            indent=2,
+            ensure_ascii=False,
+        )
 
     if not elections:
         suggestions = []
@@ -402,4 +411,4 @@ async def srgssr_polis_get_elections(
         el_id = el.get("id", "?")
         lines.append(f"- **{el_date}** — {title} (ID: `{el_id}`)")
 
-    return "\n".join(lines)
+    return "\n".join(lines) + provenance_footer()
