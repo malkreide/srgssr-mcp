@@ -9,7 +9,7 @@ server.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Transport = Literal["stdio", "sse", "streamable-http"]
@@ -26,8 +26,12 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    consumer_key: str = Field(default="", validation_alias="SRGSSR_CONSUMER_KEY")
-    consumer_secret: str = Field(default="", validation_alias="SRGSSR_CONSUMER_SECRET")
+    consumer_key: SecretStr = Field(
+        default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_KEY"
+    )
+    consumer_secret: SecretStr = Field(
+        default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_SECRET"
+    )
 
     transport: Transport = Field(
         default="stdio",
@@ -39,12 +43,14 @@ class Settings(BaseSettings):
     mount_path: str | None = Field(default=None, validation_alias="SRGSSR_MCP_MOUNT_PATH")
 
     def require_credentials(self) -> tuple[str, str]:
-        if not self.consumer_key or not self.consumer_secret:
+        key = self.consumer_key.get_secret_value()
+        secret = self.consumer_secret.get_secret_value()
+        if not key or not secret:
             raise ValueError(
                 "SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET must be set. "
                 "Register at https://developer.srgssr.ch to obtain credentials."
             )
-        return self.consumer_key, self.consumer_secret
+        return key, secret
 
 
 @lru_cache(maxsize=1)

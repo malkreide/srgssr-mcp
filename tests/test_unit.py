@@ -1047,8 +1047,8 @@ def test_settings_reads_credentials_from_env(monkeypatch):
     monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "env-secret")
     monkeypatch.delenv("SRGSSR_MCP_TRANSPORT", raising=False)
     s = Settings()
-    assert s.consumer_key == "env-key"
-    assert s.consumer_secret == "env-secret"
+    assert s.consumer_key.get_secret_value() == "env-key"
+    assert s.consumer_secret.get_secret_value() == "env-secret"
     assert s.transport == "stdio"
     assert s.host == "127.0.0.1"
     assert s.port == 8000
@@ -1070,10 +1070,29 @@ def test_settings_rejects_invalid_transport(monkeypatch):
         Settings()
 
 
-def test_require_credentials_raises_when_missing():
-    s = Settings(consumer_key="", consumer_secret="")
+def test_require_credentials_raises_when_missing(monkeypatch):
+    monkeypatch.delenv("SRGSSR_CONSUMER_KEY", raising=False)
+    monkeypatch.delenv("SRGSSR_CONSUMER_SECRET", raising=False)
+    s = Settings()
     with _pytest.raises(ValueError, match="SRGSSR_CONSUMER_KEY"):
         s.require_credentials()
+
+
+def test_secrets_not_leaked_in_repr(monkeypatch):
+    """SecretStr must mask the value in repr/str/dict to prevent log leaks."""
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "super-key-12345")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "super-secret-67890")
+    s = Settings()
+    rendered = repr(s)
+    assert "super-key-12345" not in rendered
+    assert "super-secret-67890" not in rendered
+    # Plain str of SecretStr also masks
+    assert "super-key-12345" not in str(s.consumer_key)
+    assert "super-secret-67890" not in str(s.consumer_secret)
+    # But require_credentials() still returns the cleartext for actual use
+    key, secret = s.require_credentials()
+    assert key == "super-key-12345"
+    assert secret == "super-secret-67890"
 
 
 def test_get_credentials_uses_settings(monkeypatch):
