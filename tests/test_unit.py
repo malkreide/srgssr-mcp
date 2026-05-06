@@ -1073,7 +1073,9 @@ def test_settings_rejects_invalid_transport(monkeypatch):
 def test_require_credentials_raises_when_missing(monkeypatch):
     monkeypatch.delenv("SRGSSR_CONSUMER_KEY", raising=False)
     monkeypatch.delenv("SRGSSR_CONSUMER_SECRET", raising=False)
-    s = Settings()
+    # _env_file=None disables .env auto-loading, so a local/CI workspace with
+    # a populated .env cannot make this test pass nondeterministically.
+    s = Settings(_env_file=None)
     with _pytest.raises(ValueError, match="SRGSSR_CONSUMER_KEY"):
         s.require_credentials()
 
@@ -1082,7 +1084,7 @@ def test_secrets_not_leaked_in_repr(monkeypatch):
     """SecretStr must mask the value in repr/str/dict to prevent log leaks."""
     monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "super-key-12345")
     monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "super-secret-67890")
-    s = Settings()
+    s = Settings(_env_file=None)
     rendered = repr(s)
     assert "super-key-12345" not in rendered
     assert "super-secret-67890" not in rendered
