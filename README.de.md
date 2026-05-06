@@ -449,11 +449,14 @@ Siehe [CHANGELOG.md](CHANGELOG.md)
 ## Datenquellen & Lizenzen
 
 Alle Daten dieses Servers werden live von einem einzigen Upstream-Anbieter
-geladen — der **SRG SSR Public API V2** (`https://api.srgssr.ch`). Jede
-Tool-Antwort (Markdown wie JSON) trägt eine Provenance-Attribution
-(`source` / `license` / `provenance_url` / `fetched_at`), damit nach-
-gelagerte Konsumenten die Datenherkunft nachvollziehen können, ohne
-zurück in dieses README springen zu müssen.
+geladen — der **SRG SSR Public API V2** (`https://api.srgssr.ch`). Jeder
+Tool-Return ist ein typisiertes [Pydantic-`BaseModel`](src/srgssr_mcp/_models.py)
+mit eingebauten Feldern `source` / `license` / `provenance_url` /
+`fetched_at` auf Top-Level — damit nachgelagerte Konsumenten die
+Datenherkunft nachvollziehen können, ohne zurück in dieses README zu
+springen. FastMCP exponiert das zugehörige `outputSchema` im
+`tools/list`-Manifest, damit MCP-Clients Folge-Calls präzise planen
+können.
 
 | Cluster | Anbieter | Lizenz | Hinweise |
 |---|---|---|---|

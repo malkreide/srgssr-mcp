@@ -351,6 +351,23 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
     return f"Unerwarteter Fehler. Details siehe Server-Log (Typ: {type(e).__name__})."
 
 
+def _build_error_response(
+    e: Exception, not_found_hint: str | None = None
+) -> "ToolErrorResponse":
+    """Wrap :func:`_handle_error`'s localised message in the typed
+    :class:`ToolErrorResponse` model (SDK-002 Option A).
+
+    Imported lazily to avoid a circular import: ``_models`` does not depend
+    on ``_http`` and we want to keep it that way.
+    """
+    from srgssr_mcp._models import ToolErrorResponse
+
+    return ToolErrorResponse(
+        error_type=type(e).__name__,
+        message=_handle_error(e, not_found_hint=not_found_hint),
+    )
+
+
 def _query_variants(query: str) -> list[str]:
     """Returns deduplicated query variants for fuzzy retry.
 
