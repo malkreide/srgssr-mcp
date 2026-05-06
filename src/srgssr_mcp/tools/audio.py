@@ -11,8 +11,8 @@ from mcp.server.fastmcp import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import VALID_BU, BusinessUnit, ResponseFormat, mcp
-from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp._http import AUDIO_BASE, _api_get, _handle_error
+from srgssr_mcp._provenance import provenance_footer, with_provenance
 from srgssr_mcp.logging_config import get_logger
 from srgssr_mcp.tools.video import VideoLivestreamsInput, VideoShowsInput
 
