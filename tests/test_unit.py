@@ -1359,8 +1359,21 @@ def test_handle_error_timeout_returns_localized_message():
 def test_handle_error_unknown_exception_returns_unexpected_message():
     msg = _server._handle_error(RuntimeError("kaboom"))
     assert msg.startswith("Unerwarteter Fehler")
-    assert "RuntimeError" in msg
-    assert "kaboom" in msg
+    assert "RuntimeError" in msg  # exception type is allowed (helpful, no internals)
+    # OBS-002: internal exception message must not reach the user
+    assert "kaboom" not in msg
+
+
+def test_handle_error_default_does_not_leak_socket_internals():
+    """OBS-002: a gaierror like 'getaddrinfo: nodename nor servname provided'
+    must not surface in the tool result, only in the structured log."""
+    import socket as _stdlib_socket
+
+    err = _stdlib_socket.gaierror("getaddrinfo failed for host secret-internal.local")
+    msg = _server._handle_error(err)
+    assert "secret-internal.local" not in msg
+    assert "getaddrinfo failed" not in msg
+    assert "gaierror" in msg  # exception type is OK, internal details are not
 
 
 def test_handle_error_status_500_includes_truncated_body():
