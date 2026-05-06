@@ -6,7 +6,7 @@ transport setting controls how :func:`srgssr_mcp.server.main` runs the MCP
 server.
 """
 
-from functools import lru_cache
+import time
 from typing import Literal
 
 from pydantic import Field, SecretStr
@@ -53,7 +53,36 @@ class Settings(BaseSettings):
         return key, secret
 
 
-@lru_cache(maxsize=1)
+# SEC-013: bounded TTL instead of an unbounded lru_cache so rotated upstream
+# credentials take effect without a process restart. Five minutes is a
+# pragmatic balance between rotation latency and Settings construction cost.
+SETTINGS_TTL_SECONDS = 300.0
+
+_settings_cache: dict[str, Settings | float | None] = {
+    "value": None,
+    "loaded_at": 0.0,
+}
+
+
 def get_settings() -> Settings:
-    """Return the process-wide :class:`Settings` instance (memoized)."""
-    return Settings()
+    """Return the process-wide :class:`Settings`, refreshing every ``SETTINGS_TTL_SECONDS``."""
+    now = time.monotonic()
+    cached = _settings_cache["value"]
+    loaded_at = _settings_cache["loaded_at"]
+    assert isinstance(loaded_at, float)
+    if cached is None or (now - loaded_at) > SETTINGS_TTL_SECONDS:
+        _settings_cache["value"] = Settings()
+        _settings_cache["loaded_at"] = now
+    return _settings_cache["value"]  # type: ignore[return-value]
+
+
+def _clear_settings_cache() -> None:
+    """Reset the cached Settings (test-only helper)."""
+    _settings_cache["value"] = None
+    _settings_cache["loaded_at"] = 0.0
+
+
+# Backwards-compatible shim: existing tests call get_settings.cache_clear()
+# (lru_cache convention). Keep the surface identical so nothing else needs
+# to change in the test suite.
+get_settings.cache_clear = _clear_settings_cache  # type: ignore[attr-defined]

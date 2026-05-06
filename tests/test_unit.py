@@ -1107,6 +1107,30 @@ def test_get_credentials_uses_settings(monkeypatch):
         _server.get_settings.cache_clear()
 
 
+def test_settings_cache_refreshes_after_ttl(monkeypatch):
+    """SEC-013: rotated env credentials are picked up after SETTINGS_TTL_SECONDS."""
+    from srgssr_mcp import config as _config
+
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "key-v1")
+    monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "secret-v1")
+    _config.get_settings.cache_clear()
+
+    s1 = _config.get_settings()
+    assert s1.consumer_key == "key-v1"
+
+    # Rotate creds in the env, but stay within the TTL window — cache holds.
+    monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "key-v2")
+    s2 = _config.get_settings()
+    assert s2.consumer_key == "key-v1", "cache should still be warm before TTL elapses"
+
+    # Simulate TTL elapse: directly age the cache entry.
+    _config._settings_cache["loaded_at"] -= _config.SETTINGS_TTL_SECONDS + 1.0
+    s3 = _config.get_settings()
+    assert s3.consumer_key == "key-v2", "cache must refresh after TTL elapses"
+
+    _config.get_settings.cache_clear()
+
+
 def test_build_mcp_applies_host_port(monkeypatch):
     monkeypatch.setenv("SRGSSR_MCP_HOST", "10.0.0.5")
     monkeypatch.setenv("SRGSSR_MCP_PORT", "7777")
