@@ -1116,17 +1116,21 @@ def test_settings_cache_refreshes_after_ttl(monkeypatch):
     _config.get_settings.cache_clear()
 
     s1 = _config.get_settings()
-    assert s1.consumer_key == "key-v1"
+    assert s1.consumer_key.get_secret_value() == "key-v1"
 
     # Rotate creds in the env, but stay within the TTL window — cache holds.
     monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "key-v2")
     s2 = _config.get_settings()
-    assert s2.consumer_key == "key-v1", "cache should still be warm before TTL elapses"
+    assert (
+        s2.consumer_key.get_secret_value() == "key-v1"
+    ), "cache should still be warm before TTL elapses"
 
     # Simulate TTL elapse: directly age the cache entry.
     _config._settings_cache["loaded_at"] -= _config.SETTINGS_TTL_SECONDS + 1.0
     s3 = _config.get_settings()
-    assert s3.consumer_key == "key-v2", "cache must refresh after TTL elapses"
+    assert (
+        s3.consumer_key.get_secret_value() == "key-v2"
+    ), "cache must refresh after TTL elapses"
 
     _config.get_settings.cache_clear()
 
@@ -1786,6 +1790,55 @@ def test_daily_briefing_extra_field_rejected():
 # ---------------------------------------------------------------------------
 # SDK-001: shared httpx.AsyncClient
 # ---------------------------------------------------------------------------
+
+async def test_validate_url_safe_populates_dns_pin_cache(monkeypatch):
+    """SEC-005: validate writes the resolved IP into _dns_pin_cache so
+    subsequent code-layer reads agree on a single source of truth."""
+    from srgssr_mcp import _http
+
+    _http._dns_pin_cache.clear()
+
+    monkeypatch.setattr(
+        _http_mod.socket,
+        "getaddrinfo",
+        lambda *_a, **_kw: _fake_addrinfo("1.2.3.4"),
+    )
+
+    _server._validate_url_safe("https://api.srgssr.ch/foo")
+
+    cached = _http._dns_pin_cache.get("api.srgssr.ch")
+    assert cached is not None
+    assert cached["ip"] == "1.2.3.4"
+    _http._dns_pin_cache.clear()
+
+
+async def test_resolve_pinned_uses_cache_within_ttl(monkeypatch):
+    """SEC-005: a second call within DNS_PIN_TTL_SECONDS does NOT re-resolve."""
+    from srgssr_mcp import _http
+
+    _http._dns_pin_cache.clear()
+
+    call_count = {"n": 0}
+
+    def fake_getaddrinfo(*_a, **_kw):
+        call_count["n"] += 1
+        return _fake_addrinfo("8.8.8.8")
+
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", fake_getaddrinfo)
+
+    ip1 = await _http._resolve_pinned("api.srgssr.ch")
+    ip2 = await _http._resolve_pinned("api.srgssr.ch")
+    assert ip1 == ip2 == "8.8.8.8"
+    assert call_count["n"] == 1, "second call must hit the TTL cache, not getaddrinfo"
+
+    # After ageing the cache entry past the TTL, a fresh resolution must happen.
+    _http._dns_pin_cache["api.srgssr.ch"]["resolved_at"] -= _http.DNS_PIN_TTL_SECONDS + 1
+    ip3 = await _http._resolve_pinned("api.srgssr.ch")
+    assert ip3 == "8.8.8.8"
+    assert call_count["n"] == 2, "post-TTL call must trigger a fresh getaddrinfo"
+
+    _http._dns_pin_cache.clear()
+
 
 async def test_shared_http_client_is_reused_across_calls():
     """SDK-001: _get_http_client() returns the same instance on repeat calls."""
