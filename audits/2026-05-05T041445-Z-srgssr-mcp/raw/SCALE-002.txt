@@ -1,0 +1,26 @@
+# SCALE-002 — Stateful Load Balancing für Streamable HTTP / SSE
+# Status: TODO
+# Reasoning: Profil deklariert dual transport (stdio + sse + streamable-http) und Kubernetes als geplantes Deployment (is_cloud_deployed=false). Aktuell existieren KEINE Deployment-Konfigurationen (kein Dockerfile, kein k8s/, kein helm/, kein docker-compose.yml). Code-Layer-Session-Manager sind nicht vorhanden (kein Redis-Dep, kein SessionStore). Da der Server primär lokal via stdio läuft (auth_model: none, is_cloud_deployed: false), greift dieser Check noch nicht — wird relevant bei tatsächlicher Cloud-Deployment-Implementierung.
+
+## Modus: config_check (Deployment-Konfiguration)
+$ find . -maxdepth 3 -type f \( -name "Dockerfile*" -o -name "docker-compose*" -o -name "railway*" -o -name "render*" \)
+(no output for Docker/compose/railway/render)
+$ ls k8s/ helm/ deploy/
+(no such directories)
+=> Keine Deployment-Manifeste vorhanden. Sticky-Session / Session-Affinity nicht konfiguriert (kann auch nicht — Deployment-Layer fehlt).
+
+## Modus: code_review (Session-Manager-Pattern)
+$ grep -rE "redis|memcached|session_manager|SessionStore|DurableObject" src/ pyproject.toml
+(no output)
+=> Kein externer Session-Store. Kein Redis in Dependencies.
+
+## Modus: code_review (FastMCP-Default-Session-Handling)
+FastMCP verwaltet Sessions intern (in-memory pro Pod). Bei Single-Pod-Deployment (Default) ist das ausreichend. Bei horizontaler Skalierung (>1 Pod) wird Sticky Session ODER Shared State erforderlich — aktuell weder dokumentiert noch implementiert.
+
+## NOTE
+- Status TODO statt FAIL: Profil sagt deployment "Kubernetes (geplant)" und is_cloud_deployed=false. Die Cloud-Deployment-Infrastruktur existiert noch nicht. Dieser Check wird bei tatsächlicher K8s-Migration relevant.
+- README dokumentiert primär stdio-Transport für lokale Nutzung, sse/streamable-http nur als optionale ENV-gesteuerte Alternativen.
+- docs/network-egress.md beschreibt zukünftige K8s-Egress-Pläne — dort wäre auch die Sticky-Session-/Redis-Strategie zu adressieren.
+
+## Empfehlung
+Vor Cloud-Deployment: explizite Entscheidung Sticky-Session (HAProxy/Nginx-Ingress mit `Mcp-Session-Id` als Cookie) oder Shared State (Redis-SessionManager). In docs/network-egress.md oder neuer docs/scaling.md dokumentieren.

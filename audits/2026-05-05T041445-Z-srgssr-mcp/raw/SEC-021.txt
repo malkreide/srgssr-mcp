@@ -1,0 +1,55 @@
+# SEC-021 — Egress-Allow-List: Code-Layer und Network-Layer
+# Status: PASS
+# Reasoning: Code-Layer Allow-List ist als FrozenSet im Code (`ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})` in src/srgssr_mcp/_http.py) — nicht config-mutierbar zur Laufzeit. _validate_url_safe() prüft jeden ausgehenden URL gegen diese Allow-List. Network-Layer-Egress ist in docs/network-egress.md ausführlich dokumentiert (Kubernetes NetworkPolicy mit FQDN-Egress via Cilium, AWS Security Group, Cloudflare WARP Zero-Trust) als Plan für sse/streamable-http-Deployments. Allow-List-Update-Verfahren in README + CHANGELOG verankert. Audit-Finding audits/2026-04-30-srgssr-mcp/findings/SEC-021-egress-allowlist.md mit Test-Matrix.
+
+## Modus: code_review (Code-Layer Allow-List)
+$ grep -rE 'ALLOWED_HOSTS' src/
+src/srgssr_mcp/_http.py:ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+src/srgssr_mcp/_http.py:    if hostname not in ALLOWED_HOSTS:
+=> PASS: minimaler Scope, Pre-Request-Check.
+
+## Modus: code_review (FrozenSet, nicht config-mutierbar)
+$ grep -rE 'frozenset|FrozenSet|Final\[' src/ | grep -iE 'allow|whitelist|host'
+src/srgssr_mcp/_http.py:ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+=> PASS: explizit als frozenset, nicht set/list, nicht aus Env-Var.
+
+## Modus: config_check (Network-Layer Egress Policy)
+$ find . -iname '*egress*'
+./docs/network-egress.md
+./audits/2026-04-30-srgssr-mcp/findings/SEC-021-egress-allowlist.md
+=> PASS: Network-Layer-Plan dokumentiert.
+
+$ head -25 docs/network-egress.md
+"This document describes the network-layer egress control plan for srgssr-mcp deployments that use the sse or streamable-http transport..."
+"Restrict the server pod / container / VM to outbound TCP 443 traffic to api.srgssr.ch only. Block:
+ - Cloud metadata services (169.254.169.254, fd00:ec2::254, …)
+ - Internal services (private RFC1918 ranges, 127.0.0.0/8)
+ - Arbitrary public internet endpoints
+ - Outbound DNS to non-trusted resolvers"
+"## Kubernetes NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy ..."
+=> PASS: enthält Kubernetes NetworkPolicy + Defense-in-Depth-Erklärung.
+
+## Modus: documentation_check (Allow-List dokumentiert)
+$ grep -A5 "## Security: Egress Allowlist" README.md
+"The server implements a code-layer egress allowlist (SEC-021, combined with SEC-004 SSRF defense) to prevent unintended external requests..."
+"Three controls per request: HTTPS-only / Host allowlist / IP blocklist"
+"Adding a new SRG SSR domain: ..."
+=> PASS: Allow-List in README + Update-Verfahren dokumentiert.
+
+## Modus: documentation_check (CHANGELOG)
+$ grep -A2 "SEC-021" CHANGELOG.md
+"Egress-Allowlist-Dokumentation (SEC-021): Die Code-Layer-Egress-Allowlist (ALLOWED_HOSTS = {api.srgssr.ch} in _http.py, gemeinsam mit SEC-004 SSRF-Defense bereits implementiert) ist jetzt explizit in README.md und README.de.md als eigener «Security: Egress Allowlist»-Abschnitt dokumentiert..."
+=> PASS: CHANGELOG-Tracking aktiv (Synergie zu ARCH-012).
+
+## Modus: pre-Request-Check
+$ grep -n "_validate_url_safe" src/srgssr_mcp/_http.py
+src/srgssr_mcp/_http.py:75: def _validate_url_safe(url: str) -> None:
+src/srgssr_mcp/_http.py:118: _validate_url_safe(TOKEN_URL)
+src/srgssr_mcp/_http.py:147: _validate_url_safe(url)
+=> PASS: vor jedem ausgehenden Request aufgerufen (Token-Refresh + alle API-GETs).
+
+## NOTE
+- DNS-Resolution-Path im Network-Layer im docs/network-egress.md erläutert (Outbound UDP 53 zu kube-dns).
+- Pre-Existing Audit-Finding zeigt: dieser Check wurde im 2026-04-30-Audit bereits als "resolved" markiert. Aktueller Audit bestätigt diesen Status.

@@ -1,0 +1,31 @@
+# SEC-016 — 0.0.0.0-Binding-Prevention (NeighborJack)
+# Status: PASS
+# Reasoning: src/srgssr_mcp/config.py setzt `host: str = Field(default="127.0.0.1", validation_alias="SRGSSR_MCP_HOST")` — Default ist 127.0.0.1 (loopback only), nicht 0.0.0.0. Im Code gibt es KEIN hartcodiertes 0.0.0.0-Binding. Default-Transport ist stdio (siehe SEC-006), HTTP/SSE benötigen explizite ENV-Var SRGSSR_MCP_TRANSPORT. Kein Dockerfile mit ENV MCP_HOST=0.0.0.0 (kein Container existiert — siehe SEC-007).
+
+## Modus: automated (Code-Suche nach Binding)
+$ grep -rnE 'host\s*=\s*["\x27]0\.0\.0\.0|host\s*=\s*["\x27]\*' src/
+(no output)
+=> PASS: keine 0.0.0.0-Hartcodierung im Code.
+
+$ grep -rnE '0\.0\.0\.0' . --include="*.toml" --include="*.yaml" --include="*.json"
+NOTE: nur in audits/* Daten und Test-Mocks. Kein Production-Config mit 0.0.0.0.
+
+## Modus: code_review (Deployment-Differenzierung)
+$ grep -n "host" src/srgssr_mcp/config.py
+37:    host: str = Field(default="127.0.0.1", validation_alias="SRGSSR_MCP_HOST")
+=> PASS: Default 127.0.0.1, override via SRGSSR_MCP_HOST.
+
+$ grep -A5 "if settings.transport ==" src/srgssr_mcp/server.py
+    if settings.transport == "stdio":
+        server.run(transport="stdio")  # kein Network-Binding
+    else:
+        server.run(transport=settings.transport, mount_path=settings.mount_path)
+=> PASS: stdio (Default) öffnet keinen Port; bei sse/http kommt host aus settings (Default 127.0.0.1).
+
+## Modus: runtime_test (Port-Erreichbarkeit)
+N/A: nicht ausgeführt. Statisch verifiziert: ohne ENV-Var-Override öffnet der Server keinen TCP-Port.
+
+## NOTE
+- README.md dokumentiert "stdio for the developer laptop, SSE for the browser" (Z. 150) — klare Differenzierung.
+- Bei zukünftigem Container-Deployment: Dockerfile sollte ENV SRGSSR_MCP_HOST=0.0.0.0 explizit setzen (Container-only-Override), Code-Default bleibt 127.0.0.1.
+- Optional Empfehlung: warn_on_dangerous_binding()-Helper aus dem Check-Pattern hinzufügen, der bei MCP_HOST=0.0.0.0 ohne /.dockerenv eine Warnung loggt.

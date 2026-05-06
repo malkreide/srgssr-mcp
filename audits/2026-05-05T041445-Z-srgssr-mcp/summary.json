@@ -1,0 +1,259 @@
+{
+  "audit_meta": {
+    "server_name": "srgssr-mcp",
+    "run_id": "2026-05-05T041445-Z-srgssr-mcp",
+    "started_at": "2026-05-05T04:14:45.523191+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "0.9.x",
+    "output_dir": "/home/user/srgssr-mcp/audits/2026-05-05T041445-Z-srgssr-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/home/user/mcp-audit-skill/checks",
+    "agent_runs": [
+      {
+        "run_index": 0,
+        "started_at": "2026-05-06T05:37:57.776840+00:00",
+        "duration_seconds": 932.0,
+        "tool_uses": 126,
+        "tokens": 222556,
+        "expected_ids": [
+          "ARCH-001",
+          "ARCH-002",
+          "ARCH-003",
+          "ARCH-004",
+          "ARCH-005",
+          "ARCH-006",
+          "ARCH-007",
+          "ARCH-008",
+          "ARCH-009",
+          "ARCH-011",
+          "ARCH-012",
+          "CH-004",
+          "OBS-001",
+          "OBS-002",
+          "OBS-003",
+          "OBS-004",
+          "OPS-001",
+          "OPS-002",
+          "OPS-003",
+          "SCALE-002",
+          "SDK-001",
+          "SDK-002",
+          "SDK-003",
+          "SDK-004",
+          "SEC-004",
+          "SEC-005",
+          "SEC-006",
+          "SEC-007",
+          "SEC-008",
+          "SEC-009",
+          "SEC-013",
+          "SEC-016",
+          "SEC-018",
+          "SEC-019",
+          "SEC-020",
+          "SEC-021"
+        ],
+        "satisfied_ids": [
+          "ARCH-001",
+          "ARCH-002",
+          "ARCH-003",
+          "ARCH-004",
+          "ARCH-005",
+          "ARCH-006",
+          "ARCH-007",
+          "ARCH-008",
+          "ARCH-009",
+          "ARCH-011",
+          "ARCH-012",
+          "CH-004",
+          "OBS-001",
+          "OBS-002",
+          "OBS-003",
+          "OBS-004",
+          "OPS-001",
+          "OPS-002",
+          "OPS-003",
+          "SCALE-002",
+          "SDK-001",
+          "SDK-002",
+          "SDK-003",
+          "SDK-004",
+          "SEC-004",
+          "SEC-005",
+          "SEC-006",
+          "SEC-007",
+          "SEC-008",
+          "SEC-009",
+          "SEC-013",
+          "SEC-016",
+          "SEC-018",
+          "SEC-019",
+          "SEC-020",
+          "SEC-021"
+        ],
+        "missing_ids": [],
+        "empty_ids": [],
+        "incomplete_ids": [],
+        "status": "ok",
+        "retry_of_run_index": null
+      }
+    ],
+    "audit_date": "2026-05-06",
+    "catalog_version": "v0.5.0 (68 checks)"
+  },
+  "totals": {
+    "checks_evaluated": 68,
+    "applicable": 36,
+    "by_status": {
+      "pass": 23,
+      "fail": 3,
+      "partial": 6,
+      "todo": 4,
+      "n/a": 32
+    },
+    "by_severity_among_findings": {
+      "critical": 1,
+      "high": 5,
+      "medium": 3,
+      "low": 0
+    },
+    "by_category": {
+      "ARCH": {
+        "pass": 10,
+        "fail": 0,
+        "partial": 1,
+        "todo": 0,
+        "n/a": 1
+      },
+      "CH": {
+        "pass": 0,
+        "fail": 0,
+        "partial": 1,
+        "todo": 0,
+        "n/a": 7
+      },
+      "HITL": {
+        "pass": 0,
+        "fail": 0,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 5
+      },
+      "OBS": {
+        "pass": 2,
+        "fail": 0,
+        "partial": 2,
+        "todo": 0,
+        "n/a": 2
+      },
+      "OPS": {
+        "pass": 3,
+        "fail": 0,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 0
+      },
+      "SCALE": {
+        "pass": 0,
+        "fail": 0,
+        "partial": 0,
+        "todo": 1,
+        "n/a": 5
+      },
+      "SDK": {
+        "pass": 0,
+        "fail": 2,
+        "partial": 1,
+        "todo": 1,
+        "n/a": 1
+      },
+      "SEC": {
+        "pass": 8,
+        "fail": 1,
+        "partial": 1,
+        "todo": 2,
+        "n/a": 11
+      }
+    }
+  },
+  "findings": {
+    "policy": "fail-or-partial",
+    "policy_statuses": [
+      "fail",
+      "partial"
+    ],
+    "expected_count": 9,
+    "expected_ids": [
+      "ARCH-005",
+      "CH-004",
+      "OBS-001",
+      "OBS-002",
+      "SDK-001",
+      "SDK-002",
+      "SDK-003",
+      "SEC-005",
+      "SEC-013"
+    ],
+    "details": [
+      {
+        "check_id": "ARCH-005",
+        "category": "ARCH",
+        "severity": "critical",
+        "status": "partial"
+      },
+      {
+        "check_id": "CH-004",
+        "category": "CH",
+        "severity": "medium",
+        "status": "partial"
+      },
+      {
+        "check_id": "OBS-001",
+        "category": "OBS",
+        "severity": "high",
+        "status": "partial"
+      },
+      {
+        "check_id": "OBS-002",
+        "category": "OBS",
+        "severity": "high",
+        "status": "partial"
+      },
+      {
+        "check_id": "SDK-001",
+        "category": "SDK",
+        "severity": "high",
+        "status": "fail"
+      },
+      {
+        "check_id": "SDK-002",
+        "category": "SDK",
+        "severity": "medium",
+        "status": "partial"
+      },
+      {
+        "check_id": "SDK-003",
+        "category": "SDK",
+        "severity": "medium",
+        "status": "fail"
+      },
+      {
+        "check_id": "SEC-005",
+        "category": "SEC",
+        "severity": "high",
+        "status": "fail"
+      },
+      {
+        "check_id": "SEC-013",
+        "category": "SEC",
+        "severity": "high",
+        "status": "partial"
+      }
+    ]
+  },
+  "production_ready": false,
+  "blocking_findings": [
+    "SDK-001",
+    "SEC-005"
+  ]
+}

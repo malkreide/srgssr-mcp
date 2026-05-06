@@ -1,0 +1,32 @@
+# SEC-009 — Session-ID Cryptographic Binding (user_id:session_id)
+# Status: TODO
+# Reasoning: Profil sagt transport=dual + auth_model=none (MCP-Server selbst hat keine Client-Auth). Bei stdio (Default) ist kein Mcp-Session-Id-Konzept relevant — Session ist die Process-Lifetime des stdio-Subprocesses. Bei sse/streamable-http würde FastMCP intern die Session-Verwaltung übernehmen — der Anwendungscode generiert keine Session-IDs selbst, kein User-Identitäts-Binding (auth_model: none = kein OAuth-Token, keine `sub`-Claims, keine User-zu-Session-Binding-Logik möglich). Damit greift dieser Check für das aktuelle Setup nicht im klassischen Sinn. Bei zukünftigem Multi-User-Cloud-Deployment mit Auth wäre er kritisch.
+
+## Modus: code_review (kryptografisch sichere Generierung)
+$ grep -rnE "session_id|sessionId|mcp_session" src/
+(no output)
+=> Kein eigenes Session-Management. FastMCP übernimmt das intern.
+
+$ grep -rnE "uuid\.|secrets\.|crypto\." src/
+(no output)
+=> Kein Custom-ID-Generator. (Hinweis: FastMCP-internal-Generation muss im SDK-Code geprüft werden, nicht in diesem Repo.)
+
+## Modus: code_review (Binding an validated user_id)
+$ grep -rnE "user.*session|sub.*session|validate_session" src/
+(no output)
+=> Kein Binding-Code, weil kein User-Identitäts-Konzept existiert (auth_model: none — der MCP-Server hat KEINE eigene Client-Auth, nutzt nur Upstream-OAuth2 zur SRG-API für outbound).
+
+## Modus: runtime_test
+N/A: stdio default (kein Session-ID-Header). HTTP/SSE-Pfad nicht in Production.
+
+## Threat-Modell-Bewertung
+- stdio: jede Stdio-Instanz = ein User. Session-Hijacking-Vektor existiert nicht (Stdin/Stdout sind Process-Pipes, kein Netzwerk-Stream).
+- sse/streamable-http: hier würde Multi-Tenant-Risiko entstehen. Aktuell auth_model=none → der Server würde alle Requests anonym akzeptieren. Bei Cloud-Deployment ZWINGEND vorher Auth-Layer einbauen (siehe SEC-001/002/003) und dann Session-Binding nach SEC-009-Pattern.
+
+## Empfehlung
+Vor Cloud-Deployment mit dem öffentlichen Internet:
+1. OAuth2-Resource-Server vor dem MCP-Server (Token-Validation)
+2. session_id = secrets.token_urlsafe(32)
+3. user_id (aus validated `sub`-Claim) + session_id in signed JWT
+4. Bei jedem Request: Mcp-Session-Id gegen User-ID prüfen, Mismatch → 401/403
+5. Logout-Endpoint mit serverseitiger Invalidation

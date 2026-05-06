@@ -1,0 +1,34 @@
+# SEC-005 — DNS-Rebinding-Prevention: DNS-Pinning gegen TOCTOU
+# Status: FAIL
+# Reasoning: _validate_url_safe() ruft socket.getaddrinfo() für die Validation auf, gibt aber dann die Original-URL (mit Hostname, nicht IP) an httpx weiter. httpx macht intern eine ZWEITE DNS-Resolution beim eigentlichen Request — klassisches TOCTOU/DNS-Rebinding-Fenster. Es gibt kein DNS-Pinning, kein Custom-Transport mit gepinnter IP, keine `Host`-Header-Manipulation für SNI. Das Risiko ist in der Praxis durch den Single-Host-Allowlist-Scope (`api.srgssr.ch`) reduziert (Angreifer müsste DNS für api.srgssr.ch kontrollieren), aber dem Pass-Pattern aus dem Check entspricht es nicht.
+
+## Modus: code_review (DNS-Resolution einmalig + Pinning)
+$ grep -rE 'getaddrinfo|gethostbyname|dns\.resolve' src/
+src/srgssr_mcp/_http.py:        addr_infos = socket.getaddrinfo(hostname, None)
+=> Ein Lookup zur Validation. Dann httpx.AsyncClient.get(url) — macht implizit zweiten Lookup.
+
+$ grep -rE 'replace\(.*hostname.*resolved|Host:.*hostname|pinned_url' src/
+(no output)
+=> FAIL: kein Hostname→IP-Replace, kein expliziter Host-Header, kein PinnedTransport.
+
+## Modus: code_review (TLS-SNI / Certificate Validation erhalten)
+$ grep -rE 'sni_hostname|SSLContext|verify_hostname|verify=False' src/
+(no output)
+=> N/A: kein verify=False (gut), aber auch keine SNI-Manipulation (weil kein Pinning aktiv).
+
+## Modus: runtime_test (Rebinding-Simulation)
+NOTE: Nicht ausgeführt. Statisch zeigt das Pattern: 2 DNS-Lookups (1 in _validate_url_safe für Range-Check, 1 implizit in httpx) — das TOCTOU-Fenster existiert.
+
+## Risiko-Bewertung
+- ALLOWED_HOSTS = {"api.srgssr.ch"}: nur 1 Domain im Scope. Ein Angreifer müsste den DNS von api.srgssr.ch kontrollieren — was praktisch unmöglich ist (SRG SSR controlled).
+- Dennoch: Defense-in-Depth-Prinzip → SEC-021 + SEC-005 verlangen explizit DNS-Pinning oder Egress-Proxy.
+
+## Empfehlung
+1. Custom httpx.AsyncHTTPTransport, das pinned_url via socket.getaddrinfo erzeugt
+2. Original-Hostname via Host-Header und httpx-extensions={"sni_hostname": hostname} setzen
+3. Tests gegen Mock-Resolver (siehe Modus 3 im Check)
+ODER
+- Egress-Proxy (Stripe Smokescreen) via HTTPS_PROXY-ENV-Var, der DNS-Pinning automatisch macht.
+
+## NOTE
+Bei einem Read-only-Server mit Public Open Data und einer einzigen, infrastrukturell-vertrauten Upstream-Domain ist das Restrisiko klein. Bei Cloud-Deployment mit erweitertem Scope (mehrere Domains, weniger Trust) wird DNS-Pinning Pflicht.

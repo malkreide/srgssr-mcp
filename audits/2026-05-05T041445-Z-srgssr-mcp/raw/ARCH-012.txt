@@ -1,0 +1,52 @@
+# ARCH-012 — protocolVersion-Pinning + CHANGELOG + SDK-Update-Disziplin
+# Status: PASS
+# Reasoning: PROTOCOL_VERSION ist explizit gepinnt auf "2025-06-18" in src/srgssr_mcp/_app.py mit Validation gegen SUPPORTED_PROTOCOL_VERSIONS beim Import. CHANGELOG.md im Keep-a-Changelog-Format vorhanden, mit detaillierten Spec-Version-Referenzen. README.md und README.de.md haben "MCP Protocol Version"-Sektion mit Update-Policy. .github/dependabot.yml vorhanden.
+
+## Modus: code_review (protocolVersion gepinnt)
+$ grep -rnE 'protocolVersion|protocol_version|PROTOCOL_VERSION' src/
+src/srgssr_mcp/_app.py:11:from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
+src/srgssr_mcp/_app.py:22:PROTOCOL_VERSION = "2025-06-18"
+src/srgssr_mcp/_app.py:24:if PROTOCOL_VERSION not in SUPPORTED_PROTOCOL_VERSIONS:
+src/srgssr_mcp/_app.py:26:    f"Pinned MCP protocolVersion {PROTOCOL_VERSION!r} is not in the installed "
+src/srgssr_mcp/_app.py:27:    f"SDK's SUPPORTED_PROTOCOL_VERSIONS={SUPPORTED_PROTOCOL_VERSIONS}. ..."
+src/srgssr_mcp/_app.py:58:logger.info("server_initialized", protocol_version=PROTOCOL_VERSION)
+src/srgssr_mcp/server.py:23:from srgssr_mcp._app import PROTOCOL_VERSION, ...
+src/srgssr_mcp/server.py:113:    "PROTOCOL_VERSION",
+
+NOTE: Pinned auf 2025-06-18 + Fail-Fast-Validation gegen SDK-Support beim Import. Sehr starkes Pass-Pattern.
+
+## Modus: documentation_check (CHANGELOG)
+$ test -f CHANGELOG.md && echo "exists"
+exists
+
+$ head -30 CHANGELOG.md
+# Änderungsprotokoll / Changelog
+Alle wesentlichen Änderungen werden in dieser Datei dokumentiert.
+Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
+
+## [Unreleased]
+### Security
+- Egress-Allowlist-Dokumentation (SEC-021), Input Validation Hardening (SEC-018), SSRF Defense (SEC-004 + SEC-021)
+### Added
+- Docs (OPS-003), Observability (OBS-003), ...
+### Changed
+- Architecture (ARCH-004), UX (ARCH-003), ...
+
+NOTE: Keep-a-Changelog Format mit Spec-Version-Referenzen explizit erwähnt.
+
+## Modus: documentation_check (Breaking-Change-Policy)
+$ grep -inE 'breaking|spec.version|protocol.version|migration' README.md README.de.md
+README.md:308: ## MCP Protocol Version
+README.md:310: This server is built and tested against MCP protocol version **`2025-06-18`**.
+README.md:312: pinned explicitly as PROTOCOL_VERSION ... validated at import time
+README.md:317: Spec bumps are evaluated on a feature branch ...
+README.md:318: A spec-version bump ... triggers a minor or major release per Semantic Versioning
+README.de.md:300: ## MCP Protocol Version
+README.de.md:304: ... explizit gepinnt und wird beim Import gegen SUPPORTED_PROTOCOL_VERSIONS validiert
+README.de.md:309-310: Update-Policy mit Feature-Branch-Tests, CHANGELOG-Tracking, Semver
+
+## Modus: code_review (Dependency-Update-Hygiene)
+$ ls .github/dependabot.yml .github/renovate.json renovate.json 2>/dev/null
+.github/dependabot.yml
+
+NOTE: Dependabot konfiguriert.

@@ -1,0 +1,38 @@
+# ARCH-009 — Tool Annotations: readOnlyHint, destructiveHint, idempotentHint, openWorldHint
+# Status: PASS
+# Reasoning: Alle 15 Tools haben explizite Annotations gesetzt (15/15). Werte sind konsistent mit read-only Verhalten (readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True für externe SRG-API). Kein Tool mit delete/create/update-Namen. Doku-Modus zeigt keine README-Sektion mit Annotations-Tabelle, daher knapp PASS (alle Code-Pass-Criteria erfüllt).
+
+## Modus: code_review (Annotations gesetzt)
+$ grep -rnE 'annotations\s*=|readOnlyHint|destructiveHint|idempotentHint|openWorldHint' src/
+src/srgssr_mcp/tools/audio.py:57:    annotations={
+src/srgssr_mcp/tools/audio.py:59:        "readOnlyHint": True,
+src/srgssr_mcp/tools/audio.py:60:        "destructiveHint": False,
+src/srgssr_mcp/tools/audio.py:61:        "idempotentHint": True,
+src/srgssr_mcp/tools/audio.py:62:        "openWorldHint": True,
+[... gleiches Muster für audio.py:141, audio.py:236]
+src/srgssr_mcp/tools/epg.py:57: annotations={ readOnlyHint: True, destructiveHint: False, idempotentHint: True, openWorldHint: True }
+src/srgssr_mcp/tools/polis.py:81, 195, 293: gleiches Muster
+src/srgssr_mcp/tools/video.py: 3 Tools, jeweils gleiches Muster
+src/srgssr_mcp/tools/weather.py: 4 Tools, jeweils gleiches Muster
+src/srgssr_mcp/tools/aggregation.py: 1 Tool, gleiches Muster
+(insgesamt 15 Tools, 15 annotations-Blöcke — 75 Hint-Lines)
+
+## Modus: code_review (Annotations vs Tool-Verhalten Konsistenz)
+$ grep -rB 5 'readOnlyHint.*True' src/ | grep -E 'def (delete|create|update|remove|drop)_'
+(no output)
+NOTE: Keine Tool-Funktionsnamen mit delete/create/update/remove/drop — Konsistenz gegeben.
+
+## Modus: tool/annotation-Inventar
+$ for f in src/srgssr_mcp/tools/*.py; do echo "$f: tools=$(grep -c '@mcp\.tool(' "$f") annotations=$(grep -c 'annotations\s*=' "$f")"; done
+src/srgssr_mcp/tools/aggregation.py: tools=1 annotations=1
+src/srgssr_mcp/tools/audio.py: tools=3 annotations=3
+src/srgssr_mcp/tools/epg.py: tools=1 annotations=1
+src/srgssr_mcp/tools/polis.py: tools=3 annotations=3
+src/srgssr_mcp/tools/video.py: tools=3 annotations=3
+src/srgssr_mcp/tools/weather.py: tools=4 annotations=4
+=> 15/15 Tools haben Annotations.
+
+## Modus: documentation_check (Annotations-Policy in README)
+$ grep -inE 'annotations|readonly|destructive' README.md README.de.md docs/*.md
+(no hits)
+NOTE: README enthält keine explizite Annotations-Policy-Tabelle. Code-Pass aber erfüllt.

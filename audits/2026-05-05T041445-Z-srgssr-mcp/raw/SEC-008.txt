@@ -1,0 +1,42 @@
+# SEC-008 — Pre-Configuration Consent für Local-Server-Installation
+# Status: PASS
+# Reasoning: pyproject.toml (Hatchling-Build) hat KEINE custom cmdclass, KEINE pre/postinstall-Hooks — nur reguläre [project.scripts]-Entry-Point `srgssr-mcp = "srgssr_mcp.server:main"`. README zeigt vollen Installationsbefehl transparent (`uvx srgssr-mcp` ODER `pip install srgssr-mcp`) plus claude_desktop_config.json-Beispiel. .github/workflows/publish.yml nutzt OIDC-Trusted-Publisher (`id-token: write` + `pypa/gh-action-pypi-publish@release/v1`) — Sigstore-Signaturen bei jedem Release.
+
+## Modus: code_review (keine versteckten Setup-Steps)
+$ ls package.json setup.py 2>/dev/null
+(none — keine Node-Hooks, kein setup.py mit cmdclass)
+$ grep -E '\[tool\.setuptools\.cmdclass|\[project\.scripts\]' pyproject.toml
+[project.scripts]
+srgssr-mcp = "srgssr_mcp.server:main"
+=> PASS: nur reguläre Entry-Point. Keine Hooks.
+
+$ grep -E '\[build-system\]' pyproject.toml -A3
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+=> PASS: hatchling — modernes Build-Backend, keine cmdclass-Tricks.
+
+## Modus: documentation_check (README zeigt vollen Befehl)
+$ grep -B2 -A5 'mcpServers' README.md
+"mcpServers": {
+    "srgssr": {
+      "command": "uvx",
+      "args": ["srgssr-mcp"],
+      ...
+=> PASS: vollständiger Befehl transparent.
+
+$ grep -B2 -A2 'uvx srgssr-mcp\|pip install srgssr-mcp' README.md
+"Or with uvx (no permanent installation): uvx srgssr-mcp"
+"Or via pip: pip install srgssr-mcp"
+=> PASS: zwei klare Installations-Optionen, kein Hide-Behind-Script.
+
+## Modus: config_check (Package-Signing aktiv)
+$ grep -rE 'pypi-publish|pypa/gh-action-pypi-publish|id-token' .github/workflows/
+.github/workflows/publish.yml: id-token: write   # OIDC-Token für Trusted Publisher
+.github/workflows/publish.yml: uses: pypa/gh-action-pypi-publish@release/v1
+=> PASS: PyPI Trusted Publisher mit OIDC + Sigstore-Signatures aktiv.
+
+## NOTE
+- CONTRIBUTING.md erklärt Build-Prozess für unabhängige Verifikation (siehe OPS-002).
+- Bei `uvx`: User-Bestätigung beim ersten Run via Claude Desktop (Host-Layer).
+- Keine native Bindings, keine `gyp`-Compile-Steps.

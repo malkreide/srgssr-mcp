@@ -1,0 +1,26 @@
+# ARCH-004 — Inversion of Control
+# Status: PASS
+# Reasoning: Settings via Pydantic BaseSettings (config.py), Transport-Auswahl via SRGSSR_MCP_TRANSPORT (stdio|sse|streamable-http). _build_mcp() teilt Setup transport-agnostisch. Keine direkten request./websocket./stdin/stdout-Zugriffe in Tool-Handlern.
+
+## Modus: code_review (transport leak in handlers)
+$ grep -rA20 "@mcp\.tool" /home/user/srgssr-mcp/src/ | grep -E "request\.|websocket\.|stdin|stdout"
+(no matches)
+
+## Modus: code_review (settings)
+$ grep -rE "BaseSettings|os\.environ" /home/user/srgssr-mcp/src/
+src/srgssr_mcp/logging_config.py:        env = os.environ.get("SRGSSR_LOG_LEVEL", "info")
+src/srgssr_mcp/config.py:from pydantic_settings import BaseSettings, SettingsConfigDict
+src/srgssr_mcp/config.py:class Settings(BaseSettings):
+
+server.py main():
+    settings = get_settings()
+    server = _build_mcp(settings)
+    if settings.transport == "stdio": server.run(transport="stdio")
+    else: server.run(transport=settings.transport, mount_path=settings.mount_path)
+
+config.py: Transport = Literal["stdio","sse","streamable-http"]
+
+## Modus: runtime_test
+Skipped (lokal beide Transports zu starten ist out-of-scope für statische Pruefung,
+aber Setup-Code zeigt klar identisches mcp-Objekt für alle Transports → identisches
+Tool-Verhalten erwartbar).

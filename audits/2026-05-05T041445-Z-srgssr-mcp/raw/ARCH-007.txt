@@ -1,0 +1,23 @@
+# ARCH-007 — Capability-Aggregation: Composability intern, Atomarität extern
+# Status: PASS
+# Reasoning: srgssr_daily_briefing aggregiert intern Weather + EPG via asyncio.gather mit Graceful-Degradation (_safe_api_get). Tool-Beschreibung erwähnt Aggregation explizit. Atomare Tools (z.B. weather_current, video_get_shows) liefern jeweils gedanklich abgeschlossene Resultate (keine reinen ID-Pointer).
+
+## Modus: code_review (asyncio.gather pattern)
+$ grep -rE "asyncio\.gather|Promise\.all" /home/user/srgssr-mcp/src/
+src/srgssr_mcp/_http.py:    Used by aggregation tools that fan out via :func:`asyncio.gather` and want
+src/srgssr_mcp/tools/aggregation.py::func:`asyncio.gather` and merge the results, so callers don't have to chain
+src/srgssr_mcp/tools/aggregation.py:        "Beide Datenquellen werden parallel abgerufen (asyncio.gather), so dass "
+src/srgssr_mcp/tools/aggregation.py:    Both upstream calls run concurrently via :func:`asyncio.gather`.
+src/srgssr_mcp/tools/aggregation.py:    weather_result, epg_result = await asyncio.gather(
+
+## Modus: code_review (atomic vs. ID-pointer)
+- Tool-Resultate enthalten Markdown/JSON mit allen relevanten Daten (Titel, Datum, Beschreibung)
+- weather_search_location liefert Liste mit geolocationId UND Anzeigename (nicht reine ID)
+- _safe_api_get + _handle_error → graceful degradation in Aggregation
+- Description von daily_briefing enthält explizit "asyncio.gather" und "Graceful Degradation"
+
+## Modus: code_review (Tool description aggregation hint)
+srgssr_daily_briefing description (Auszug):
+"Aggregiertes Tagesbriefing: kombiniert die 24-Stunden-Wettervorhersage von SRF Meteo
+mit dem EPG-Tagesprogramm... Beide Datenquellen werden parallel abgerufen (asyncio.gather)..."
+→ aggregierter Charakter explizit dokumentiert.

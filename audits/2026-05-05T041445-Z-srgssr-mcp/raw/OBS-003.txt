@@ -1,0 +1,38 @@
+# OBS-003 — Structured Logging mit RFC 5424 Severity-Stufen
+# Status: PASS
+# Reasoning: structlog>=24.1.0 ist in dependencies. logging_config.py konfiguriert JSONRenderer + ProcessorFormatter mit RFC-5424-Mapping (debug/info/notice/warning/error/critical/alert/emergency). Logger wird genutzt mit strukturiertem Key-Value-Pattern (logger.info("event_name", key=value)). Keine print()-Statements im src/. ENV-Var SRGSSR_LOG_LEVEL erlaubt dynamisches Filtering.
+
+## Modus: automated (Strukturierter Logger als Dependency)
+$ grep -E 'structlog|pino|loguru' pyproject.toml
+    "structlog>=24.1.0",
+=> PASS: structlog>=24.1.0 in dependencies.
+
+## Modus: code_review (Konsistente Verwendung)
+$ grep -rnE 'logger\.(info|warning|error|debug)' src/
+src/srgssr_mcp/_app.py:58:logger.info("server_initialized", protocol_version=PROTOCOL_VERSION)
+src/srgssr_mcp/_http.py:114:        logger.debug("oauth_token_cache_hit")
+src/srgssr_mcp/_http.py:121:    logger.info("oauth_token_refresh")
+src/srgssr_mcp/_http.py:138:    logger.info("oauth_token_acquired", expires_in=expires_in)
+=> 4 strukturierte Log-Calls; alle nutzen Event-Name + bound Key-Value-Args (kein f-String).
+
+## Modus: print-Statements
+$ grep -rnE 'print\(' src/ --include='*.py'
+(no output)
+=> PASS: keine print()-Statements im src/.
+
+## Modus: RFC-5424-Mapping
+$ grep -A10 "_RFC5424_LEVELS" src/srgssr_mcp/logging_config.py
+_RFC5424_LEVELS = {
+    "debug": logging.DEBUG, "info": logging.INFO, "notice": logging.INFO,
+    "warning": logging.WARNING, "error": logging.ERROR, "critical": logging.CRITICAL,
+    "alert": logging.CRITICAL, "emergency": logging.CRITICAL,
+}
+=> PASS: alle 8 RFC-5424-Stufen gemappt.
+
+## Modus: JSON-Output bestätigt
+$ grep -A2 "JSONRenderer" src/srgssr_mcp/logging_config.py
+            structlog.processors.JSONRenderer(),
+=> PASS: JSON-Output via JSONRenderer.
+
+## NOTE
+Bound-Context pro Tool-Call (z.B. tool=, session_id=) ist im Code aktuell nicht standardmässig pro Tool gesetzt — Tools nutzen den shared logger ohne explizite .bind(). Mindestens 4 Severity-Stufen (debug/info/warning/error) sind im Mapping aktivierbar; aktuell genutzt: info, debug. Empfehlung: warning/error in _handle_error logging hinzufügen für vollständige Coverage.

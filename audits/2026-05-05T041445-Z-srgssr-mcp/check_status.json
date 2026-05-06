@@ -1,0 +1,182 @@
+{
+  "ARCH-001": {
+    "status": "PASS",
+    "reasoning": "Alle 15 Tools folgen einheitlich snake_case mit Prefix \"srgssr_<domain>_\". Keine Spaces, Punkte oder Sonderzeichen. snake_case ist akzeptabel (camelCase wäre bevorzugt, aber explizit erlaubt). Beschreibungen sind ausführlich (mehrsätzig, mit Use-Cases) — Stichprobe zeigt Qualität. code_review Aspekt wirkt erfüllt.",
+    "file": "ARCH-001.txt"
+  },
+  "ARCH-002": {
+    "status": "PASS",
+    "reasoning": "Alle 15 Tools enthalten <use_case>, <important_notes> und <example> Tags. 100% Coverage > 80% Threshold.",
+    "file": "ARCH-002.txt"
+  },
+  "ARCH-003": {
+    "status": "PASS",
+    "reasoning": "Empty-Result-Pfade sind im gesamten Repo abgedeckt. Tools liefern aktionable Hinweise mit Vorschlägen (z.B. polis: konkrete Filter-Vorschläge wie year_from senken; weather: Locations vorschlagen; audio: \"Vorschlag: srgssr_audio_get_shows aufrufen\"). Kein leeres \"[]\" oder \"No results found\" String erkennbar.",
+    "file": "ARCH-003.txt"
+  },
+  "ARCH-004": {
+    "status": "PASS",
+    "reasoning": "Settings via Pydantic BaseSettings (config.py), Transport-Auswahl via SRGSSR_MCP_TRANSPORT (stdio|sse|streamable-http). _build_mcp() teilt Setup transport-agnostisch. Keine direkten request./websocket./stdin/stdout-Zugriffe in Tool-Handlern.",
+    "file": "ARCH-004.txt"
+  },
+  "ARCH-005": {
+    "status": "PARTIAL",
+    "reasoning": "Pydantic-Settings-Pattern mit env_prefix=SRGSSR_, kein Klartext-Secret im Code, .env nicht im Repo. Aber: consumer_secret als `str` (nicht SecretStr), `.gitignore` fehlt `.env`, `.env.example` fehlt, kein gitleaks/trufflehog in CI.",
+    "file": "ARCH-005.txt"
+  },
+  "ARCH-006": {
+    "status": "PASS",
+    "reasoning": "15 echte Tools (16 grep-Treffer inkl. Dokumentation/Imports). Liegt mit 15 in der \"9-15 Tools: Use-Case-Cluster prüfen\"-Zone, aber Tools sind klar nach Domains (audio/video/epg/polis/weather) strukturiert und decken atomare Anwendungsfälle ab. Mit srgssr_daily_briefing existiert ein Aggregations-Tool. Keine offensichtlichen 1:1-CRUD-Mappings.",
+    "file": "ARCH-006.txt"
+  },
+  "ARCH-007": {
+    "status": "PASS",
+    "reasoning": "srgssr_daily_briefing aggregiert intern Weather + EPG via asyncio.gather mit Graceful-Degradation (_safe_api_get). Tool-Beschreibung erwähnt Aggregation explizit. Atomare Tools (z.B. weather_current, video_get_shows) liefern jeweils gedanklich abgeschlossene Resultate (keine reinen ID-Pointer).",
+    "file": "ARCH-007.txt"
+  },
+  "ARCH-008": {
+    "status": "PASS",
+    "reasoning": "Server nutzt alle drei Primitive: 15 @mcp.tool, 2 @mcp.resource (epg, votation), 2 @mcp.prompt (analyse_abstimmungsverhalten, tagesbriefing_kanton). README dokumentiert URI-Schemen und Prompt-Liste.",
+    "file": "ARCH-008.txt"
+  },
+  "ARCH-009": {
+    "status": "PASS",
+    "reasoning": "Alle 15 Tools haben explizite Annotations gesetzt (15/15). Werte sind konsistent mit read-only Verhalten (readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=True für externe SRG-API). Kein Tool mit delete/create/update-Namen. Doku-Modus zeigt keine README-Sektion mit Annotations-Tabelle, daher knapp PASS (alle Code-Pass-Criteria erfüllt).",
+    "file": "ARCH-009.txt"
+  },
+  "ARCH-011": {
+    "status": "PASS",
+    "reasoning": "Alle Pflicht-Files (README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml) und Verzeichnisse (src/, tests/, .github/workflows/) vorhanden. src-Layout korrekt deklariert. 15 Tools sind in tools/-Verzeichnis aufgeteilt; server.py nur 181 LOC. README.de.md hat parallele Struktur (Sektionen sind übersetzt, semantisch parallel). 4 Workflow-Files inkl. test.yml, ci.yml, publish.yml, live-test.yml.",
+    "file": "ARCH-011.txt"
+  },
+  "ARCH-012": {
+    "status": "PASS",
+    "reasoning": "PROTOCOL_VERSION ist explizit gepinnt auf \"2025-06-18\" in src/srgssr_mcp/_app.py mit Validation gegen SUPPORTED_PROTOCOL_VERSIONS beim Import. CHANGELOG.md im Keep-a-Changelog-Format vorhanden, mit detaillierten Spec-Version-Referenzen. README.md und README.de.md haben \"MCP Protocol Version\"-Sektion mit Update-Policy. .github/dependabot.yml vorhanden.",
+    "file": "ARCH-012.txt"
+  },
+  "CH-004": {
+    "status": "PARTIAL",
+    "reasoning": "SRG SSR Public API ist nicht klassische OGD-CC-BY-4.0-Quelle (nicht-kommerziell, schriftliche Genehmigung für kommerzielle Nutzung). Die Lizenz-Lage ist im README dokumentiert (SRG SSR Terms of Use, kommerzielle Nutzung erfordert api@srgssr.ch). Aber: Tool-Antworten enthalten kein explizites \"source\"/\"license\"/\"provenance\"-Feld. README hat keine \"Datenquellen & Lizenzen\"-Tabelle wie im OGD-CH-Pass-Pattern.",
+    "file": "CH-004.txt"
+  },
+  "OBS-001": {
+    "status": "PARTIAL",
+    "reasoning": "Alle 15 Tools fangen Exceptions in try/except und delegieren an _handle_error(), das einen deutschsprachigen Error-String zurückgibt — das vermeidet JSON-RPC-Crashes bei API-/Validierungs-Fehlern (Pass-Pattern für Execution Errors). Allerdings: keine standardisierten JSON-RPC-Codes (-326xx/-320xx) und kein expliziter `isError: true`-Envelope mit TextContent — der Error wird als plain str retourniert, nicht als MCP-strukturiertes isError-Result. Pydantic-ValidationErrors / Tool-Lookup-Fehler werden vom FastMCP-Framework korrekt als Protocol-Errors gehandhabt (durch FastMCP-Default).",
+    "file": "OBS-001.txt"
+  },
+  "OBS-002": {
+    "status": "PARTIAL",
+    "reasoning": "Keine `traceback.format_exc()`/`sys.exc_info()`-Outputs in Tool-Returns (gut). _handle_error() liefert sanitisierte deutsche Error-Strings für 401/403/404/429/Timeout (Pass). Allerdings: Default-Fallback gibt `f\"Unerwarteter Fehler ({type(e).__name__}): {e}\"` zurück — kann bei unerwarteten Exceptions Internals leaken (z.B. ConnectionError mit interner Adresse). FastMCP-`mask_error_details=True` ist NICHT gesetzt — bei unhandled Exceptions im Framework greift der FastMCP-Default. structlog-Logger nutzt JSONRenderer mit `format_exc_info`-Processor — Stacktraces landen im Log (gewollt), nicht im Tool-Return.",
+    "file": "OBS-002.txt"
+  },
+  "OBS-003": {
+    "status": "PASS",
+    "reasoning": "structlog>=24.1.0 ist in dependencies. logging_config.py konfiguriert JSONRenderer + ProcessorFormatter mit RFC-5424-Mapping (debug/info/notice/warning/error/critical/alert/emergency). Logger wird genutzt mit strukturiertem Key-Value-Pattern (logger.info(\"event_name\", key=value)). Keine print()-Statements im src/. ENV-Var SRGSSR_LOG_LEVEL erlaubt dynamisches Filtering.",
+    "file": "OBS-003.txt"
+  },
+  "OBS-004": {
+    "status": "PASS",
+    "reasoning": "Keine print()-Statements im src/ (CRITICAL-Anti-Pattern vermieden). logging.StreamHandler ist explizit auf sys.stderr konfiguriert. structlog läuft via stdlib-logging-Adapter (ProcessorFormatter), erbt damit den stderr-Handler. dual-Transport (stdio default, sse / streamable-http optional) verwendet identische Logging-Config — kein transport-abhängiger Switch.",
+    "file": "OBS-004.txt"
+  },
+  "OPS-001": {
+    "status": "PASS",
+    "reasoning": "tests/test_unit.py (128 Tests) + tests/test_live.py (14 Tests) + tests/test_logging.py (9 Tests). respx wird in unit + logging Tests verwendet (HTTP-Mocking). Live-Tests sind via `pytestmark = [pytest.mark.live]` markiert. Marker im pyproject.toml registriert. CI-Workflow .github/workflows/test.yml läuft `pytest -m \"not live\"` mit cov-fail-under=80. Separater Nightly-Live-Workflow .github/workflows/live-test.yml (cron 04:00 UTC + workflow_dispatch) mit eigenen Test-Credentials (LIVE_TEST_CONSUMER_KEY/SECRET).",
+    "file": "OPS-001.txt"
+  },
+  "OPS-002": {
+    "status": "PASS",
+    "reasoning": "Bilingual READMEs (EN+DE) mit 22 Top-Level-Sektionen je. Alle Pflicht-Sektionen vorhanden: Anchor-Demo-Query (explizit als \"Anchor demo query\"), Installation, Quickstart, Configuration, MCP Primitives, Available Tools, Architecture (mit ASCII-Diagramm an Z. 257-...), Development Phase, Known Limits (mind. 7 Limits), Security: Egress Allowlist, Logging, Testing, Contributing, Changelog, License. Keep-a-Changelog-Format mit Sektionen Added/Changed/Security explizit. CONTRIBUTING.md + CONTRIBUTING.de.md vorhanden.",
+    "file": "OPS-002.txt"
+  },
+  "OPS-003": {
+    "status": "PASS",
+    "reasoning": "Phase 1 ist explizit deklariert (\"Phase 1: Read-only Wrapper\") in README.md UND README.de.md mit Status-Tabelle (Abschlusskriterien) und expliziten Statements zu Phase 2/3 (\"Phase 2 nicht geplant\", \"Phase 3 aufgeschoben\"). Tool-Annotations sind konsistent: 0 Tools mit `destructiveHint=True`. CHANGELOG.md dokumentiert die Phase-1-Deklaration als OPS-003-Eintrag. docs/roadmap.md fehlt — aber die Future-Phases-Sektion im README übernimmt diese Funktion.",
+    "file": "OPS-003.txt"
+  },
+  "SCALE-002": {
+    "status": "TODO",
+    "reasoning": "Profil deklariert dual transport (stdio + sse + streamable-http) und Kubernetes als geplantes Deployment (is_cloud_deployed=false). Aktuell existieren KEINE Deployment-Konfigurationen (kein Dockerfile, kein k8s/, kein helm/, kein docker-compose.yml). Code-Layer-Session-Manager sind nicht vorhanden (kein Redis-Dep, kein SessionStore). Da der Server primär lokal via stdio läuft (auth_model: none, is_cloud_deployed: false), greift dieser Check noch nicht — wird relevant bei tatsächlicher Cloud-Deployment-Implementierung.",
+    "file": "SCALE-002.txt"
+  },
+  "SDK-001": {
+    "status": "FAIL",
+    "reasoning": "KEIN @asynccontextmanager-Lifespan definiert. KEIN lifespan= Argument bei FastMCP-Konstruktor (siehe src/srgssr_mcp/_app.py — `mcp = FastMCP(\"srgssr_mcp\", instructions=...)`). httpx.AsyncClient wird PRO API-Call neu erstellt (in _api_get und _get_access_token via `async with httpx.AsyncClient(timeout=TIMEOUT) as client:`) — kein Connection-Pooling, kein Resource-Reuse zwischen Tool-Calls. Klassisches Fail-Pattern aus dem Check.",
+    "file": "SDK-001.txt"
+  },
+  "SDK-002": {
+    "status": "PARTIAL",
+    "reasoning": "Pydantic >= 2.0 in dependencies (PASS). Tool-INPUTS sind alle als Pydantic-BaseModel-Subklassen typisiert (10 Input-Modelle: EpgProgramsInput, AudioEpisodesInput, PolisListInput/ResultInput, VideoShowsInput/EpisodesInput/LivestreamsInput, WeatherSearchInput/ForecastInput, DailyBriefingInput). Tool-OUTPUTS sind allerdings durchgehend `-> str` (Markdown-formatierte Strings), KEIN strukturierter BaseModel/TypedDict-Response-Envelope mit `source`/`provenance`/`results`/`count`. Damit fehlt der konsistente Provenance-Envelope, den der Check fordert. ResponseFormat-Enum (markdown/json) existiert in _app.py — aber als StrEnum-Hint, nicht als Output-Schema.",
+    "file": "SDK-002.txt"
+  },
+  "SDK-003": {
+    "status": "FAIL",
+    "reasoning": "KEIN Tool nutzt den Context-Parameter (ctx: Context). Damit fehlen alle Capabilities, die Context bietet: Progress-Reports (ctx.report_progress), strukturiertes Per-Call-Logging (ctx.info/warning/error), Client-Info, Sampling, Elicitation. Das ist besonders relevant für `srgssr_daily_briefing` (aggregiert via asyncio.gather mehrere API-Calls) und für die EPG/Polis-Tools mit grossen Listen-Iterationen, die als lang laufend zu klassifizieren sind. Tools loggen über den shared structlog-Logger ohne Per-Call-Context-Binding (siehe OBS-003).",
+    "file": "SDK-003.txt"
+  },
+  "SDK-004": {
+    "status": "TODO",
+    "reasoning": "Keine CORS-Middleware konfiguriert (kein CORSMiddleware-Import, kein cors_origins/cors_expose_headers an FastMCP-Konstruktor). Da der Server primär für stdio-Transport (Default) gebaut ist und HTTP/SSE als optionaler Cloud-Use-Case dokumentiert sind, ist das aktuell nicht-funktional bei Browser-Clients — würde aber bei tatsächlicher Cloud-Deployment via streamable-http akut: Browser könnten die Mcp-Session-Id nicht auslesen, Folge-Requests landen ohne Session-Header, Session-Lifecycle bricht. Da Profil dual transport deklariert (stdio + sse + streamable-http) UND HTTP/SSE-Pfad nicht stillgelegt ist, ist dieser Punkt als Lücke zu erfassen — wird aber erst kritisch bei Cloud-Browser-Use.",
+    "file": "SDK-004.txt"
+  },
+  "SEC-004": {
+    "status": "PASS",
+    "reasoning": "_validate_url_safe() in src/srgssr_mcp/_http.py implementiert alle drei Pflichtkontrollen vor jedem ausgehenden Request: (1) HTTPS-only-Enforcement (raises ValueError bei !https), (2) Egress-Allowlist (`ALLOWED_HOSTS = frozenset({\"api.srgssr.ch\"})`), (3) IP-Blocklist nach getaddrinfo-Resolution gegen 18 IP-Ranges (RFC1918 privat, Loopback, Link-Local inkl. 169.254.169.254 Cloud-Metadata, CGNAT, Multicast, Reserved, IPv6-Pendants ULA/Link-Local/Loopback/Mapped). Aufgerufen vor jedem _api_get + _get_access_token. Tests in tests/test_unit.py (siehe CHANGELOG: 20 neue Unit-Tests für HTTPS, Allowlist, alle IP-Kategorien inkl IPv6).",
+    "file": "SEC-004.txt"
+  },
+  "SEC-005": {
+    "status": "FAIL",
+    "reasoning": "_validate_url_safe() ruft socket.getaddrinfo() für die Validation auf, gibt aber dann die Original-URL (mit Hostname, nicht IP) an httpx weiter. httpx macht intern eine ZWEITE DNS-Resolution beim eigentlichen Request — klassisches TOCTOU/DNS-Rebinding-Fenster. Es gibt kein DNS-Pinning, kein Custom-Transport mit gepinnter IP, keine `Host`-Header-Manipulation für SNI. Das Risiko ist in der Praxis durch den Single-Host-Allowlist-Scope (`api.srgssr.ch`) reduziert (Angreifer müsste DNS für api.srgssr.ch kontrollieren), aber dem Pass-Pattern aus dem Check entspricht es nicht.",
+    "file": "SEC-005.txt"
+  },
+  "SEC-006": {
+    "status": "PASS",
+    "reasoning": "Default-Transport ist `stdio` (siehe src/srgssr_mcp/config.py:transport=Field(default=\"stdio\")). SSE/streamable-http nur via expliziter ENV-Var SRGSSR_MCP_TRANSPORT aktivierbar. server.py main() routiert: if stdio → stdio, sonst expliziter Transport. README.md dokumentiert \"stdio for the developer laptop, SSE for the browser\" und zeigt Claude-Desktop-Setup mit stdio prominent. Ohne ENV-Var öffnet der Server keinen TCP-Port.",
+    "file": "SEC-006.txt"
+  },
+  "SEC-007": {
+    "status": "TODO",
+    "reasoning": "Kein Dockerfile, kein k8s/, kein helm/ — der Server wird primär als PyPI/uvx-Distribution für Claude-Desktop-Stdio verteilt (siehe README.md Installation-Sektion). Container-Sandboxing-Anforderungen greifen erst bei tatsächlicher Container-Distribution. Profil sagt deployment=[local-stdio, Kubernetes (geplant)] und is_cloud_deployed=false. Damit ist SEC-007 derzeit nicht anwendbar (kein Container existiert), aber für die geplante K8s-Migration vorzubereiten.",
+    "file": "SEC-007.txt"
+  },
+  "SEC-008": {
+    "status": "PASS",
+    "reasoning": "pyproject.toml (Hatchling-Build) hat KEINE custom cmdclass, KEINE pre/postinstall-Hooks — nur reguläre [project.scripts]-Entry-Point `srgssr-mcp = \"srgssr_mcp.server:main\"`. README zeigt vollen Installationsbefehl transparent (`uvx srgssr-mcp` ODER `pip install srgssr-mcp`) plus claude_desktop_config.json-Beispiel. .github/workflows/publish.yml nutzt OIDC-Trusted-Publisher (`id-token: write` + `pypa/gh-action-pypi-publish@release/v1`) — Sigstore-Signaturen bei jedem Release.",
+    "file": "SEC-008.txt"
+  },
+  "SEC-009": {
+    "status": "TODO",
+    "reasoning": "Profil sagt transport=dual + auth_model=none (MCP-Server selbst hat keine Client-Auth). Bei stdio (Default) ist kein Mcp-Session-Id-Konzept relevant — Session ist die Process-Lifetime des stdio-Subprocesses. Bei sse/streamable-http würde FastMCP intern die Session-Verwaltung übernehmen — der Anwendungscode generiert keine Session-IDs selbst, kein User-Identitäts-Binding (auth_model: none = kein OAuth-Token, keine `sub`-Claims, keine User-zu-Session-Binding-Logik möglich). Damit greift dieser Check für das aktuelle Setup nicht im klassischen Sinn. Bei zukünftigem Multi-User-Cloud-Deployment mit Auth wäre er kritisch.",
+    "file": "SEC-009.txt"
+  },
+  "SEC-013": {
+    "status": "PARTIAL",
+    "reasoning": "Aktuell Stufe 1 (Plain Env-Var via pydantic-settings BaseSettings — SRGSSR_CONSUMER_KEY/SECRET aus Environment oder .env-File). Profil sagt data_class=Public Open Data — das ist nach dem Check-Schema akzeptabel (\"Stufe 1 ist akzeptabel für Public-Open-Data-Server\"), wenn dokumentiert. Allerdings: keine explizite docs/secret-management.md, keine TTL-Cache für Rotation (Settings ist lru_cache(maxsize=1) → Reload erst bei Process-Restart), kein boto3/azure-keyvault/google-cloud-secret-manager als Dependency. Bei zukünftigem K8s-Deployment Stufe 3 (Secret Manager) zu erwägen.",
+    "file": "SEC-013.txt"
+  },
+  "SEC-016": {
+    "status": "PASS",
+    "reasoning": "src/srgssr_mcp/config.py setzt `host: str = Field(default=\"127.0.0.1\", validation_alias=\"SRGSSR_MCP_HOST\")` — Default ist 127.0.0.1 (loopback only), nicht 0.0.0.0. Im Code gibt es KEIN hartcodiertes 0.0.0.0-Binding. Default-Transport ist stdio (siehe SEC-006), HTTP/SSE benötigen explizite ENV-Var SRGSSR_MCP_TRANSPORT. Kein Dockerfile mit ENV MCP_HOST=0.0.0.0 (kein Container existiert — siehe SEC-007).",
+    "file": "SEC-016.txt"
+  },
+  "SEC-018": {
+    "status": "PASS",
+    "reasoning": "Alle 10 Tool-Input-Models nutzen `ConfigDict(strict=True, str_strip_whitespace=True, extra=\"forbid\")` — strict-Mode + extra-forbid explizit gesetzt. String-Felder (channel_id, show_id, votation_id, geolocation_id) haben whitelist-pattern `^[A-Za-z0-9_-]+$` und min/max_length. Numerische Felder (page, page_size, year_from/to) haben ge/le-Constraints. canton hat `^[A-Za-z]{2,4}$`, query (weather) `^[\\w\\s.\\-']+$`. CHANGELOG dokumentiert \"23 neue Unit-Tests in tests/test_unit.py decken Strict-Mode-Enforcement, Extra-Field-Rejection und alle Pattern-Constraints ab.\"",
+    "file": "SEC-018.txt"
+  },
+  "SEC-019": {
+    "status": "PASS",
+    "reasoning": "Trifecta-Bewertung implizit erfüllt: (1) Private Daten = NEIN (data_class=Public Open Data, README \"Personal data: No personal data — all endpoints serve public broadcast metadata, weather observations and historical votation/election results\"). (2) Untrusted Content = NEIN (Server fetcht nur api.srgssr.ch, eine vertraute Upstream-API; siehe Egress-Allowlist). (3) Externe Kommunikation = NEIN (write_capable=false, alle Tools read-only — kein send_mail, kein POST nach extern). Trifecta-Score: 0/3. README dokumentiert explizit \"Read-only — the server only reads from SRG SSR APIs and cannot post, modify or delete any content\". Keine ADR-/Trifecta-Tabelle als eigene Sektion, aber die Safety & Limits-Tabelle deckt die Faktoren ab.",
+    "file": "SEC-019.txt"
+  },
+  "SEC-020": {
+    "status": "PASS",
+    "reasoning": "KEIN os.system, kein shell=True, kein eval(), kein exec(), kein os.popen() im src/. KEIN subprocess-Import. Server tauscht keine Shell-Befehle aus — alle Operationen sind reine HTTP-Calls via httpx + Markdown-Formatierung. Auch keine pathlib-Operationen (kein Filesystem-Tool — siehe tools_include_filesystem=false im Profil). Anti-Pattern aus Equixly-2025-Studie (43% der MCP-Server haben Command-Injection) ist hier strukturell ausgeschlossen.",
+    "file": "SEC-020.txt"
+  },
+  "SEC-021": {
+    "status": "PASS",
+    "reasoning": "Code-Layer Allow-List ist als FrozenSet im Code (`ALLOWED_HOSTS: frozenset[str] = frozenset({\"api.srgssr.ch\"})` in src/srgssr_mcp/_http.py) — nicht config-mutierbar zur Laufzeit. _validate_url_safe() prüft jeden ausgehenden URL gegen diese Allow-List. Network-Layer-Egress ist in docs/network-egress.md ausführlich dokumentiert (Kubernetes NetworkPolicy mit FQDN-Egress via Cilium, AWS Security Group, Cloudflare WARP Zero-Trust) als Plan für sse/streamable-http-Deployments. Allow-List-Update-Verfahren in README + CHANGELOG verankert. Audit-Finding audits/2026-04-30-srgssr-mcp/findings/SEC-021-egress-allowlist.md mit Test-Matrix.",
+    "file": "SEC-021.txt"
+  }
+}

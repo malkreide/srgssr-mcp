@@ -1,0 +1,38 @@
+# OBS-001 — Protocol vs. Execution Errors: korrekte Trennung
+# Status: PARTIAL
+# Reasoning: Alle 15 Tools fangen Exceptions in try/except und delegieren an _handle_error(), das einen deutschsprachigen Error-String zurückgibt — das vermeidet JSON-RPC-Crashes bei API-/Validierungs-Fehlern (Pass-Pattern für Execution Errors). Allerdings: keine standardisierten JSON-RPC-Codes (-326xx/-320xx) und kein expliziter `isError: true`-Envelope mit TextContent — der Error wird als plain str retourniert, nicht als MCP-strukturiertes isError-Result. Pydantic-ValidationErrors / Tool-Lookup-Fehler werden vom FastMCP-Framework korrekt als Protocol-Errors gehandhabt (durch FastMCP-Default).
+
+## Modus: code_review (Tool-Handler-Pattern — try/except)
+$ grep -rn "try:|except|_handle_error" src/srgssr_mcp/tools/
+audio.py: 3 Tools (87, 173, 259) — alle haben try/except → _handle_error
+epg.py: 1 Tool (88) — try/except → _handle_error
+polis.py: 3 Tools (115, 221, 326) — alle haben try/except → _handle_error
+video.py: 3 Tools (127, 214, 301) — alle haben try/except → _handle_error
+weather.py: 4 Tools (97, 191, 265, 346) — alle haben try/except → _handle_error
+resources.py: 2 Resources (63, 102) — try/except → _handle_error
+=> 13/15 Tools (87%) plus 2 Resources nutzen das Pattern; aggregation.py exportiert _safe_api_get-basiertes Pattern (siehe _http.py).
+
+## Modus: code_review (_handle_error mapping)
+$ grep -A30 "def _handle_error" src/srgssr_mcp/_http.py
+Mapped HTTP-Status auf User-Friendly-Strings (DE):
+- ValueError → "Konfigurationsfehler: ..."
+- 401 → "Fehler 401: Ungültige API-Credentials..."
+- 403 → "Fehler 403: Zugriff verweigert..."
+- 404 → "Fehler 404: Ressource nicht gefunden..."
+- 429 → "Fehler 429: Rate-Limit überschritten..."
+- TimeoutException → "Fehler: Anfrage hat das Timeout überschritten..."
+- Default → "Unerwarteter Fehler ({type}): {e}" (leakt evtl Exception-Details)
+
+## Modus: code_review (Standardisierte JSON-RPC-Fehlercodes)
+$ grep -rE "INVALID_TOOL|INVALID_PARAMS|INSUFFICIENT_SCOPE|RATE_LIMIT_EXCEEDED|READ_ONLY_MODE|EXECUTION_FAILED|-32601|-32602|-32001|-32003|-32004|-32603" src/
+(no output)
+NOTE: Keine standardisierten JSON-RPC-Codes als Konstanten. FastMCP verwaltet Protocol-Errors intern (Tool-Lookup, Schema-Mismatch). Execution-Errors werden als deutscher String zurückgegeben — kein expliziter `{"isError": true, "content": [TextContent(...)]}`-Envelope.
+
+## Modus: code_review (isError envelope)
+$ grep -rn "isError\|TextContent" src/
+(no output)
+NOTE: Keine explizite isError-Konstruktion. Tools geben bei Fehler einen str zurück (DE-Text). Das funktioniert mit FastMCP, ist aber nicht der idealtypische MCP-Pattern aus dem Check (TextContent + isError:true).
+
+## Modus: documentation_check (Test-Coverage Error-Pfade)
+$ grep -rn "raise\|except\|isError\|fehler\|Fehler" tests/test_unit.py
+NOTE: tests/test_unit.py existiert (siehe OPS-001) — enthält Mock-basierte Tests; nicht im Detail untersucht ob Protocol- vs Execution-Pfade beide gedeckt.

@@ -1,0 +1,34 @@
+# CH-004 — OGD-CH Lizenz-Compliance: CC BY 4.0 Attribution
+# Status: PARTIAL
+# Reasoning: SRG SSR Public API ist nicht klassische OGD-CC-BY-4.0-Quelle (nicht-kommerziell, schriftliche Genehmigung für kommerzielle Nutzung). Die Lizenz-Lage ist im README dokumentiert (SRG SSR Terms of Use, kommerzielle Nutzung erfordert api@srgssr.ch). Aber: Tool-Antworten enthalten kein explizites "source"/"license"/"provenance"-Feld. README hat keine "Datenquellen & Lizenzen"-Tabelle wie im OGD-CH-Pass-Pattern.
+
+## Modus: code_review (Source-Field in Tool-Returns)
+$ grep -rnE '"source"|"license"|"provenance"|"attribution"' src/
+(no hits — keine source/license/provenance Felder in Pydantic-Response-Models)
+
+$ grep -rnE 'source.*srgssr|api\.srgssr|attribution' src/ | head -10
+src/srgssr_mcp/tools/resources.py:51:    resource="srgssr_epg",
+src/srgssr_mcp/tools/resources.py:100:    log = logger.bind(resource="srgssr_polis_votation", ...
+src/srgssr_mcp/_http.py:17:BASE_URL = "https://api.srgssr.ch"
+src/srgssr_mcp/_http.py:34:ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+
+NOTE: Server hat einen einzigen Datenanbieter (SRG SSR), Provenance ist implizit über Server-Identität.
+
+## Modus: documentation_check (README-Lizenz-Sektion)
+$ grep -inE 'cc by|creative commons|opendata|ogd|license|lizenz' README.md README.de.md
+README.md:6: License: MIT
+README.md:54: Terms of use: SRG SSR APIs are available for non-commercial use. For commercial use, contact api@srgssr.ch
+README.md:457: ## License
+README.md:459: MIT License
+README.de.md:344: Lizenz & Nutzung — SRG SSR APIs sind für nicht-kommerzielle Nutzung; kommerzielle Nutzung erfordert schriftliche Genehmigung via api@srgssr.ch
+README.de.md:449: ## Lizenz - MIT-Lizenz
+
+NOTE: SRG SSR Terms of Use sind dokumentiert, aber keine "Datenquellen & Lizenzen"-Tabelle.
+SRG SSR ist kein klassischer CC-BY-4.0-OGD-Provider — Profile sagt data_class="Public Open Data"
+aber SRG-Daten sind Public-but-Restricted (non-commercial).
+
+## Modus: code_review (Lizenz-Konflikte)
+$ grep -rnE 'CC BY-SA|CC BY-NC|CC BY-ND' src/
+(no hits)
+
+NOTE: Datenquellen-Aggregation findet nicht über mehrere Lizenzen statt — Single-Provider-Pattern.

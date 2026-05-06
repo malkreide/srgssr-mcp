@@ -1,0 +1,582 @@
+{
+  "audit_meta": {
+    "server_name": "srgssr-mcp",
+    "run_id": "2026-05-05T041445-Z-srgssr-mcp",
+    "started_at": "2026-05-05T04:14:45.523191+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "0.9.x",
+    "output_dir": "/home/user/srgssr-mcp/audits/2026-05-05T041445-Z-srgssr-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/home/user/mcp-audit-skill/checks",
+    "agent_runs": [
+      {
+        "run_index": 0,
+        "started_at": "2026-05-06T05:37:57.776840+00:00",
+        "duration_seconds": 932.0,
+        "tool_uses": 126,
+        "tokens": 222556,
+        "expected_ids": [
+          "ARCH-001",
+          "ARCH-002",
+          "ARCH-003",
+          "ARCH-004",
+          "ARCH-005",
+          "ARCH-006",
+          "ARCH-007",
+          "ARCH-008",
+          "ARCH-009",
+          "ARCH-011",
+          "ARCH-012",
+          "CH-004",
+          "OBS-001",
+          "OBS-002",
+          "OBS-003",
+          "OBS-004",
+          "OPS-001",
+          "OPS-002",
+          "OPS-003",
+          "SCALE-002",
+          "SDK-001",
+          "SDK-002",
+          "SDK-003",
+          "SDK-004",
+          "SEC-004",
+          "SEC-005",
+          "SEC-006",
+          "SEC-007",
+          "SEC-008",
+          "SEC-009",
+          "SEC-013",
+          "SEC-016",
+          "SEC-018",
+          "SEC-019",
+          "SEC-020",
+          "SEC-021"
+        ],
+        "satisfied_ids": [
+          "ARCH-001",
+          "ARCH-002",
+          "ARCH-003",
+          "ARCH-004",
+          "ARCH-005",
+          "ARCH-006",
+          "ARCH-007",
+          "ARCH-008",
+          "ARCH-009",
+          "ARCH-011",
+          "ARCH-012",
+          "CH-004",
+          "OBS-001",
+          "OBS-002",
+          "OBS-003",
+          "OBS-004",
+          "OPS-001",
+          "OPS-002",
+          "OPS-003",
+          "SCALE-002",
+          "SDK-001",
+          "SDK-002",
+          "SDK-003",
+          "SDK-004",
+          "SEC-004",
+          "SEC-005",
+          "SEC-006",
+          "SEC-007",
+          "SEC-008",
+          "SEC-009",
+          "SEC-013",
+          "SEC-016",
+          "SEC-018",
+          "SEC-019",
+          "SEC-020",
+          "SEC-021"
+        ],
+        "missing_ids": [],
+        "empty_ids": [],
+        "incomplete_ids": [],
+        "status": "ok",
+        "retry_of_run_index": null
+      }
+    ],
+    "audit_date": "2026-05-06",
+    "catalog_version": "v0.5.0 (68 checks)"
+  },
+  "results": {
+    "ARCH-001": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-003": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-004": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-005": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-006": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-007": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-008": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-009": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-010": {
+      "status": "n/a",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-011": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "ARCH-012": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-001": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-002": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-003": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-004": {
+      "status": "partial",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-005": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-006": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-007": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "CH-008": {
+      "status": "n/a",
+      "category": "CH",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "HITL-001": {
+      "status": "n/a",
+      "category": "HITL",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "HITL-002": {
+      "status": "n/a",
+      "category": "HITL",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "HITL-003": {
+      "status": "n/a",
+      "category": "HITL",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "HITL-004": {
+      "status": "n/a",
+      "category": "HITL",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "HITL-005": {
+      "status": "n/a",
+      "category": "HITL",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-001": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-002": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-003": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-004": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-005": {
+      "status": "n/a",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "OBS-006": {
+      "status": "n/a",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "OPS-001": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "OPS-002": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "OPS-003": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-001": {
+      "status": "n/a",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-002": {
+      "status": "todo",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-003": {
+      "status": "n/a",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-004": {
+      "status": "n/a",
+      "category": "SCALE",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-005": {
+      "status": "n/a",
+      "category": "SCALE",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SCALE-006": {
+      "status": "n/a",
+      "category": "SCALE",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SDK-001": {
+      "status": "fail",
+      "category": "SDK",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SDK-002": {
+      "status": "partial",
+      "category": "SDK",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SDK-003": {
+      "status": "fail",
+      "category": "SDK",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SDK-004": {
+      "status": "todo",
+      "category": "SDK",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SDK-005": {
+      "status": "n/a",
+      "category": "SDK",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-001": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-002": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-003": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-004": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-005": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-006": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-007": {
+      "status": "todo",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-008": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-009": {
+      "status": "todo",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-010": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-011": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-012": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-013": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-014": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-015": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-016": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-017": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-018": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-019": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-020": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-021": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-022": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    },
+    "SEC-023": {
+      "status": "n/a",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [],
+      "gaps": []
+    }
+  }
+}

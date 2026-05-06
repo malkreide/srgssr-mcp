@@ -1,0 +1,15 @@
+# ARCH-002 — Tool-Beschreibung mit Use-Case-Tags
+# Status: PASS
+# Reasoning: Alle 15 Tools enthalten <use_case>, <important_notes> und <example> Tags. 100% Coverage > 80% Threshold.
+
+## Modus: code_review (use_case tags)
+$ grep -r "<use_case>" /home/user/srgssr-mcp/src/ | wc -l
+15
+$ grep -r "<important_notes>" /home/user/srgssr-mcp/src/ | wc -l
+15
+$ grep -r "<example>" /home/user/srgssr-mcp/src/ | wc -l
+15
+
+## Modus: code_review (description length)
+Stichprobe: descriptions enthalten mehrere Sätze, Use-Case-Tag, Important-Notes-Tag,
+Example-Tag — deutlich >100 Zeichen pro Tool.

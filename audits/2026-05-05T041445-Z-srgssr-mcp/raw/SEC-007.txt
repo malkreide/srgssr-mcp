@@ -1,0 +1,33 @@
+# SEC-007 — Container-Sandboxing: Docker / chroot mit minimalen Privilegien
+# Status: TODO
+# Reasoning: Kein Dockerfile, kein k8s/, kein helm/ — der Server wird primär als PyPI/uvx-Distribution für Claude-Desktop-Stdio verteilt (siehe README.md Installation-Sektion). Container-Sandboxing-Anforderungen greifen erst bei tatsächlicher Container-Distribution. Profil sagt deployment=[local-stdio, Kubernetes (geplant)] und is_cloud_deployed=false. Damit ist SEC-007 derzeit nicht anwendbar (kein Container existiert), aber für die geplante K8s-Migration vorzubereiten.
+
+## Modus: code_review (Dockerfile-Hardening)
+$ find . -maxdepth 2 -name "Dockerfile*"
+(no output)
+=> Kein Dockerfile.
+
+$ grep -rE '^USER |^FROM .*scratch|^FROM .*distroless' .
+(no output)
+=> Kein Container-Image-Recipe.
+
+## Modus: code_review (Kubernetes SecurityContext)
+$ grep -rE 'readOnlyRootFilesystem|allowPrivilegeEscalation|runAsNonRoot' .
+(no output)
+=> Keine K8s-Manifeste.
+
+## Modus: runtime_test
+N/A: kein Container zur Inspektion vorhanden.
+
+## NOTE
+- Distribution-Modus laut README: `pip install srgssr-mcp` ODER `uvx srgssr-mcp` für Claude Desktop. Beides UNCONTAINERIZED.
+- Bei diesem Distributionsmodell verlässt sich Sicherheit auf:
+  * stdio-Transport (kein Port → kein NeighborJack, siehe SEC-006)
+  * SSRF-Defense für Outbound (siehe SEC-004)
+  * Read-only-Tools (kein Filesystem-Schreibzugriff durch Tools, kein Subprocess-Spawning siehe SEC-020)
+- Für SEC-007-Konformität bei zukünftigem K8s-Deployment empfohlen:
+  * Multi-Stage-Dockerfile (siehe SCALE-004) mit USER 10001 (non-root)
+  * K8s SecurityContext: runAsNonRoot=true, readOnlyRootFilesystem=true, capabilities.drop=ALL
+  * seccompProfile: RuntimeDefault
+  * NetworkPolicy für Egress (siehe SEC-021)
+- docs/network-egress.md dokumentiert bereits Network-Plan; ähnliches Hardening-Doku für Container-Layer wäre wertvoll.

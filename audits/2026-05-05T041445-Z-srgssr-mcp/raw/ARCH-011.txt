@@ -1,0 +1,54 @@
+# ARCH-011 — Standardisierte Repo-Struktur (src-Layout, tests, README.de.md)
+# Status: PASS
+# Reasoning: Alle Pflicht-Files (README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml) und Verzeichnisse (src/, tests/, .github/workflows/) vorhanden. src-Layout korrekt deklariert. 15 Tools sind in tools/-Verzeichnis aufgeteilt; server.py nur 181 LOC. README.de.md hat parallele Struktur (Sektionen sind übersetzt, semantisch parallel). 4 Workflow-Files inkl. test.yml, ci.yml, publish.yml, live-test.yml.
+
+## Modus: documentation_check (Pflicht-Files vorhanden)
+$ for f in README.md README.de.md CHANGELOG.md LICENSE pyproject.toml; do test -f "$f" && echo "OK $f" || echo "MISSING $f"; done
+OK README.md
+OK README.de.md
+OK CHANGELOG.md
+OK LICENSE
+OK pyproject.toml
+
+$ for d in src tests .github/workflows; do test -d "$d" && echo "OK $d" || echo "MISSING $d"; done
+OK src
+OK tests
+OK .github/workflows
+
+$ ls .github/workflows/*.yml
+.github/workflows/ci.yml
+.github/workflows/live-test.yml
+.github/workflows/publish.yml
+.github/workflows/test.yml
+
+## Modus: code_review (src-Layout)
+$ ls src/
+srgssr_mcp
+
+$ grep -E 'packages|tool\.hatch\.build' pyproject.toml
+[tool.hatch.build.targets.wheel]
+packages = ["src/srgssr_mcp"]
+
+## Modus: documentation_check (README.de.md Sektion-Parität)
+$ diff <(grep -E '^## ' README.md | sort) <(grep -E '^## ' README.de.md | sort)
+(Sektionen sind in DE übersetzt, semantisch parallel; "Architecture" <-> "Architektur",
+ "Available Tools" <-> "Verfügbare Tools", "License" <-> "Lizenz", etc.
+ README.md hat zusätzlich "MCP Primitives" -- in DE gemerged in "MCP-Primitive".
+ Sektion-Inventar deckt sich semantisch — Pass für Übersetzungs-Parität.)
+
+## Modus: code_review (Tools-Verzeichnis-Aufteilung)
+$ ls src/srgssr_mcp/tools/*.py
+src/srgssr_mcp/tools/__init__.py
+src/srgssr_mcp/tools/aggregation.py
+src/srgssr_mcp/tools/audio.py
+src/srgssr_mcp/tools/epg.py
+src/srgssr_mcp/tools/polis.py
+src/srgssr_mcp/tools/prompts.py
+src/srgssr_mcp/tools/resources.py
+src/srgssr_mcp/tools/video.py
+src/srgssr_mcp/tools/weather.py
+
+$ wc -l src/srgssr_mcp/server.py
+181 src/srgssr_mcp/server.py
+
+NOTE: 15 Tools in 7 Tool-Files plus prompts/resources, server.py < 200 LOC. Pass.

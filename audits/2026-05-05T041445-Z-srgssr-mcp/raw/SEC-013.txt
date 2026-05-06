@@ -1,0 +1,38 @@
+# SEC-013 — API-Key-Storage: Secret Manager statt Plain-Text Env-Vars
+# Status: PARTIAL
+# Reasoning: Aktuell Stufe 1 (Plain Env-Var via pydantic-settings BaseSettings — SRGSSR_CONSUMER_KEY/SECRET aus Environment oder .env-File). Profil sagt data_class=Public Open Data — das ist nach dem Check-Schema akzeptabel ("Stufe 1 ist akzeptabel für Public-Open-Data-Server"), wenn dokumentiert. Allerdings: keine explizite docs/secret-management.md, keine TTL-Cache für Rotation (Settings ist lru_cache(maxsize=1) → Reload erst bei Process-Restart), kein boto3/azure-keyvault/google-cloud-secret-manager als Dependency. Bei zukünftigem K8s-Deployment Stufe 3 (Secret Manager) zu erwägen.
+
+## Modus: code_review (Secret-Loading-Mechanismus)
+$ grep -rnE "SRGSSR_CONSUMER_KEY|SRGSSR_CONSUMER_SECRET" src/
+src/srgssr_mcp/config.py:29: consumer_key: str = Field(default="", validation_alias="SRGSSR_CONSUMER_KEY")
+src/srgssr_mcp/config.py:30: consumer_secret: str = Field(default="", validation_alias="SRGSSR_CONSUMER_SECRET")
+=> Stufe 1: Plain Env-Var (oder .env-File via pydantic-settings).
+
+$ grep -rE 'boto3|secretsmanager|hvac|azure-keyvault|google-cloud-secret-manager' pyproject.toml
+(no output)
+=> Kein Secret-Manager-Dep. Stufe 3 nicht aktiv.
+
+## Modus: config_check (Production-Deployment / .env-Handling)
+$ grep -rE 'env_file' src/srgssr_mcp/config.py
+src/srgssr_mcp/config.py:23: env_file=".env",
+=> .env-File wird unterstützt. Empfehlung: in .gitignore prüfen (nicht in dieser Audit-Verifikation gemacht).
+
+## Modus: code_review (Rotation-Support)
+$ grep -rnE "lru_cache|cache_ttl|refresh.*secret|reload.*config" src/
+src/srgssr_mcp/config.py:51:@lru_cache(maxsize=1)
+src/srgssr_mcp/config.py:52:def get_settings() -> Settings:
+NOTE: lru_cache(maxsize=1) → Settings einmal pro Process geladen. Rotation erfordert Process-Restart. Kein TTL-Cache (z.B. cachetools.TTLCache) für Auto-Reload.
+
+## Modus: documentation_check (Stufe-1-Dokumentation)
+$ ls docs/
+network-egress.md
+$ ls docs/secret-management.md 2>/dev/null
+(no such file)
+NOTE: docs/secret-management.md fehlt. README dokumentiert Credentials in der Quickstart-Sektion, aber keine explizite Secret-Storage-Reife-Stufe.
+
+## NOTE / Empfehlung
+- Public Open Data als Datenklasse rechtfertigt Stufe 1 ABER:
+  * Bei produktiver Nutzung mit mehr als Demo-Traffic: docs/secret-management.md mit Stufe-1-Akzeptanz-Begründung erstellen
+  * TTL-Cache für Settings einführen (z.B. cachetools.TTLCache(ttl=300)) für Rotation ohne Restart
+  * Bei K8s-Deployment: External Secrets Operator + AWS Secrets Manager (eu-central-1 oder eu-zurich) ODER Workload Identity (Stufe 4)
+- Secret-Audit-Trail ist via OBS-003 strukturiertes Logging möglich (oauth_token_refresh-Event existiert).

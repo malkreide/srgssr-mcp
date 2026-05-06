@@ -1,0 +1,37 @@
+# SEC-020 — Command Injection Prevention: keine os.system, shell=True, eval
+# Status: PASS
+# Reasoning: KEIN os.system, kein shell=True, kein eval(), kein exec(), kein os.popen() im src/. KEIN subprocess-Import. Server tauscht keine Shell-Befehle aus — alle Operationen sind reine HTTP-Calls via httpx + Markdown-Formatierung. Auch keine pathlib-Operationen (kein Filesystem-Tool — siehe tools_include_filesystem=false im Profil). Anti-Pattern aus Equixly-2025-Studie (43% der MCP-Server haben Command-Injection) ist hier strukturell ausgeschlossen.
+
+## Modus: code_review (verbotene Patterns suchen)
+$ grep -rnE 'os\.system\(|shell\s*=\s*True|\beval\(|\bexec\(|os\.popen\(' src/
+(no output)
+=> PASS: keine der 5 Anti-Pattern-Klassen.
+
+$ grep -rnE 'subprocess' src/
+(no output)
+=> PASS: kein subprocess-Modul in Verwendung.
+
+$ grep -rnE 'child_process\.exec\(|\beval\(|new Function\(' src/
+(no output)
+=> PASS: auch keine Node-Pendants (n/a — Python-only).
+
+## Modus: code_review (Pfade)
+$ grep -rnE 'os\.path\.join.*\+|f".*\{.*\}.*\.\w+"' src/
+(no output for unsafe path concat with strings)
+=> PASS: keine String-Konkatenation für Filesystem-Pfade.
+
+$ grep -rnE 'pathlib|Path' src/
+(no output)
+=> N/A: kein pathlib-Import. Tools haben keinen Filesystem-Zugriff (tools_include_filesystem=false).
+
+## Modus: runtime_test
+N/A: keine Subprocess-Sites zu attackieren.
+
+## Modus: code_review (Whitelist-Validation)
+String-Inputs für IDs/queries durchlaufen Pydantic-Pattern-Validation (siehe SEC-018), die alle Shell-Metacharacters (;, &, |, $, backticks) durch das Whitelist-Pattern `^[A-Za-z0-9_-]+$` blockiert. Damit auch ohne Subprocess-Kontext Defense-in-Depth.
+
+## NOTE
+- tools_include_filesystem=false UND tools_make_external_requests=true: Server agiert ausschliesslich als HTTP-Proxy zur SRG-API.
+- Keine Library-Migration nötig (gitpython, Pillow, etc. n/a).
+- CI-Hook gegen Regression: nicht-trivial, da bestehende Suite leer wäre. Empfehlung: einfacher grep-Check als Pre-Commit/CI-Step:
+  `! grep -rnE 'os\.system|shell\s*=\s*True|\beval\(|\bexec\(' src/`

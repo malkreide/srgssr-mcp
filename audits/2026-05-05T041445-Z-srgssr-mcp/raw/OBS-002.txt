@@ -1,0 +1,21 @@
+# OBS-002 — Mask Error Details: keine Stacktraces / SQL ans LLM
+# Status: PARTIAL
+# Reasoning: Keine `traceback.format_exc()`/`sys.exc_info()`-Outputs in Tool-Returns (gut). _handle_error() liefert sanitisierte deutsche Error-Strings für 401/403/404/429/Timeout (Pass). Allerdings: Default-Fallback gibt `f"Unerwarteter Fehler ({type(e).__name__}): {e}"` zurück — kann bei unerwarteten Exceptions Internals leaken (z.B. ConnectionError mit interner Adresse). FastMCP-`mask_error_details=True` ist NICHT gesetzt — bei unhandled Exceptions im Framework greift der FastMCP-Default. structlog-Logger nutzt JSONRenderer mit `format_exc_info`-Processor — Stacktraces landen im Log (gewollt), nicht im Tool-Return.
+
+## Modus: code_review (mask_error_details aktiv)
+$ grep -rE 'mask_error_details|maskErrors|sanitize.*error' src/
+(no output)
+NOTE: FastMCP wird ohne mask_error_details=True initialisiert (siehe src/srgssr_mcp/_app.py — `mcp = FastMCP("srgssr_mcp", instructions=...)`). Bei nicht-gefangenen Exceptions greift FastMCP-Default-Verhalten.
+
+## Modus: code_review (traceback in tool returns)
+$ grep -rE 'traceback|format_exc|sys\.exc_info' src/
+(no output)
+=> Kein traceback.format_exc() / sys.exc_info() in den Tool-Returns. structlog hat zwar format_exc_info-Processor (logging_config.py), aber das geht nur ans stderr-Log, nicht ans Tool-Result. PASS für diesen Punkt.
+
+## Modus: code_review (Default-Fallback in _handle_error)
+$ grep -A2 "Unerwarteter Fehler" src/srgssr_mcp/_http.py
+src/srgssr_mcp/_http.py:    return f"Unerwarteter Fehler ({type(e).__name__}): {e}"
+NOTE: Bei unerwarteter Exception (nicht ValueError, nicht HTTPStatusError, nicht Timeout) wird `str(e)` durchgereicht — kann interne Details enthalten (z.B. bei socket.gaierror → Hostname/IP-Internals). Mitigation-Empfehlung: generischer Default mit nur Exception-Typ, kein str(e).
+
+## Modus: runtime_test (provozierter Error)
+NOTE: Nicht ausgeführt — runtime_test wäre ein laufender Server. Statisch zeigt das Code-Pattern aber: 401/403/404/429/Timeout führen zu generischen DE-Strings ohne Stacktrace, während der Default-Fall potentiell Internal-Details leakt.

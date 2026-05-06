@@ -1,0 +1,26 @@
+# ARCH-008 — Drei Primitive nutzen: Tools, Resources und Prompts
+# Status: PASS
+# Reasoning: Server nutzt alle drei Primitive: 15 @mcp.tool, 2 @mcp.resource (epg, votation), 2 @mcp.prompt (analyse_abstimmungsverhalten, tagesbriefing_kanton). README dokumentiert URI-Schemen und Prompt-Liste.
+
+## Modus: code_review (Resources + Prompts inventory)
+$ grep -rE "@mcp\.resource|@mcp\.prompt" /home/user/srgssr-mcp/src/
+src/srgssr_mcp/tools/prompts.py:@mcp.prompt(...)  (x2)
+src/srgssr_mcp/tools/resources.py:@mcp.resource(...)  (x2)
+
+## Modus: documentation_check (README primitives section)
+$ grep -B2 -A20 "primitive" /home/user/srgssr-mcp/README.md
+"This server exposes all three orthogonal MCP primitives:"
+| Tools (verbs)       | 15 tools |
+| Resources (nouns)   | EPG entries and immutable votation results |
+| Prompts (recipes)   | Voting analysis & daily briefing |
+
+URI-Schemen dokumentiert:
+- epg://{bu}/{channel_id}/{date}
+- votation://{votation_id}
+
+## Modus: code_review (rationale read-only-as-resource)
+README erläutert Cache-Friendliness und Stabilität:
+"Resources expose stable data points that are safe to cache: a published EPG for
+a given channel/date, or the final result of a closed Swiss votation."
+
+→ Pass-Criteria erfüllt: ≥2 Primitive + URI-Schema konsistent + dokumentiert.
