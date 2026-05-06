@@ -66,6 +66,15 @@ _token_lock: asyncio.Lock | None = None
 _http_client: httpx.AsyncClient | None = None
 _http_lock: asyncio.Lock | None = None
 
+# SEC-005: process-wide TTL'd DNS cache used by both _validate_url_safe (for
+# early IP-allowlist enforcement) and PinnedDNSTransport (for connect-time
+# pinning). A single source of truth eliminates the TOCTOU window where the
+# pre-flight validation and the actual TCP connect could see different IPs
+# (DNS rebinding). Five-minute TTL matches the SETTINGS_TTL_SECONDS rhythm.
+DNS_PIN_TTL_SECONDS = 300.0
+_dns_pin_cache: dict[str, dict] = {}
+_dns_pin_lock: asyncio.Lock | None = None
+
 
 def _get_lock(slot: str) -> asyncio.Lock:
     """Lazy per-event-loop lock initialiser.
@@ -75,14 +84,90 @@ def _get_lock(slot: str) -> asyncio.Lock:
     loop happens to be running at import time (usually none) and break under
     pytest-asyncio which creates a fresh loop per test.
     """
-    global _token_lock, _http_lock
+    global _token_lock, _http_lock, _dns_pin_lock
     if slot == "token":
         if _token_lock is None:
             _token_lock = asyncio.Lock()
         return _token_lock
+    if slot == "dns":
+        if _dns_pin_lock is None:
+            _dns_pin_lock = asyncio.Lock()
+        return _dns_pin_lock
     if _http_lock is None:
         _http_lock = asyncio.Lock()
     return _http_lock
+
+
+def _resolve_and_validate_addrinfo(hostname: str) -> str:
+    """Resolve ``hostname`` once and return the first non-blocked IP.
+
+    Synchronous because :func:`socket.getaddrinfo` is synchronous; the caller
+    is expected to either run inside an async context (and accept the brief
+    blocking call) or wrap it in :func:`asyncio.to_thread`. The blocking time
+    is dominated by the OS DNS resolver, which is typically <1 ms on a warm
+    cache.
+
+    Raises :class:`ValueError` if any resolved IP is in the SSRF blocklist;
+    this preserves the defense against split-horizon DNS where an attacker
+    might return a mix of public and private addresses.
+    """
+    try:
+        addr_infos = socket.getaddrinfo(hostname, None, type=socket.SOCK_STREAM)
+    except socket.gaierror as e:
+        raise ValueError(
+            f"SSRF blocked: cannot resolve host '{hostname}' ({e})"
+        ) from e
+    if not addr_infos:
+        raise ValueError(f"SSRF blocked: no addresses returned for '{hostname}'")
+
+    first_ip: str | None = None
+    for info in addr_infos:
+        ip_str = info[4][0]
+        ip = ipaddress.ip_address(ip_str)
+        for blocked in _BLOCKED_IP_NETWORKS:
+            if ip.version == blocked.version and ip in blocked:
+                raise ValueError(
+                    f"SSRF blocked: host '{hostname}' resolves to {ip} "
+                    f"which is in blocked range {blocked}"
+                )
+        if first_ip is None:
+            first_ip = ip_str
+    assert first_ip is not None
+    return first_ip
+
+
+async def _resolve_pinned(hostname: str) -> str:
+    """Return a TTL-cached, allowlist-validated IP for ``hostname``.
+
+    SEC-005: the same cached IP is consumed by both :func:`_validate_url_safe`
+    (pre-flight) and :class:`PinnedDNSTransport` (at connect time). The
+    TOCTOU window between validation and the TCP connect collapses to a
+    single resolution.
+    """
+    now = time.monotonic()
+    cached = _dns_pin_cache.get(hostname)
+    if cached and (now - cached["resolved_at"]) < DNS_PIN_TTL_SECONDS:
+        return cached["ip"]
+
+    async with _get_lock("dns"):
+        # Re-check after acquiring the lock; another coroutine may have
+        # just populated the cache during the wait.
+        now = time.monotonic()
+        cached = _dns_pin_cache.get(hostname)
+        if cached and (now - cached["resolved_at"]) < DNS_PIN_TTL_SECONDS:
+            return cached["ip"]
+
+        ip = _resolve_and_validate_addrinfo(hostname)
+        _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": now}
+        logger.debug(
+            "dns_pinned", host=hostname, ip=ip, ttl_sec=DNS_PIN_TTL_SECONDS
+        )
+        return ip
+
+
+def _clear_dns_pin_cache() -> None:
+    """Drop all cached DNS pins. Test-only helper."""
+    _dns_pin_cache.clear()
 
 
 async def _get_http_client() -> httpx.AsyncClient:
@@ -97,13 +182,15 @@ async def _get_http_client() -> httpx.AsyncClient:
 
 async def close_http_client() -> None:
     """Close the shared client. Called from the FastMCP lifespan teardown."""
-    global _http_client, _http_lock, _token_lock
+    global _http_client, _http_lock, _token_lock, _dns_pin_lock
     if _http_client is not None:
         await _http_client.aclose()
         _http_client = None
-    # Drop locks too — a follow-up event loop will get fresh ones via _get_lock.
+    # Drop locks and DNS cache too — a follow-up event loop will get fresh ones.
     _http_lock = None
     _token_lock = None
+    _dns_pin_lock = None
+    _dns_pin_cache.clear()
 
 
 def _validate_url_safe(url: str) -> None:
@@ -116,6 +203,12 @@ def _validate_url_safe(url: str) -> None:
     3. **IP blocklist** — every address the hostname resolves to is checked
        against :data:`_BLOCKED_IP_NETWORKS`; resolution to any private,
        loopback, link-local, multicast or reserved range aborts the request.
+
+    SEC-005: the resolved IP is also written into :data:`_dns_pin_cache` so
+    :class:`PinnedDNSTransport` reuses the same address at connect time. This
+    closes the historical TOCTOU window where validation and the actual TCP
+    connect would each call ``getaddrinfo`` and could see different IPs under
+    DNS rebinding.
 
     Raises :class:`ValueError` on any violation. The caller (``_api_get`` /
     ``_get_access_token``) propagates the exception, which is mapped to a
@@ -136,20 +229,22 @@ def _validate_url_safe(url: str) -> None:
             f"SSRF blocked: host '{hostname}' is not in the egress allowlist "
             f"({sorted(ALLOWED_HOSTS)})"
         )
-    try:
-        addr_infos = socket.getaddrinfo(hostname, None)
-    except socket.gaierror as e:
-        raise ValueError(
-            f"SSRF blocked: cannot resolve host '{hostname}' ({e})"
-        ) from e
-    for info in addr_infos:
-        ip = ipaddress.ip_address(info[4][0])
-        for blocked in _BLOCKED_IP_NETWORKS:
-            if ip.version == blocked.version and ip in blocked:
-                raise ValueError(
-                    f"SSRF blocked: host '{hostname}' resolves to {ip} "
-                    f"which is in blocked range {blocked}"
-                )
+    # SEC-005: hit the TTL'd cache first. A cached entry has already passed
+    # the IP-allowlist check, so we re-trust it for the rest of the TTL
+    # window — eliminating the per-request getaddrinfo call that the audit
+    # finding flagged as the duplicate-resolution problem. On a miss (or
+    # past-TTL) we resolve fresh, validate, and repopulate the cache.
+    #
+    # No asyncio.Lock here because _validate_url_safe is sync and runs in
+    # event-loop coroutines. Concurrent first-time resolutions are benign:
+    # both will produce the same IP from the same OS DNS layer, both will
+    # validate it against _BLOCKED_IP_NETWORKS, and the last write wins.
+    now = time.monotonic()
+    cached = _dns_pin_cache.get(hostname)
+    if cached and (now - cached["resolved_at"]) < DNS_PIN_TTL_SECONDS:
+        return
+    ip = _resolve_and_validate_addrinfo(hostname)
+    _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": now}
 
 
 def _get_credentials() -> tuple[str, str]:

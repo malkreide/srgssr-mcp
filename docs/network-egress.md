@@ -147,6 +147,45 @@ $ curl -v http://169.254.169.254/latest/meta-data/
 # Expected: blocked — cloud metadata IP in blocklist (also enforced at code layer).
 ```
 
+## DNS Rebinding (SEC-005)
+
+`_validate_url_safe` resolves the URL hostname and rejects any IP that
+falls in `_BLOCKED_IP_NETWORKS`. The resolved IP is cached for **5
+minutes** (`DNS_PIN_TTL_SECONDS`) so subsequent validate calls on the
+same hostname reuse the same allowlisted IP — eliminating the duplicate
+DNS resolution that previously happened on every tool call.
+
+The residual TOCTOU window is between this in-process cache and httpx's
+own DNS resolution at TCP-connect time. In practice this gap is closed
+by:
+
+- **OS-level DNS cache** (typically 30 s+) — both layers see the same IP.
+- **HTTP keepalive on the shared httpx client** (`SDK-001`) — DNS happens
+  once per connection, and connections are reused across tool calls.
+
+For deployments where this layered defence is not enough — multi-tenant
+clouds, less-trusted DNS resolvers, or scopes beyond a single
+SRG-controlled host — close the gap completely with a **network-layer
+egress proxy** that performs DNS resolution and pinning itself:
+
+```
++--------------+    HTTPS_PROXY=http://smokescreen:4750
+| srgssr-mcp   | ----------------------------------------+
++--------------+                                         |
+                                              +--------------------+
+                                              | Stripe Smokescreen |
+                                              |  - allowlist       |
+                                              |  - DNS pinning     |
+                                              |  - block private   |
+                                              +--------------------+
+                                                         |
+                                              api.srgssr.ch:443 only
+```
+
+The application sets `HTTPS_PROXY` and stays unaware of the pinning;
+Smokescreen does the single resolution + IP-block enforcement at the
+proxy level so DNS rebinding cannot bypass the in-process check.
+
 ## Maintenance
 
 - **DNS-name-based egress** is preferred over CIDR allowlists; SRG SSR's IP ranges may change without notice.
@@ -155,5 +194,7 @@ $ curl -v http://169.254.169.254/latest/meta-data/
 
 ## References
 
-- Code-layer allowlist: [`src/srgssr_mcp/_http.py`](../src/srgssr_mcp/_http.py) (`ALLOWED_HOSTS`, `_validate_url_safe`)
+- Code-layer allowlist: [`src/srgssr_mcp/_http.py`](../src/srgssr_mcp/_http.py) (`ALLOWED_HOSTS`, `_validate_url_safe`, `_resolve_pinned`)
 - Findings: [`audits/2026-04-30-srgssr-mcp/findings/SEC-004-ssrf-prevention.md`](../audits/2026-04-30-srgssr-mcp/findings/SEC-004-ssrf-prevention.md), [`audits/2026-04-30-srgssr-mcp/findings/SEC-021-egress-allowlist.md`](../audits/2026-04-30-srgssr-mcp/findings/SEC-021-egress-allowlist.md)
+- SEC-005 audit finding: [`audits/2026-05-05T041445-Z-srgssr-mcp/findings/SEC-005-dns-rebinding-toctou.md`](../audits/2026-05-05T041445-Z-srgssr-mcp/findings/SEC-005-dns-rebinding-toctou.md)
+- [Stripe Smokescreen](https://github.com/stripe/smokescreen) — egress proxy with built-in DNS pinning
