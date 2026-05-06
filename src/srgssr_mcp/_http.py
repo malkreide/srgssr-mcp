@@ -1,5 +1,6 @@
 """HTTP plumbing: OAuth2 token cache, authenticated GET helpers, error mapper."""
 
+import asyncio
 import base64
 import ipaddress
 import socket
@@ -55,6 +56,54 @@ _BLOCKED_IP_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...] 
 )
 
 _token_cache: dict = {"access_token": None, "expires_at": 0.0}
+_token_lock: asyncio.Lock | None = None
+
+# SDK-001: a single shared httpx.AsyncClient is created on first use and held
+# for the process lifetime, then closed by the FastMCP lifespan in _app.py.
+# This enables HTTP connection pooling across tool calls (no TCP/TLS handshake
+# per request), which matters for the aggregation tool that fans out via
+# asyncio.gather and for rapid-fire follow-up calls during interactive use.
+_http_client: httpx.AsyncClient | None = None
+_http_lock: asyncio.Lock | None = None
+
+
+def _get_lock(slot: str) -> asyncio.Lock:
+    """Lazy per-event-loop lock initialiser.
+
+    Locks must be created inside a running event loop because they bind to
+    the loop at construction time. Module-level locks would attach to whichever
+    loop happens to be running at import time (usually none) and break under
+    pytest-asyncio which creates a fresh loop per test.
+    """
+    global _token_lock, _http_lock
+    if slot == "token":
+        if _token_lock is None:
+            _token_lock = asyncio.Lock()
+        return _token_lock
+    if _http_lock is None:
+        _http_lock = asyncio.Lock()
+    return _http_lock
+
+
+async def _get_http_client() -> httpx.AsyncClient:
+    """Return the shared httpx.AsyncClient, creating it on first call."""
+    global _http_client
+    if _http_client is None:
+        async with _get_lock("http"):
+            if _http_client is None:
+                _http_client = httpx.AsyncClient(timeout=TIMEOUT)
+    return _http_client
+
+
+async def close_http_client() -> None:
+    """Close the shared client. Called from the FastMCP lifespan teardown."""
+    global _http_client, _http_lock, _token_lock
+    if _http_client is not None:
+        await _http_client.aclose()
+        _http_client = None
+    # Drop locks too — a follow-up event loop will get fresh ones via _get_lock.
+    _http_lock = None
+    _token_lock = None
 
 
 def _validate_url_safe(url: str) -> None:
@@ -114,12 +163,23 @@ async def _get_access_token() -> str:
         logger.debug("oauth_token_cache_hit")
         return _token_cache["access_token"]
 
-    key, secret = _get_credentials()
-    credentials = base64.b64encode(f"{key}:{secret}".encode()).decode()
+    # Serialise concurrent first-time refreshes — without this lock, a fan-out
+    # via asyncio.gather on a cold cache would hammer the OAuth endpoint
+    # with N parallel refresh requests.
+    async with _get_lock("token"):
+        # Re-check after acquiring the lock; another coroutine may have just
+        # populated the cache while we were waiting.
+        now = time.time()
+        if _token_cache["access_token"] and _token_cache["expires_at"] > now + 60:
+            logger.debug("oauth_token_cache_hit")
+            return _token_cache["access_token"]
 
-    _validate_url_safe(TOKEN_URL)
-    logger.info("oauth_token_refresh")
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        key, secret = _get_credentials()
+        credentials = base64.b64encode(f"{key}:{secret}".encode()).decode()
+
+        _validate_url_safe(TOKEN_URL)
+        logger.info("oauth_token_refresh")
+        client = await _get_http_client()
         resp = await client.post(
             TOKEN_URL,
             params={"grant_type": "client_credentials"},
@@ -132,11 +192,11 @@ async def _get_access_token() -> str:
         resp.raise_for_status()
         data = resp.json()
 
-    _token_cache["access_token"] = data["access_token"]
-    expires_in = int(data.get("expires_in", 3600))
-    _token_cache["expires_at"] = now + expires_in
-    logger.info("oauth_token_acquired", expires_in=expires_in)
-    return _token_cache["access_token"]
+        _token_cache["access_token"] = data["access_token"]
+        expires_in = int(data.get("expires_in", 3600))
+        _token_cache["expires_at"] = now + expires_in
+        logger.info("oauth_token_acquired", expires_in=expires_in)
+        return _token_cache["access_token"]
 
 
 async def _api_get(url: str, params: dict | None = None) -> dict:
@@ -148,10 +208,10 @@ async def _api_get(url: str, params: dict | None = None) -> dict:
         "Accept": "application/json",
         "User-Agent": USER_AGENT,
     }
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        resp = await client.get(url, params=params, headers=headers)
-        resp.raise_for_status()
-        return resp.json()
+    client = await _get_http_client()
+    resp = await client.get(url, params=params, headers=headers)
+    resp.raise_for_status()
+    return resp.json()
 
 
 async def _safe_api_get(

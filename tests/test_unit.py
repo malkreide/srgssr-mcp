@@ -1723,3 +1723,40 @@ def test_daily_briefing_extra_field_rejected():
             longitude=8.0,
             extra_payload="x",
         )
+
+
+# ---------------------------------------------------------------------------
+# SDK-001: shared httpx.AsyncClient
+# ---------------------------------------------------------------------------
+
+async def test_shared_http_client_is_reused_across_calls():
+    """SDK-001: _get_http_client() returns the same instance on repeat calls."""
+    from srgssr_mcp import _http
+
+    await _http.close_http_client()  # reset state for this test
+    try:
+        c1 = await _http._get_http_client()
+        c2 = await _http._get_http_client()
+        assert c1 is c2, "shared client must be reused, not recreated per call"
+        assert isinstance(c1, httpx.AsyncClient)
+        assert not c1.is_closed
+    finally:
+        await _http.close_http_client()
+
+
+async def test_close_http_client_releases_resources():
+    """SDK-001: close_http_client() closes the underlying client and clears the slot."""
+    from srgssr_mcp import _http
+
+    client = await _http._get_http_client()
+    assert _http._http_client is client
+
+    await _http.close_http_client()
+    assert _http._http_client is None
+    assert client.is_closed
+
+    # A subsequent _get_http_client() call must produce a fresh, open client.
+    fresh = await _http._get_http_client()
+    assert fresh is not client
+    assert not fresh.is_closed
+    await _http.close_http_client()

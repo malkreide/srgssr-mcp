@@ -5,11 +5,14 @@ import the same registry. Importing :mod:`srgssr_mcp.tools` (or any of its
 submodules) executes the decorator-based registrations against this object.
 """
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from enum import StrEnum
 
 from mcp.server.fastmcp import FastMCP
 from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
 
+from srgssr_mcp._http import close_http_client
 from srgssr_mcp.logging_config import configure_logging, get_logger
 
 configure_logging()
@@ -45,6 +48,21 @@ class ResponseFormat(StrEnum):
     JSON = "json"
 
 
+@asynccontextmanager
+async def lifespan(_server: FastMCP) -> AsyncIterator[None]:
+    """Manage the shared httpx.AsyncClient lifetime (SDK-001).
+
+    The HTTP client is created lazily on first use inside
+    :mod:`srgssr_mcp._http`; this lifespan only owns its **shutdown** so
+    sockets and the connection pool are cleaned up when the server stops
+    (Ctrl-C, SIGTERM, transport disconnect).
+    """
+    try:
+        yield
+    finally:
+        await close_http_client()
+
+
 mcp = FastMCP(
     "srgssr_mcp",
     instructions=(
@@ -53,6 +71,7 @@ mcp = FastMCP(
         "Swiss political data (votations and elections since 1900). "
         "All tools require valid SRGSSR_CONSUMER_KEY and SRGSSR_CONSUMER_SECRET."
     ),
+    lifespan=lifespan,
 )
 
 logger.info("server_initialized", protocol_version=PROTOCOL_VERSION)
