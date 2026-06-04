@@ -333,6 +333,8 @@ srgssr-mcp/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md          # English
 ├── CONTRIBUTING.de.md       # German
+├── SECURITY.md              # Security policy (English)
+├── SECURITY.de.md           # Security policy (German)
 ├── LICENSE                  # MIT
 ├── README.md                # This file (English)
 └── README.de.md             # German version
@@ -366,7 +368,13 @@ srgssr-mcp/
 
 ---
 
-## Security: Egress Allowlist
+## Security
+
+For the full security posture, vulnerability reporting process and accepted-risk
+register, see [SECURITY.md](SECURITY.md) (English) · [SECURITY.de.md](SECURITY.de.md) (German).
+The key egress control is summarised below.
+
+### Egress Allowlist
 
 The server implements a **code-layer egress allowlist** (SEC-021, combined with SEC-004 SSRF defense) to prevent unintended external requests. Every outbound HTTP request is validated by `_validate_url_safe()` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py) before it is issued.
 
@@ -444,7 +452,7 @@ ruff check src/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md) (English) · [CONTRIBUTING.de.md](CONTRIBUTING.de.md) (German)
 
 ---
 
