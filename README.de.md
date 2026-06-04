@@ -1,5 +1,3 @@
-[🇬🇧 English Version](README.md)
-
 > 🇨🇭 **Teil des [Swiss Public Data MCP Portfolios](https://github.com/malkreide)**
 
 # 📺 srgssr-mcp
@@ -12,6 +10,8 @@
 [![Datenquelle](https://img.shields.io/badge/Daten-SRG%20SSR%20Public%20API-red)](https://developer.srgssr.ch)
 
 > MCP-Server, der KI-Modelle mit den öffentlichen APIs der SRG SSR verbindet – Wetter, TV-/Radio-Metadaten, Programmguide und Schweizer Abstimmungen/Wahlen seit 1900 (SRF, RTS, RSI, RTR, SWI).
+
+[🇬🇧 English Version](README.md)
 
 <p align="center">
   <img src="assets/demo.svg" alt="Demo: Claude stellt eine Frage → srgssr-mcp Tool Call → fundierte Antwort aus der SRG SSR Polis API" width="760">
@@ -325,6 +325,8 @@ srgssr-mcp/
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md          # Englisch
 ├── CONTRIBUTING.de.md       # Deutsch
+├── SECURITY.md              # Sicherheitsrichtlinie (Englisch)
+├── SECURITY.de.md           # Sicherheitsrichtlinie (Deutsch)
 ├── LICENSE                  # MIT
 ├── README.md                # Englische Hauptversion
 └── README.de.md             # Diese Datei (Deutsch)
@@ -358,7 +360,13 @@ srgssr-mcp/
 
 ---
 
-## Sicherheit: Egress-Allowlist
+## Sicherheit
+
+Den vollständigen Sicherheitsstatus, den Meldeprozess für Schwachstellen sowie
+das Register akzeptierter Restrisiken findest du in [SECURITY.de.md](SECURITY.de.md) (Deutsch) · [SECURITY.md](SECURITY.md) (Englisch).
+Die zentrale Egress-Kontrolle ist unten zusammengefasst.
+
+### Egress-Allowlist
 
 Der Server implementiert eine **Code-Layer-Egress-Allowlist** (SEC-021, kombiniert mit SEC-004 SSRF-Defense), um unbeabsichtigte externe Requests zu verhindern. Jeder ausgehende HTTP-Request wird vor der Ausführung durch `_validate_url_safe()` in [`src/srgssr_mcp/_http.py`](src/srgssr_mcp/_http.py) geprüft.
 
