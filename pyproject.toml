@@ -39,7 +39,6 @@ dev = [
 srgssr-mcp = "srgssr_mcp.server:main"
 
 [project.urls]
-"mcp-name" = "io.github.malkreide/srgssr-mcp"
 Homepage = "https://github.com/malkreide/srgssr-mcp"
 Repository = "https://github.com/malkreide/srgssr-mcp"
 "Bug Tracker" = "https://github.com/malkreide/srgssr-mcp/issues"

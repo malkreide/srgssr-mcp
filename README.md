@@ -521,3 +521,5 @@ Hayal Oezkan · [github.com/malkreide](https://github.com/malkreide)
 → `srgssr-mcp` (Polis, cantonal results) + `swiss-statistics-mcp` (BFS, turnout data)
 
 - **Portfolio:** [Swiss Public Data MCP Portfolio](https://github.com/malkreide)
+
+<!-- mcp-name: io.github.malkreide/srgssr-mcp -->
