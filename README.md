@@ -368,6 +368,12 @@ srgssr-mcp/
 
 ---
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) (English) · [CONTRIBUTING.de.md](CONTRIBUTING.de.md) (German)
+
+---
+
 ## Security
 
 For the full security posture, vulnerability reporting process and accepted-risk
@@ -447,12 +453,6 @@ PYTHONPATH=src pytest tests/ -m "live"
 # Linting
 ruff check src/
 ```
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) (English) · [CONTRIBUTING.de.md](CONTRIBUTING.de.md) (German)
 
 ---
 
