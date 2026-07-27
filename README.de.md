@@ -360,6 +360,12 @@ srgssr-mcp/
 
 ---
 
+## Beitragen
+
+Siehe [CONTRIBUTING.md](CONTRIBUTING.md) (Englisch) · [CONTRIBUTING.de.md](CONTRIBUTING.de.md) (Deutsch)
+
+---
+
 ## Sicherheit
 
 Den vollständigen Sicherheitsstatus, den Meldeprozess für Schwachstellen sowie
@@ -439,12 +445,6 @@ PYTHONPATH=src pytest tests/ -m "live"
 # Linting
 ruff check src/
 ```
-
----
-
-## Beitragen
-
-Siehe [CONTRIBUTING.md](CONTRIBUTING.md) (Englisch) · [CONTRIBUTING.de.md](CONTRIBUTING.de.md) (Deutsch)
 
 ---
 
