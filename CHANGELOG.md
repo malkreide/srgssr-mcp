@@ -6,6 +6,13 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Declared `mcp` explicitly and capped it at `<2`.** This server imports
+  `mcp.server.fastmcp`, but never declared `mcp` — it arrived transitively via
+  `fastmcp`. `mcp` 2.0.0, published 2026-07-28, removed that module, and the
+  only reason installs still work today is an upper bound inside `fastmcp-slim`,
+  a package this project never names. The dependency that is actually imported
+  is now declared and bounded here rather than left to someone else's resolver.
+
 - **User-Agent no longer reports a stale version.** Three numbers had drifted
   apart: `pyproject.toml` said `1.0.3`, `__init__.__version__` said `0.1.0`, and
   the hard-coded `USER_AGENT` in `_http.py` said `1.0.0`. Every request to the
