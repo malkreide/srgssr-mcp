@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import httpx
 
+from srgssr_mcp import __version__
 from srgssr_mcp.config import get_settings
 from srgssr_mcp.logging_config import get_logger
 
@@ -24,7 +25,9 @@ EPG_BASE = f"{BASE_URL}/epg/v3"
 POLIS_BASE = f"{BASE_URL}/polis/v1"
 
 TIMEOUT = 30.0
-USER_AGENT = "srgssr-mcp/1.0.0 (github.com/malkreide/srgssr-mcp)"
+# Derived from the package version, not hand-maintained: this literal read
+# "srgssr-mcp/1.0.0" while the package was at 1.0.3.
+USER_AGENT = f"srgssr-mcp/{__version__} (github.com/malkreide/srgssr-mcp)"
 
 # SSRF defense (SEC-004 + SEC-021): every outbound HTTP request is restricted
 # to the SRG SSR API host, must use HTTPS, and the resolved IPs must not fall
