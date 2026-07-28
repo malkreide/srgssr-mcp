@@ -5,6 +5,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **User-Agent no longer reports a stale version.** Three numbers had drifted
+  apart: `pyproject.toml` said `1.0.3`, `__init__.__version__` said `0.1.0`, and
+  the hard-coded `USER_AGENT` in `_http.py` said `1.0.0`. Every request to the
+  SRG SSR APIs carried the stale value. `__version__` now comes from the
+  installed distribution metadata (`importlib.metadata`, generated from
+  `pyproject.toml`) and the User-Agent is derived from it. Guarded by
+  `tests/test_version.py`.
+
 ## [1.0.0] – 2026-05-06
 
 Erste stabile Release. Sämtliche Findings des `mcp-audit-skill v0.5.0`-Audits
