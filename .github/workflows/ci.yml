@@ -29,3 +29,6 @@ jobs:
 
       - name: Syntax check
         run: python -m py_compile src/srgssr_mcp/server.py
+
+      - name: Versions-Sync (pyproject ↔ server.json / README / src)
+        run: python scripts/check_version_sync.py
