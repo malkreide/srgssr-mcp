@@ -12,8 +12,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   1.x — ein `>=1.x`-Bereich würde einen Resolver eine Version wählen lassen,
   die beim Import scheitert. `FastMCP` → `MCPServer`.
 
-  Kein Protokollwechsel: der `initialize`-Handshake verhandelt weiterhin
-  2025-11-25. `PROTOCOL_VERSION` bleibt bei `2025-06-18` — der Guard gegen
+  Bestehende Clients sehen keinen Unterschied: der Legacy-`initialize`-Handshake
+  deckelt weiterhin bei 2025-11-25 — nachgemessen, nicht aus einem
+  Konstantennamen geschlossen; wer `2026-07-28` anfragt, bekommt `2025-11-25`
+  zurück. mcp 2.x bedient über denselben Server aber eine zweite, „moderne"
+  Ära (Per-Request-Envelope; die erste Anfrage des Clients entscheidet), die
+  2026-07-28 erreicht. Ein 2.x-Client verhandelt also die neuere Revision. Kein
+  Bruch, aber auch kein Protokoll-No-op.
+
+  `PROTOCOL_VERSION` bleibt bei `2025-06-18` — der Guard gegen
   `SUPPORTED_PROTOCOL_VERSIONS` (jetzt `mcp.types.version` statt
   `mcp.shared.version`) hält, der Wert ist also weiter gültig.
 
