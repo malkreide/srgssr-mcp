@@ -3,7 +3,7 @@
 This module replaces the previous Markdown-string-with-Markdown-footer
 convention with typed Pydantic ``BaseModel`` returns. Concrete benefits:
 
-* FastMCP exposes an ``outputSchema`` per tool in the ``tools/list``
+* MCPServer exposes an ``outputSchema`` per tool in the ``tools/list``
   manifest, so MCP clients can plan follow-up calls precisely instead of
   parsing free-form Markdown.
 * The provenance metadata (``source``, ``license``, ``provenance_url``,

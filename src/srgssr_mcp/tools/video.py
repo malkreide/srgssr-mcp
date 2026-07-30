@@ -1,6 +1,6 @@
 """Video tools: TV shows, episodes and livestreams across SRG SSR business units."""
 
-from mcp.server.fastmcp import Context
+from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, mcp

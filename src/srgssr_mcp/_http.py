@@ -62,7 +62,7 @@ _token_cache: dict = {"access_token": None, "expires_at": 0.0}
 _token_lock: asyncio.Lock | None = None
 
 # SDK-001: a single shared httpx.AsyncClient is created on first use and held
-# for the process lifetime, then closed by the FastMCP lifespan in _app.py.
+# for the process lifetime, then closed by the MCPServer lifespan in _app.py.
 # This enables HTTP connection pooling across tool calls (no TCP/TLS handshake
 # per request), which matters for the aggregation tool that fans out via
 # asyncio.gather and for rapid-fire follow-up calls during interactive use.
@@ -184,7 +184,7 @@ async def _get_http_client() -> httpx.AsyncClient:
 
 
 async def close_http_client() -> None:
-    """Close the shared client. Called from the FastMCP lifespan teardown."""
+    """Close the shared client. Called from the MCPServer lifespan teardown."""
     global _http_client, _http_lock, _token_lock, _dns_pin_lock
     if _http_client is not None:
         await _http_client.aclose()

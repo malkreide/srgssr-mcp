@@ -1330,26 +1330,68 @@ def test_settings_cache_refreshes_after_ttl(monkeypatch):
     _config.get_settings.cache_clear()
 
 
-def test_build_mcp_applies_host_port(monkeypatch):
+def test_transport_kwargs_carry_host_and_port(monkeypatch):
+    """mcp 2.x: the bind travels as run() kwargs, not via mutated settings."""
     monkeypatch.setenv("SRGSSR_MCP_HOST", "10.0.0.5")
     monkeypatch.setenv("SRGSSR_MCP_PORT", "7777")
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "streamable-http")
+    monkeypatch.delenv("SRGSSR_MCP_MOUNT_PATH", raising=False)
+    _server.get_settings.cache_clear()
+    try:
+        kwargs = _server._transport_kwargs(_server.get_settings())
+        assert kwargs == {"host": "10.0.0.5", "port": 7777}
+    finally:
+        _server.get_settings.cache_clear()
+
+
+def test_settings_no_longer_carries_host_port_mount_path():
+    """The 1.x assignment path is gone — and it fails loudly, not silently.
+
+    ``_transport_kwargs`` replaced ``mcp.settings.host = ...``. If someone
+    reintroduces the assignment, pydantic raises instead of ignoring it, so
+    this pins the reason the indirection exists.
+    """
+    for field in ("host", "port", "mount_path"):
+        assert not hasattr(mcp.settings, field)
+        with pytest.raises(ValueError, match=f'has no field "{field}"'):
+            setattr(mcp.settings, field, "x")
+
+
+def test_transport_kwargs_stdio_is_empty(monkeypatch):
+    """stdio takes no bind arguments; run() would ignore them silently."""
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "stdio")
+    monkeypatch.setenv("SRGSSR_MCP_HOST", "10.0.0.5")
+    _server.get_settings.cache_clear()
+    try:
+        assert _server._transport_kwargs(_server.get_settings()) == {}
+    finally:
+        _server.get_settings.cache_clear()
+
+
+def test_mount_path_maps_to_message_path_for_sse(monkeypatch):
+    """``mount_path`` has no 2.x counterpart; ``message_path`` is the nearest.
+
+    In 1.x it only rewrote the advertised message endpoint while the route
+    stayed at ``/messages/``. 2.x uses one value for both, so the route moves
+    too — a real semantic change, recorded here rather than papered over.
+    """
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "sse")
     monkeypatch.setenv("SRGSSR_MCP_MOUNT_PATH", "/srg")
     _server.get_settings.cache_clear()
     try:
-        s = _server.get_settings()
-        original_host = mcp.settings.host
-        original_port = mcp.settings.port
-        original_mount = mcp.settings.mount_path
-        try:
-            built = _server._build_mcp(s)
-            assert built is mcp
-            assert built.settings.host == "10.0.0.5"
-            assert built.settings.port == 7777
-            assert built.settings.mount_path == "/srg"
-        finally:
-            mcp.settings.host = original_host
-            mcp.settings.port = original_port
-            mcp.settings.mount_path = original_mount
+        assert _server._transport_kwargs(_server.get_settings())["message_path"] == "/srg/messages/"
+    finally:
+        _server.get_settings.cache_clear()
+
+
+def test_mount_path_is_not_passed_to_streamable_http(monkeypatch):
+    """1.x run() never forwarded mount_path to streamable-http — it was a
+    no-op. Passing it now would be a TypeError, so it must stay dropped."""
+    monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "streamable-http")
+    monkeypatch.setenv("SRGSSR_MCP_MOUNT_PATH", "/srg")
+    _server.get_settings.cache_clear()
+    try:
+        assert "message_path" not in _server._transport_kwargs(_server.get_settings())
     finally:
         _server.get_settings.cache_clear()
 
@@ -1359,12 +1401,14 @@ def test_main_dispatches_to_configured_transport(monkeypatch):
     monkeypatch.setenv("SRGSSR_CONSUMER_SECRET", "s")
     monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "streamable-http")
     monkeypatch.delenv("SRGSSR_MCP_MOUNT_PATH", raising=False)
+    monkeypatch.delenv("SRGSSR_MCP_HOST", raising=False)
+    monkeypatch.delenv("SRGSSR_MCP_PORT", raising=False)
     _server.get_settings.cache_clear()
 
     calls: list[dict] = []
 
-    def _fake_run(self, transport="stdio", mount_path=None):
-        calls.append({"transport": transport, "mount_path": mount_path})
+    def _fake_run(self, transport="stdio", **kwargs):
+        calls.append({"transport": transport, **kwargs})
 
     monkeypatch.setattr(type(mcp), "run", _fake_run)
     try:
@@ -1372,7 +1416,7 @@ def test_main_dispatches_to_configured_transport(monkeypatch):
     finally:
         _server.get_settings.cache_clear()
 
-    assert calls == [{"transport": "streamable-http", "mount_path": None}]
+    assert calls == [{"transport": "streamable-http", "host": "127.0.0.1", "port": 8000}]
 
 
 def test_main_defaults_to_stdio(monkeypatch):
@@ -1383,8 +1427,8 @@ def test_main_defaults_to_stdio(monkeypatch):
 
     calls: list[dict] = []
 
-    def _fake_run(self, transport="stdio", mount_path=None):
-        calls.append({"transport": transport, "mount_path": mount_path})
+    def _fake_run(self, transport="stdio", **kwargs):
+        calls.append({"transport": transport, **kwargs})
 
     monkeypatch.setattr(type(mcp), "run", _fake_run)
     try:
@@ -1392,7 +1436,7 @@ def test_main_defaults_to_stdio(monkeypatch):
     finally:
         _server.get_settings.cache_clear()
 
-    assert calls == [{"transport": "stdio", "mount_path": None}]
+    assert calls == [{"transport": "stdio"}]
 
 
 # ---------------------------------------------------------------------------
@@ -1402,7 +1446,7 @@ def test_main_defaults_to_stdio(monkeypatch):
 
 async def test_resource_templates_registered():
     templates = await mcp.list_resource_templates()
-    uris = {t.uriTemplate for t in templates}
+    uris = {t.uri_template for t in templates}
     assert "epg://{bu}/{channel_id}/{date}" in uris
     assert "votation://{votation_id}" in uris
 

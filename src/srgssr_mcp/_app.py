@@ -1,4 +1,4 @@
-"""Module-level FastMCP server instance and shared enums.
+"""Module-level MCPServer server instance and shared enums.
 
 The ``mcp`` instance lives here so that every tool/resource/prompt module can
 import the same registry. Importing :mod:`srgssr_mcp.tools` (or any of its
@@ -9,8 +9,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from enum import StrEnum
 
-from mcp.server.fastmcp import FastMCP
-from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
+from mcp.server.mcpserver import MCPServer
+from mcp.types.version import SUPPORTED_PROTOCOL_VERSIONS
 
 from srgssr_mcp._http import close_http_client
 from srgssr_mcp.logging_config import configure_logging, get_logger
@@ -49,7 +49,7 @@ class ResponseFormat(StrEnum):
 
 
 @asynccontextmanager
-async def lifespan(_server: FastMCP) -> AsyncIterator[None]:
+async def lifespan(_server: MCPServer) -> AsyncIterator[None]:
     """Manage the shared httpx.AsyncClient lifetime (SDK-001).
 
     The HTTP client is created lazily on first use inside
@@ -63,7 +63,7 @@ async def lifespan(_server: FastMCP) -> AsyncIterator[None]:
         await close_http_client()
 
 
-mcp = FastMCP(
+mcp = MCPServer(
     "srgssr_mcp",
     instructions=(
         "Provides access to SRG SSR public APIs covering Swiss weather, "

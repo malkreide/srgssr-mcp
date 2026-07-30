@@ -1,6 +1,6 @@
 """Polis tools: Swiss votations, votation results, and elections (since 1900)."""
 
-from mcp.server.fastmcp import Context
+from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import mcp
