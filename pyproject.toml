@@ -19,19 +19,18 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    # NOTE: nothing in src/ or tests/ imports `fastmcp`. It is a leftover from
-    # when this server got `mcp` transitively through it; `mcp` is declared
-    # directly below now. Dropping it would remove a whole second MCP
-    # framework from every install, but that is a separate decision with
-    # downstream effects, so it is left in place here.
-    "fastmcp>=2.0.0",
-    # Now on the 2.x API (`mcp.server.mcpserver`). The floor is hard: 2.0.0
+    # `fastmcp` was dropped: nothing in src/ or tests/ imports it. It was a
+    # leftover from when this server received `mcp` transitively through it,
+    # which stopped being true once `mcp` was declared directly below. A
+    # `test_dependencies.py` guard now fails if an import of it reappears
+    # without the declaration coming back.
+    # On the 2.x API (`mcp.server.mcpserver`). The floor is hard: 2.0.0
     # removed `mcp.server.fastmcp` with no compatibility shim, so this code
     # cannot run on 1.x — a `>=1.x` range would let a resolver pick a version
     # that fails at import. The `<3` cap stays for the reason the old `<2` one
     # existed: a major bump is a decision to take on purpose.
-    # Declared explicitly rather than inherited via fastmcp, so the real
-    # dependency and its version are this project's decision.
+    # Declared explicitly rather than inherited, so the real dependency and its
+    # version are this project's decision.
     # Existing clients see no difference: the legacy `initialize` handshake
     # still caps at 2025-11-25 (measured — a client asking for 2026-07-28 gets
     # 2025-11-25 back). mcp 2.x additionally serves a "modern" per-request
