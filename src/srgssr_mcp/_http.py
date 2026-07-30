@@ -17,12 +17,13 @@ from srgssr_mcp.logging_config import get_logger
 logger = get_logger("mcp.srgssr.http")
 
 BASE_URL = "https://api.srgssr.ch"
-TOKEN_URL = f"{BASE_URL}/oauth/v1/accesstoken"
+TOKEN_URL = "https://srgssr-prod.apigee.net/oauth/v1/accesstoken"
 WEATHER_BASE = f"{BASE_URL}/forecasts/v2.0/weather"
-VIDEO_BASE = f"{BASE_URL}/video/v3"
-AUDIO_BASE = f"{BASE_URL}/audio/v3"
+VIDEO_BASE = f"{BASE_URL}/videometadata/v2"
+AUDIO_BASE = f"{BASE_URL}/audiometadata/v2"
 EPG_BASE = f"{BASE_URL}/epg/v3"
 POLIS_BASE = f"{BASE_URL}/polis/v1"
+SUBTITLES_BASE = f"{BASE_URL}/srgssr-play-subtitles/v2"
 
 TIMEOUT = 30.0
 # Derived from the package version, not hand-maintained: this literal read
@@ -35,7 +36,7 @@ USER_AGENT = f"srgssr-mcp/{__version__} (github.com/malkreide/srgssr-mcp)"
 # range. The host allowlist is the primary control; the IP blocklist is
 # defense-in-depth against DNS rebinding, a compromised resolver, or future
 # code that constructs URLs from less-trusted input.
-ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
+ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch", "srgssr-prod.apigee.net"})
 
 _BLOCKED_IP_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...] = (
     ipaddress.ip_network("0.0.0.0/8"),       # "this network"
