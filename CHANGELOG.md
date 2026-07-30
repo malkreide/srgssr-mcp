@@ -5,6 +5,35 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Removed
+- **`fastmcp` als Abhängigkeit entfernt — nichts importierte es.** Es war ein
+  Rest aus der Zeit, in der dieser Server `mcp` transitiv darüber bezog; mit
+  der direkten `mcp`-Deklaration wurde es überflüssig und blieb trotzdem
+  stehen. Nichts schlug fehl, deshalb fiel es nicht auf.
+
+  Gemessen in frischen venvs, nur Runtime-Abhängigkeiten: **84 → 44 Pakete**,
+  also 40 weniger, und keines kommt hinzu. Was mit verschwindet, ist der Punkt:
+  `redis` und `burner-redis`, `py-key-value-aio`, `pydocket`,
+  `prometheus_client`, `keyring`/`SecretStorage`/`jeepney`, `Authlib`,
+  `joserfc`, `websockets`, `cronsim`, `jsonschema-path`. Ein Redis-Client, ein
+  Keyring-Stack und eine OAuth-Bibliothek wurden in einen read-only Server über
+  öffentliche Daten installiert, wegen einer ungenutzten Zeile.
+
+  `tests/test_dependencies.py` hält das offen in beide Richtungen: der Test
+  prüft *Gleichheit* von „deklariert" und „importiert", nicht bloss Abwesenheit.
+  Ein legitimer Wiedereinzug von `fastmcp` verlangt also die Deklaration zurück,
+  statt den Test zu löschen. Ein zweiter Test prüft den Scanner selbst gegen
+  `mcp`, damit ein kaputter Import-Scan nicht jede Gleichheit trivial erfüllt.
+  Beide Richtungen sind mutationsgetestet.
+
+  Die Dependabot-Gruppen nennen `fastmcp` nicht mehr — das Pattern wäre mit der
+  Abhängigkeit toter Code geworden.
+
+  Geprüft: 162 passed / 14 deselected (156 plus die sechs neuen Tests),
+  Coverage 96.7 % gegen das 80-%-Gate, `ruff check src/` clean, und ein Install
+  in einem frischen venv startet den Server mit allen 15 Tools. Kein
+  `yaml`-Import im Projekt, obwohl `PyYAML` mit wegfällt.
+
 ### Changed
 - **Migration auf die `mcp` 2.x Server-API.** Pin von `>=1.28.1,<2` auf
   `>=2.0.0,<3`. Die Untergrenze ist hart: 2.0.0 hat `mcp.server.fastmcp` ohne
