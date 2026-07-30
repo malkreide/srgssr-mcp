@@ -5,6 +5,8 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.0] – 2026-07-30
+
 ### Fixed
 - **API-Basispfade und EPG-Endpunkt korrigiert** (Basis: PR #46 von @aburossi).
   `/video/v3` und `/audio/v3` sind bei Apigee nicht mehr als Basepath
