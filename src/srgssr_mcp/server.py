@@ -21,12 +21,13 @@ re-exports the public surface so callers (and tests) can keep importing from
 from mcp.server.fastmcp import FastMCP
 
 from srgssr_mcp._app import PROTOCOL_VERSION, VALID_BU, BusinessUnit, ResponseFormat, mcp
-from srgssr_mcp._http import (  # noqa: F401  (re-exported for backwards-compat)
+from srgssr_mcp._http import ( # noqa: F401 (re-exported for backwards-compat)
     ALLOWED_HOSTS,
     AUDIO_BASE,
     BASE_URL,
     EPG_BASE,
     POLIS_BASE,
+    SUBTITLES_BASE,
     TIMEOUT,
     TOKEN_URL,
     USER_AGENT,
@@ -105,11 +106,12 @@ __all__ = [
     "EPG_BASE",
     "EpgProgramsInput",
     "POLIS_BASE",
-    "PROTOCOL_VERSION",
     "PolisListInput",
     "PolisResultInput",
+    "PROTOCOL_VERSION",
     "ResponseFormat",
     "Settings",
+    "SUBTITLES_BASE",
     "TIMEOUT",
     "TOKEN_URL",
     "Transport",

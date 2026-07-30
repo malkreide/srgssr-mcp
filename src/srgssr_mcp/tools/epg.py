@@ -17,6 +17,11 @@ class EpgProgramsInput(BaseModel):
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi' (EPG für RTR/SWI nicht verfügbar)",
     )
+    broadcast_type: str = Field(
+        default="tv",
+        pattern=r"^(tv|radio)$",
+        description="Sendertyp: 'tv' oder 'radio'",
+    )
     channel_id: str = Field(
         ..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"
     )
@@ -24,11 +29,12 @@ class EpgProgramsInput(BaseModel):
 
 
 def _epg_program_from_dict(d: dict) -> EpgProgram:
+    dates = d.get("dateTimes") or {}
     return EpgProgram(
         title=str(d.get("title", "Unbekannt")),
-        start_time=d.get("startTime") or d.get("date"),
-        subtitle=(d.get("subtitle") or "").strip() or None,
-        description=(d.get("description") or d.get("lead") or "").strip()[:200] or None,
+        start_time=dates.get("startTime") or d.get("startTime") or d.get("date"),
+        subtitle=(d.get("shortDescription") or "").strip() or None,
+        description=(d.get("longDescription") or d.get("description") or d.get("lead") or "").strip()[:200] or None,
     )
 
 
@@ -84,8 +90,8 @@ async def srgssr_epg_get_programs(
         )
     try:
         data = await _api_get(
-            f"{EPG_BASE}/programs",
-            params={"bu": bu, "channel": params.channel_id, "date": params.date},
+            f"{EPG_BASE}/{bu}/{params.broadcast_type}/stations/{params.channel_id}",
+            params={"date": params.date},
         )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
@@ -100,6 +106,6 @@ async def srgssr_epg_get_programs(
             ),
         )
 
-    raw_programs = data.get("programList", data.get("programs", []))
+    raw_programs = data.get("programs", data.get("programList", []))
     log.info("tool_succeeded", program_count=len(raw_programs or []))
     return _build_epg_response(raw_programs, params.channel_id, bu, params.date)
