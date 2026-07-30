@@ -10,6 +10,7 @@ input is constructed via the Pydantic models from server.py.
 """
 import asyncio
 import json  # noqa: F401  (still used by some assertions)
+import re
 
 import httpx
 import pytest
@@ -64,8 +65,8 @@ from srgssr_mcp.server import (
 )
 
 WEATHER_BASE = "https://api.srgssr.ch/forecasts/v2.0/weather"
-VIDEO_BASE = "https://api.srgssr.ch/video/v3"
-AUDIO_BASE = "https://api.srgssr.ch/audio/v3"
+VIDEO_BASE = "https://api.srgssr.ch/videometadata/v2"
+AUDIO_BASE = "https://api.srgssr.ch/audiometadata/v2"
 EPG_BASE = "https://api.srgssr.ch/epg/v3"
 POLIS_BASE = "https://api.srgssr.ch/polis/v1"
 
@@ -598,7 +599,7 @@ async def test_audio_get_livestreams_empty():
 
 @respx.mock
 async def test_epg_get_programs_happy_path():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -626,7 +627,7 @@ async def test_epg_get_programs_happy_path():
 
 @respx.mock
 async def test_epg_get_programs_handles_404():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_epg_get_programs(
@@ -970,7 +971,7 @@ async def test_polis_get_elections_empty_returns_typed_response():
 
 @respx.mock
 async def test_epg_get_programs_404_includes_recovery_hint():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_epg_get_programs(
@@ -1028,7 +1029,7 @@ async def test_daily_briefing_combines_weather_and_epg():
             },
         )
     )
-    epg_route = respx.get(f"{EPG_BASE}/programs").mock(
+    epg_route = respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -1064,7 +1065,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
     respx.get(f"{WEATHER_BASE}/24hour").mock(
         return_value=httpx.Response(200, json={"list": []})
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(200, json={"programList": []})
     )
 
@@ -1166,7 +1167,7 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
         return httpx.Response(200, json={"programList": []})
 
     respx.get(f"{WEATHER_BASE}/24hour").mock(side_effect=_trace)
-    respx.get(f"{EPG_BASE}/programs").mock(side_effect=_trace)
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(side_effect=_trace)
 
     await srgssr_daily_briefing(_briefing_input())
 
@@ -1189,7 +1190,7 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
             },
         )
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
 
@@ -1210,7 +1211,7 @@ async def test_daily_briefing_returns_typed_sub_responses():
     respx.get(f"{WEATHER_BASE}/24hour").mock(
         return_value=httpx.Response(200, json={"list": [{"dateTime": "2026-04-30T00:00"}]})
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(
             200, json={"programList": [{"startTime": "08:00", "title": "Echo der Zeit"}]}
         )
@@ -1416,7 +1417,7 @@ async def test_prompts_registered():
 
 @respx.mock
 async def test_epg_resource_returns_json_envelope():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -1453,7 +1454,7 @@ async def test_epg_resource_rejects_unsupported_business_unit():
 
 @respx.mock
 async def test_epg_resource_handles_404():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(url__regex=rf"^{re.escape(EPG_BASE)}/.*").mock(
         return_value=httpx.Response(404, text="not found")
     )
     contents = list(await mcp.read_resource("epg://srf/unknown/2026-04-30"))
