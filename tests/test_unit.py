@@ -1921,6 +1921,34 @@ def test_token_url_is_https_and_in_allowlist():
     assert parsed.hostname in _server.ALLOWED_HOSTS
 
 
+def test_allowed_hosts_is_pinned():
+    """The allowlist is pinned to an explicit set, not to whatever the URL
+    constants happen to name.
+
+    ``test_all_base_urls_are_https_and_in_allowlist`` and
+    ``test_token_url_is_https_and_in_allowlist`` only assert *membership* in
+    ``ALLOWED_HOSTS`` — widening the set makes both pass by construction, so
+    neither can notice a new egress destination. This one fails on any change,
+    which is the point: adding a host is a security decision that goes through
+    the README procedure (code + docs + test) rather than riding along with an
+    endpoint fix.
+    """
+    assert _server.ALLOWED_HOSTS == frozenset(
+        {
+            "api.srgssr.ch",  # every data endpoint
+            "srgssr-prod.apigee.net",  # OAuth2 token endpoint only
+        }
+    )
+
+
+def test_validate_url_safe_accepts_token_host(monkeypatch):
+    monkeypatch.setattr(
+        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("34.120.10.20")
+    )
+    # No exception means TOKEN_URL's host passed all three controls.
+    _server._validate_url_safe(_server.TOKEN_URL)
+
+
 def test_all_base_urls_are_https_and_in_allowlist():
     for base in (
         _server.BASE_URL,
