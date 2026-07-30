@@ -2,11 +2,11 @@
 
 This document describes the **network-layer** egress control plan for `srgssr-mcp` deployments that use the `sse` or `streamable-http` transport (as opposed to the default `stdio` transport, where the process runs in the MCP client's user context and a network-layer firewall does not apply).
 
-The **code-layer** allowlist (`ALLOWED_HOSTS = {"api.srgssr.ch"}` in `src/srgssr_mcp/_http.py`) is the primary control and is always active. This document covers the second defense-in-depth layer for production deployments.
+The **code-layer** allowlist in `src/srgssr_mcp/_http.py` is the primary control and is always active. It holds two hosts: `api.srgssr.ch` for every data endpoint, and `srgssr-prod.apigee.net` for the OAuth2 token endpoint alone (see [README → Egress Allowlist](../README.md#egress-allowlist) for why the second one is there and why it is provisional). Both must be reachable — a network-layer policy that allows only `api.srgssr.ch` breaks token acquisition and therefore every request. This document covers the second defense-in-depth layer for production deployments.
 
 ## Goal
 
-Restrict the server pod / container / VM to outbound TCP 443 traffic to `api.srgssr.ch` only. Block:
+Restrict the server pod / container / VM to outbound TCP 443 traffic to `api.srgssr.ch` and `srgssr-prod.apigee.net` only. Block:
 
 - Cloud metadata services (`169.254.169.254`, `fd00:ec2::254`, …) — already enforced at code layer, but defense-in-depth at network layer is recommended.
 - Internal services (private RFC1918 ranges, `127.0.0.0/8`).
@@ -41,8 +41,9 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # Allow HTTPS to api.srgssr.ch (resolved IP range — refresh periodically
-    # or use an egress gateway / service-mesh that supports DNS-based rules)
+    # Allow HTTPS to api.srgssr.ch + srgssr-prod.apigee.net (resolved IP
+    # ranges — refresh periodically, or use an egress gateway / service-mesh
+    # that supports DNS-based rules)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -57,7 +58,7 @@ spec:
           port: 443
 ```
 
-For DNS-name-based egress (recommended), pair this with an egress gateway like **Istio**, **Cilium**, or **Calico** that resolves `api.srgssr.ch` and dynamically programs the firewall:
+For DNS-name-based egress (recommended), pair this with an egress gateway like **Istio**, **Cilium**, or **Calico** that resolves both hostnames and dynamically programs the firewall:
 
 ```yaml
 # Cilium CiliumNetworkPolicy with FQDN matching
@@ -72,6 +73,7 @@ spec:
   egress:
     - toFQDNs:
         - matchName: api.srgssr.ch
+        - matchName: srgssr-prod.apigee.net
       toPorts:
         - ports:
             - port: "443"
@@ -106,7 +108,7 @@ resource "aws_security_group" "srgssr_mcp" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS to api.srgssr.ch (refine to specific CIDR if known)"
+    description = "HTTPS to api.srgssr.ch + srgssr-prod.apigee.net (refine to specific CIDR if known)"
   }
 
   # Egress: DNS to VPC resolver only
@@ -129,6 +131,10 @@ Action: Allow
 Selector: Domain
 Value:   api.srgssr.ch
 
+Action: Allow
+Selector: Domain
+Value:   srgssr-prod.apigee.net
+
 Action: Block
 Selector: All
 ```
@@ -137,8 +143,11 @@ Selector: All
 
 ```bash
 # From inside the pod / container / VM:
-$ curl -v https://api.srgssr.ch/oauth/v1/accesstoken
+$ curl -v https://srgssr-prod.apigee.net/oauth/v1/accesstoken
 # Expected: TCP connect succeeds, TLS handshake succeeds.
+
+$ curl -v https://api.srgssr.ch/videometadata/v2/
+# Expected: TCP connect succeeds, TLS handshake succeeds (401 without a token).
 
 $ curl -v https://example.com
 # Expected: TCP connect blocked / times out — egress policy denies.
@@ -179,7 +188,7 @@ egress proxy** that performs DNS resolution and pinning itself:
                                               |  - block private   |
                                               +--------------------+
                                                          |
-                                              api.srgssr.ch:443 only
+                              api.srgssr.ch:443, srgssr-prod.apigee.net:443
 ```
 
 The application sets `HTTPS_PROXY` and stays unaware of the pinning;
@@ -189,6 +198,7 @@ proxy level so DNS rebinding cannot bypass the in-process check.
 ## Maintenance
 
 - **DNS-name-based egress** is preferred over CIDR allowlists; SRG SSR's IP ranges may change without notice.
+- **Keep the network layer in sync with `ALLOWED_HOSTS`.** The code-layer allowlist is the source of truth; a host added there without the matching firewall rule fails at connect time instead of being cleanly rejected.
 - Re-run verification after **any** infrastructure change (Terraform apply, Helm upgrade, security-group edit).
 - Audit logs from the egress firewall should be ingested into the same SIEM as the application logs (`structlog` JSON on stderr — see [README → Logging](../README.md#logging)).
 

@@ -387,7 +387,14 @@ The server implements a **code-layer egress allowlist** (SEC-021, combined with 
 **Three controls per request:**
 
 1. **HTTPS-only** — `http://`, `file://`, `ftp://` and other non-HTTPS schemes are rejected.
-2. **Host allowlist** — the URL hostname must equal one of `ALLOWED_HOSTS = {"api.srgssr.ch"}` (exact match — subdomain tricks like `api.srgssr.ch.attacker.example` are blocked).
+2. **Host allowlist** — the URL hostname must equal one of the entries in `ALLOWED_HOSTS` (exact match — subdomain tricks like `api.srgssr.ch.attacker.example` are blocked):
+
+   | Host | Reached by |
+   |---|---|
+   | `api.srgssr.ch` | every data endpoint — weather, video, audio, EPG, Polis |
+   | `srgssr-prod.apigee.net` | the OAuth2 token endpoint (`TOKEN_URL`) only |
+
+   `srgssr-prod.apigee.net` is the Apigee runtime host behind the same gateway and is where the Basic-auth client credentials are sent. It is Google-operated multi-tenant infrastructure rather than an SRG SSR domain, so it widens the trust boundary beyond `api.srgssr.ch`. It was added in [#46](https://github.com/malkreide/srgssr-mcp/pull/46) to resolve `Invalid access token` responses; that diagnosis has not been independently reproduced — `https://api.srgssr.ch/oauth/v1/accesstoken` also answers, and the same fault string is what any unauthenticated request to a v2 basepath returns. Treat the second entry as provisional until someone confirms with real credentials which issuer the data APIs accept.
 3. **IP blocklist** — every resolved IP for the hostname is checked against private, loopback, link-local (incl. `169.254.169.254` cloud-metadata), CGNAT, multicast and reserved ranges (IPv4 + IPv6). Any single match aborts the request — defense-in-depth against DNS rebinding.
 
 Violations surface as `ValueError` and are mapped to a localized `Konfigurationsfehler: …` message by `_handle_error`, so internal network details never leak to the MCP client.

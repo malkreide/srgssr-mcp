@@ -37,13 +37,14 @@ ausgeliefert wird.
 ## Statusübersicht
 
 Dies ist ein **Nur-Lese-**, **PII-freier** MCP-Server. Alle Tools stellen
-ausschliesslich `GET`-artige Anfragen (über OAuth2 Client Credentials) an einen
-einzigen festen Upstream-Host — die **SRG SSR Public API V2**
-(`api.srgssr.ch`). Bereits umgesetzte Härtung:
+ausschliesslich `GET`-artige Anfragen (über OAuth2 Client Credentials) an die
+**SRG SSR Public API V2** (`api.srgssr.ch`); das OAuth2-Token selbst wird vom
+Apigee-Runtime-Host `srgssr-prod.apigee.net` bezogen. Bereits umgesetzte
+Härtung:
 
 | Bereich | Kontrolle |
 |---|---|
-| Egress | HTTPS-only Code-Layer-Allowlist auf `api.srgssr.ch`; keine benutzergesteuerten URLs (SEC-004 / SEC-021) — siehe [Egress-Allowlist](README.de.md#egress-allowlist) |
+| Egress | HTTPS-only Code-Layer-Allowlist auf `api.srgssr.ch` (Daten) und `srgssr-prod.apigee.net` (nur Token-Endpunkt); keine benutzergesteuerten URLs (SEC-004 / SEC-021) — siehe [Egress-Allowlist](README.de.md#egress-allowlist), wo auch steht, warum der zweite Host provisorisch ist |
 | SSRF / DNS-Rebinding | Jede aufgelöste IP wird gegen private, Loopback-, Link-Local- (inkl. `169.254.169.254`), CGNAT-, Multicast- und Reserved-Ranges geprüft; eine einzige, TTL-gecachte DNS-Auflösung schliesst das TOCTOU-Fenster (SEC-005) |
 | TLS | Zertifikatsprüfung standardmässig aktiv (httpx-Default); nie deaktiviert |
 | Binding | Standardmässig stdio-Transport; der optionale HTTP/SSE-Transport bindet über den SDK-Default und wird per expliziter Env-Var (`SRGSSR_MCP_HOST`/`PORT`) gesteuert |

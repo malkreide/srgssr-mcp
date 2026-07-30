@@ -5,6 +5,35 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Security
+- **Egress-Allowlist-Doku an den Code-Stand angeglichen.** Mit dem
+  Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` in `ALLOWED_HOSTS` — der
+  Host, an den seither die Basic-Auth-Client-Credentials für das OAuth2-Token
+  gehen. Die Sicherheitsdokumentation nannte weiterhin an fünf Stellen
+  `{"api.srgssr.ch"}` als vollständige Allowlist: beide READMEs,
+  `docs/network-egress.md`, `SECURITY.md` und `SECURITY.de.md`. Sie beschrieben
+  damit eine engere Vertrauensgrenze, als der Code tatsächlich zieht.
+
+  Nicht nur kosmetisch: `docs/network-egress.md` liefert
+  Kubernetes-NetworkPolicy-, Cilium-FQDN-, AWS-Security-Group- und
+  Cloudflare-Zero-Trust-Beispiele. Wer sie so übernommen hätte, hätte den
+  Token-Endpunkt ausgesperrt und damit jeden Request — die Beispiele führen
+  jetzt beide Hosts, und der Verifikations-`curl` prüft beide.
+
+  Die Doku benennt den Host als das, was er ist: multi-tenant-Infrastruktur
+  unter Google-Betrieb, keine SRG-SSR-Domain. Der Eintrag ist als provisorisch
+  markiert, weil die Begründung aus #46 nicht unabhängig reproduziert ist —
+  `https://api.srgssr.ch/oauth/v1/accesstoken` antwortet ebenfalls, und
+  `"Invalid access token"` ist die Standardantwort auf jeden
+  unauthentifizierten Request an einen v2-Basepath, also kein Beleg für einen
+  Issuer-Mismatch.
+
+  `test_allowed_hosts_is_pinned` pinnt die Menge jetzt explizit. Die
+  bestehenden Wächter-Tests prüfen nur *Mitgliedschaft* in `ALLOWED_HOSTS` und
+  werden durch jede Erweiterung per Konstruktion grün — sie konnten den neuen
+  Egress-Zielhost nicht bemerken. Dazu ein positiver Pfad-Test für den
+  Token-Host, wie ihn die README-Prozedur für neue Domains verlangt.
+
 ## [1.1.0] – 2026-07-30
 
 ### Fixed
