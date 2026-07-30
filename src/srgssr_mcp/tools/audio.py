@@ -5,7 +5,7 @@ counterparts (:class:`VideoShowsInput`, :class:`VideoLivestreamsInput`); only
 the upstream URL differs.
 """
 
-from mcp.server.fastmcp import Context
+from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import BusinessUnit, mcp

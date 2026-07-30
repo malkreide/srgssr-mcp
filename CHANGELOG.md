@@ -5,6 +5,45 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Migration auf die `mcp` 2.x Server-API.** Pin von `>=1.28.1,<2` auf
+  `>=2.0.0,<3`. Die Untergrenze ist hart: 2.0.0 hat `mcp.server.fastmcp` ohne
+  Kompatibilitätsschicht entfernt, dieser Code läuft also gar nicht mehr auf
+  1.x — ein `>=1.x`-Bereich würde einen Resolver eine Version wählen lassen,
+  die beim Import scheitert. `FastMCP` → `MCPServer`.
+
+  Bestehende Clients sehen keinen Unterschied: der Legacy-`initialize`-Handshake
+  deckelt weiterhin bei 2025-11-25 — nachgemessen, nicht aus einem
+  Konstantennamen geschlossen; wer `2026-07-28` anfragt, bekommt `2025-11-25`
+  zurück. mcp 2.x bedient über denselben Server aber eine zweite, „moderne"
+  Ära (Per-Request-Envelope; die erste Anfrage des Clients entscheidet), die
+  2026-07-28 erreicht. Ein 2.x-Client verhandelt also die neuere Revision. Kein
+  Bruch, aber auch kein Protokoll-No-op.
+
+  `PROTOCOL_VERSION` bleibt bei `2025-06-18` — der Guard gegen
+  `SUPPORTED_PROTOCOL_VERSIONS` (jetzt `mcp.types.version` statt
+  `mcp.shared.version`) hält, der Wert ist also weiter gültig.
+
+- **`_build_mcp()` → `_transport_kwargs()`.** `MCPServer.settings` trägt
+  `host`/`port`/`mount_path` nicht mehr; sie sind `run()`-Argumente. Die alte
+  Zuweisung ist kein stiller No-op, sondern wirft `ValueError` — ein Test hält
+  beides fest, damit der Grund für die Indirektion nicht verloren geht.
+
+  `mount_path` hat in 2.x keine Entsprechung. In 1.x schrieb es nur den
+  *angekündigten* Message-Endpoint um, während die Route unpräfixiert blieb —
+  korrekt allein dann, wenn eine äussere ASGI-App den Server unter diesem
+  Präfix einhängt. 2.x nutzt einen Wert für beides, also bildet
+  `SRGSSR_MCP_MOUNT_PATH` auf `message_path` ab, wodurch die Route mitwandert.
+  Für `streamable-http` wurde die Einstellung bereits in 1.x ignoriert
+  (`run()` gab sie nie an `run_streamable_http_async` weiter); sie bleibt
+  ignoriert, denn ein Durchreichen wäre jetzt ein `TypeError` statt eines
+  stillen No-ops.
+
+  Geprüft: 156 passed / 14 deselected gegen die 1.x-Baseline von 152 — die
+  Differenz sind genau die fünf neuen Tests minus dem einen ersetzten.
+  `ruff check src/`, Coverage-Gate (96.7 % gegen 80 %) und ein Install in
+  einem frischen venv sind grün.
+
 ### Fixed
 - **Declared `mcp` explicitly and capped it at `<2`.** This server imports
   `mcp.server.fastmcp`, but never declared `mcp` — it arrived transitively via

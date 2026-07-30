@@ -18,8 +18,6 @@ re-exports the public surface so callers (and tests) can keep importing from
 ``srgssr_mcp.server``.
 """
 
-from mcp.server.fastmcp import FastMCP
-
 from srgssr_mcp._app import PROTOCOL_VERSION, VALID_BU, BusinessUnit, ResponseFormat, mcp
 from srgssr_mcp._http import (  # noqa: F401  (re-exported for backwards-compat)
     ALLOWED_HOSTS,
@@ -147,29 +145,36 @@ __all__ = [
 ]
 
 
-def _build_mcp(settings: Settings) -> FastMCP:
-    """Apply transport-relevant settings to the module-level :data:`mcp`.
+def _transport_kwargs(settings: Settings) -> dict[str, object]:
+    """Build the per-transport ``run()`` kwargs from :class:`Settings`.
 
-    Tools are registered against the module-level ``mcp`` instance at import
-    time, so we mutate its host/port/mount_path here rather than constructing
-    a fresh server. This keeps the lifespan setup identical across stdio and
-    HTTP-style transports.
+    mcp 2.x removed host/port/mount_path from ``MCPServer.settings``; they are
+    ``run()`` arguments now, so there is nothing left to mutate on the
+    module-level :data:`mcp` (tools are still registered against it at import
+    time). Assigning them would raise ``ValueError`` rather than be ignored.
+
+    ``mount_path`` has no 2.x counterpart. In 1.x it only rewrote the message
+    endpoint *advertised* to the client while the routes stayed unprefixed —
+    correct only when an outer ASGI app mounted the server under that prefix.
+    2.x uses one value for both, so ``SRGSSR_MCP_MOUNT_PATH`` maps to
+    ``message_path``, which moves the route as well. For ``streamable-http``
+    the setting was already ignored in 1.x (``run()`` never forwarded it to
+    ``run_streamable_http_async``), so it stays ignored here — passing it would
+    now be a ``TypeError`` instead of a silent no-op.
     """
-    mcp.settings.host = settings.host
-    mcp.settings.port = settings.port
-    if settings.mount_path:
-        mcp.settings.mount_path = settings.mount_path
-    return mcp
+    if settings.transport == "stdio":
+        return {}
+    kwargs: dict[str, object] = {"host": settings.host, "port": settings.port}
+    if settings.transport == "sse" and settings.mount_path:
+        prefix = settings.mount_path.rstrip("/")
+        kwargs["message_path"] = f"{prefix}/messages/"
+    return kwargs
 
 
 def main() -> None:
     """Entry point for uvx / pip install. Transport selected via settings."""
     settings = get_settings()
-    server = _build_mcp(settings)
-    if settings.transport == "stdio":
-        server.run(transport="stdio")
-    else:
-        server.run(transport=settings.transport, mount_path=settings.mount_path)
+    mcp.run(transport=settings.transport, **_transport_kwargs(settings))
 
 
 if __name__ == "__main__":

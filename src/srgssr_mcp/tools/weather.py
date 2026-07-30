@@ -1,6 +1,6 @@
 """SRF Meteo tools: location search, current weather, 24h and 7-day forecasts."""
 
-from mcp.server.fastmcp import Context
+from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
 
 from srgssr_mcp._app import mcp
