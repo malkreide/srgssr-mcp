@@ -167,7 +167,7 @@ Tools cover parametrized searches (year ranges, free-text, paginated listings) w
 
 | URI template | Description |
 |---|---|
-| `epg://{bu}/{channel_id}/{date}` | Daily TV/radio program guide for SRF, RTS, RSI (e.g. `epg://srf/srf1/2026-04-30`) |
+| `epg://{bu}/{channel_id}/{date}` | Daily TV/radio program guide for SRF, RTS, RSI (e.g. `epg://srf/srf-1/2026-04-30`) |
 | `votation://{votation_id}` | Detailed result of a closed Swiss popular vote (e.g. `votation://v1`) |
 
 ### Prompts

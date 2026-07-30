@@ -13,10 +13,14 @@ tools produce, so consumers can use a single parser for both surfaces.
 """
 
 from srgssr_mcp._app import mcp
-from srgssr_mcp._http import EPG_BASE, POLIS_BASE, _api_get, _build_error_response
+from srgssr_mcp._http import POLIS_BASE, _api_get, _build_error_response
 from srgssr_mcp._models import VotationResultResponse
 from srgssr_mcp.logging_config import get_logger
-from srgssr_mcp.tools.epg import _build_epg_response
+from srgssr_mcp.tools.epg import (
+    _build_epg_response,
+    _epg_station_url,
+    _extract_raw_programs,
+)
 
 logger = get_logger("mcp.srgssr.resources")
 
@@ -35,10 +39,12 @@ def _normalize_bu(bu: str) -> str:
     name="srgssr_epg",
     title="SRG SSR EPG – Programmvorschau",
     description=(
-        "Tagesprogramm (Electronic Program Guide) eines SRG SSR TV- oder "
-        "Radiosenders als JSON-Envelope. Stabile Daten pro (bu, channel_id, "
-        "date) — cache-freundlich. Verfügbar für SRF, RTS und RSI. "
-        "Beispiel-URI: epg://srf/srf1/2026-04-30"
+        "Tagesprogramm (Electronic Program Guide) eines SRG SSR TV-Senders als "
+        "JSON-Envelope. Stabile Daten pro (bu, channel_id, date) — "
+        "cache-freundlich. Verfügbar für SRF, RTS und RSI. "
+        "Beispiel-URI: epg://srf/srf-1/2026-04-30\n\n"
+        "Nur TV: die URI-Vorlage hat kein Feld für den Sendertyp. Für Radio das "
+        "Tool srgssr_epg_get_programs mit broadcast_type='radio' verwenden."
     ),
     mime_type="application/json",
 )
@@ -68,8 +74,8 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
         ).model_dump_json(indent=2)
     try:
         data = await _api_get(
-            f"{EPG_BASE}/programs",
-            params={"bu": bu_norm, "channel": channel_id, "date": date},
+            _epg_station_url(bu_norm, "tv", channel_id),
+            params={"date": date},
         )
     except Exception as e:
         log.error("resource_failed", error_type=type(e).__name__, error=str(e))
@@ -82,8 +88,8 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
             ),
         ).model_dump_json(indent=2)
 
-    raw_programs = data.get("programList", data.get("programs", []))
-    log.info("resource_succeeded", program_count=len(raw_programs or []))
+    raw_programs = _extract_raw_programs(data)
+    log.info("resource_succeeded", program_count=len(raw_programs))
     response = _build_epg_response(raw_programs, channel_id, bu_norm, date)
     return response.model_dump_json(indent=2)
 

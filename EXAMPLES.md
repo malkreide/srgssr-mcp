@@ -28,7 +28,7 @@ Elternräte, interessierte Erziehungsberechtigte
 
 **Altersgerechtes TV-Programm finden**
 «Was läuft heute Nachmittag auf dem Fernsehsender SRF 1? Gibt es familienfreundliche Sendungen?»
-→ `srgssr_epg_get_programs(business_unit="srf", channel_id="srf1", date="2024-05-15")`
+→ `srgssr_epg_get_programs(business_unit="srf", channel_id="srf-1", date="2024-05-15")`
 **Warum nützlich:** Bietet Eltern eine rasche Übersicht des tagesaktuellen Programms, um gezielt passende und werbefreie Inhalte für ihre Kinder auszuwählen.
 
 ### 🗳️ Bevölkerung & öffentliches Interesse
@@ -60,7 +60,7 @@ MCP-Enthusiast:innen, Forscher:innen, Prompt Engineers, öffentliche Verwaltung
 «Lade die Liste aller Live-Livestreams von SRF und RTS herunter und frage dann das tagesaktuelle EPG-Programm für die beiden Hauptsender ab, um ein kompaktes Markdown-Dashboard zu generieren.»
 → `srgssr_video_get_livestreams(business_unit="srf")`
 → `srgssr_video_get_livestreams(business_unit="rts")`
-→ `srgssr_epg_get_programs(business_unit="srf", channel_id="srf1", date="2024-05-15")`
+→ `srgssr_epg_get_programs(business_unit="srf", channel_id="srf-1", date="2024-05-15")`
 → `srgssr_epg_get_programs(business_unit="rts", channel_id="rts1", date="2024-05-15")`
 **Warum nützlich:** Zeigt Entwicklerinnen und Entwicklern, wie sie mit wenigen API-Aufrufen cross-mediale und mehrsprachige Programmübersichten für eigene Dashboards oder Smarthome-Displays aggregieren können.
 

@@ -5,6 +5,40 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **API-Basispfade und EPG-Endpunkt korrigiert** (Basis: PR #46 von @aburossi).
+  `/video/v3` und `/audio/v3` sind bei Apigee nicht mehr als Basepath
+  registriert — sie antworten mit **302 auf `developer.srgssr.ch`**, exakt wie
+  ein frei erfundener Pfad. Weil 302 kein 4xx ist, greift `raise_for_status()`
+  nicht: `resp.json()` lief auf HTML und der User sah nur «Unerwarteter
+  Fehler». Neu `/videometadata/v2` und `/audiometadata/v2`.
+
+  Das EPG adressiert einen Tag über `/{bu}/{tv|radio}/stations/{station}` —
+  Unternehmenseinheit und Sendertyp sind Pfadsegmente, nicht Query-Parameter.
+  Dafür kommt `broadcast_type` (`tv`/`radio`, Default `tv`) als neues Feld an
+  `srgssr_epg_get_programs`. Die Antwort heisst `programs` (nicht
+  `programList`) und trägt die Zeit in `dateTimes.startTime`, den Text in
+  `shortDescription`/`longDescription`; die alten Feldnamen bleiben als
+  Fallback erhalten.
+
+  Die `epg://{bu}/{channel_id}/{date}`-Resource hing am selben alten Pfad und
+  wird mitgezogen. URL-Bau und Programm-Extraktion liegen jetzt in
+  `_epg_station_url()` / `_extract_raw_programs()` in `tools/epg.py`, die sich
+  Tool und Resource teilen — die beiden Oberflächen können nicht mehr auf
+  verschiedene Endpunkte auseinanderlaufen. Die Resource-URI hat kein Feld für
+  den Sendertyp und ist damit TV-only; für Radio das Tool verwenden. Das steht
+  jetzt auch in der Resource-Beschreibung.
+
+  Sender-IDs folgen der Stations-Schreibweise (`srf-1` statt `srf1`);
+  Tool-Beispiele, Prompt-Default, READMEs, `EXAMPLES.md` und der Live-Test sind
+  nachgezogen.
+
+  Die EPG-Mocks in `tests/test_unit.py` matchen exakte URLs statt eines
+  Präfix-Patterns — ein Mock, der jeden Pfad unter `EPG_BASE` akzeptiert, wäre
+  über den nicht migrierten Resource-Aufruf grün durchgelaufen. Drei neue
+  Tests decken die Station-Response-Form, den `radio`-Pfadsegment-Fall und den
+  Endpunkt der Resource ab.
+
 ### Removed
 - **`fastmcp` als Abhängigkeit entfernt — nichts importierte es.** Es war ein
   Rest aus der Zeit, in der dieser Server `mcp` transitiv darüber bezog; mit

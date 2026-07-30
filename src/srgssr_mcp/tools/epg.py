@@ -28,6 +28,26 @@ class EpgProgramsInput(BaseModel):
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
+def _epg_station_url(bu: str, broadcast_type: str, channel_id: str) -> str:
+    """Build the EPG station endpoint URL.
+
+    The API keys a day's schedule off ``/{bu}/{tv|radio}/stations/{station}`` —
+    business unit and broadcast type are path segments, not query parameters.
+    Shared with the ``epg://`` resource in :mod:`srgssr_mcp.tools.resources` so
+    the two surfaces cannot drift onto different endpoints.
+    """
+    return f"{EPG_BASE}/{bu}/{broadcast_type}/stations/{channel_id}"
+
+
+def _extract_raw_programs(data: dict) -> list:
+    """Pull the programme list out of an EPG payload.
+
+    ``programs`` is what the station endpoint returns; ``programList`` is kept
+    as a fallback so an older payload shape still parses.
+    """
+    return data.get("programs", data.get("programList", [])) or []
+
+
 def _epg_program_from_dict(d: dict) -> EpgProgram:
     dates = d.get("dateTimes") or {}
     return EpgProgram(
@@ -59,7 +79,7 @@ def _build_epg_response(
         "<use_case>TV-/Radio-Programmvorschauen, redaktionelle Programm-Tipps.</use_case>\n\n"
         "<important_notes>Verfügbar nur für SRF, RTS und RSI — nicht für RTR "
         "oder SWI.</important_notes>\n\n"
-        "<example>business_unit='srf', channel_id='srf1', date='2026-04-30'</example>"
+        "<example>business_unit='srf', channel_id='srf-1', date='2026-04-30'</example>"
     ),
     annotations={
         "title": "SRG SSR EPG – Programmvorschau",
@@ -90,7 +110,7 @@ async def srgssr_epg_get_programs(
         )
     try:
         data = await _api_get(
-            f"{EPG_BASE}/{bu}/{params.broadcast_type}/stations/{params.channel_id}",
+            _epg_station_url(bu, params.broadcast_type, params.channel_id),
             params={"date": params.date},
         )
     except Exception as e:
@@ -106,6 +126,6 @@ async def srgssr_epg_get_programs(
             ),
         )
 
-    raw_programs = data.get("programs", data.get("programList", []))
-    log.info("tool_succeeded", program_count=len(raw_programs or []))
+    raw_programs = _extract_raw_programs(data)
+    log.info("tool_succeeded", program_count=len(raw_programs))
     return _build_epg_response(raw_programs, params.channel_id, bu, params.date)

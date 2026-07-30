@@ -184,7 +184,7 @@ async def test_live_epg_get_programs(live_credentials):
     result = await srgssr_epg_get_programs(
         EpgProgramsInput(
             business_unit=BusinessUnit.SRF,
-            channel_id="srf1",
+            channel_id="srf-1",
             date=yesterday,
         ),
     )
