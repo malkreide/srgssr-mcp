@@ -60,7 +60,7 @@ def analyse_abstimmungsverhalten_prompt(
 )
 def tagesbriefing_kanton_prompt(
     location: str,
-    channel_id: str = "srf1",
+    channel_id: str = "srf-1",
     business_unit: str = "srf",
     date: str | None = None,
 ) -> str:
@@ -68,7 +68,8 @@ def tagesbriefing_kanton_prompt(
 
     Args:
         location: Schweizer Ort oder PLZ (z.B. 'Zürich', '8001', 'Lausanne').
-        channel_id: TV-/Radio-Kanal-ID (z.B. 'srf1', 'rts1', 'rsi-la1').
+        channel_id: Sender-ID des EPG (z.B. 'srf-1'); gültige IDs liefern
+            srgssr_video_get_livestreams / srgssr_audio_get_livestreams.
         business_unit: 'srf', 'rts' oder 'rsi'.
         date: ISO-Datum YYYY-MM-DD; leer = heute.
     """

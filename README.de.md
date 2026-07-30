@@ -159,7 +159,7 @@ Tools decken parametrisierte Abfragen ab (Jahres-Ranges, Freitext, Paginierung),
 
 | URI-Template | Beschreibung |
 |---|---|
-| `epg://{bu}/{channel_id}/{date}` | Tagesprogramm eines TV- oder Radiosenders (SRF, RTS, RSI) — z.B. `epg://srf/srf1/2026-04-30` |
+| `epg://{bu}/{channel_id}/{date}` | Tagesprogramm eines TV- oder Radiosenders (SRF, RTS, RSI) — z.B. `epg://srf/srf-1/2026-04-30` |
 | `votation://{votation_id}` | Detailresultat einer abgeschlossenen Schweizer Volksabstimmung — z.B. `votation://v1` |
 
 ### Prompts

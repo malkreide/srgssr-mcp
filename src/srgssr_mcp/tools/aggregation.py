@@ -59,7 +59,7 @@ class DailyBriefingInput(BaseModel):
         "der beiden Quellen wird die andere Sektion trotzdem geliefert "
         "(Graceful Degradation) — das Feld enthält dann ein "
         "ToolErrorResponse.</important_notes>\n\n"
-        "<example>business_unit='srf', channel_id='srf1', date='2026-04-30', "
+        "<example>business_unit='srf', channel_id='srf-1', date='2026-04-30', "
         "latitude=47.3769, longitude=8.5417</example>"
     ),
     annotations={

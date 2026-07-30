@@ -64,10 +64,20 @@ from srgssr_mcp.server import (
 )
 
 WEATHER_BASE = "https://api.srgssr.ch/forecasts/v2.0/weather"
-VIDEO_BASE = "https://api.srgssr.ch/video/v3"
-AUDIO_BASE = "https://api.srgssr.ch/audio/v3"
+VIDEO_BASE = "https://api.srgssr.ch/videometadata/v2"
+AUDIO_BASE = "https://api.srgssr.ch/audiometadata/v2"
 EPG_BASE = "https://api.srgssr.ch/epg/v3"
 POLIS_BASE = "https://api.srgssr.ch/polis/v1"
+
+
+def _epg_station(bu: str = "srf", broadcast_type: str = "tv", channel: str = "srf-1") -> str:
+    """The exact EPG station URL the code under test must build.
+
+    Pinned rather than pattern-matched on purpose: a mock that accepts any
+    path under EPG_BASE would keep passing if a call site silently kept the
+    old ``/programs?bu=&channel=`` endpoint.
+    """
+    return f"{EPG_BASE}/{bu}/{broadcast_type}/stations/{channel}"
 
 
 # ---------------------------------------------------------------------------
@@ -598,7 +608,7 @@ async def test_audio_get_livestreams_empty():
 
 @respx.mock
 async def test_epg_get_programs_happy_path():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station()).mock(
         return_value=httpx.Response(
             200,
             json={
@@ -615,7 +625,7 @@ async def test_epg_get_programs_happy_path():
         )
     )
     result = await srgssr_epg_get_programs(
-        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf1", date="2026-04-30")
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="2026-04-30")
     )
     assert isinstance(result, EpgProgramsResponse)
     titles = [p.title for p in result.programs]
@@ -625,12 +635,78 @@ async def test_epg_get_programs_happy_path():
 
 
 @respx.mock
+async def test_epg_get_programs_parses_station_payload_shape():
+    """The station endpoint answers with ``programs`` and nested ``dateTimes``.
+
+    The ``programList`` fixtures above only exercise the legacy fallbacks, so
+    without this test the parsing of the shape actually served in production
+    would be uncovered.
+    """
+    route = respx.get(_epg_station()).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "programs": [
+                    {
+                        "title": "Tagesschau",
+                        "dateTimes": {"startTime": "2026-04-30T19:30:00+02:00"},
+                        "shortDescription": "Hauptausgabe",
+                        "longDescription": "Die Hauptausgabe der Nachrichten.",
+                    }
+                ]
+            },
+        )
+    )
+    result = await srgssr_epg_get_programs(
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="2026-04-30")
+    )
+    assert isinstance(result, EpgProgramsResponse)
+    assert route.called
+    assert route.calls.last.request.url.params["date"] == "2026-04-30"
+    program = result.programs[0]
+    assert program.title == "Tagesschau"
+    assert program.start_time == "2026-04-30T19:30:00+02:00"
+    assert program.subtitle == "Hauptausgabe"
+    assert program.description == "Die Hauptausgabe der Nachrichten."
+
+
+@respx.mock
+async def test_epg_get_programs_radio_uses_radio_path_segment():
+    """broadcast_type is a path segment, not a query parameter."""
+    route = respx.get(_epg_station(broadcast_type="radio", channel="srf-3")).mock(
+        return_value=httpx.Response(200, json={"programs": []})
+    )
+    result = await srgssr_epg_get_programs(
+        EpgProgramsInput(
+            business_unit=BusinessUnit.SRF,
+            broadcast_type="radio",
+            channel_id="srf-3",
+            date="2026-04-30",
+        )
+    )
+    assert isinstance(result, EpgProgramsResponse)
+    assert result.count == 0
+    assert route.called
+
+
+@respx.mock
+async def test_epg_resource_uses_the_station_endpoint():
+    """Regression guard for the resource drifting off the tool's endpoint."""
+    route = respx.get(_epg_station()).mock(
+        return_value=httpx.Response(200, json={"programs": []})
+    )
+    list(await mcp.read_resource("epg://srf/srf-1/2026-04-30"))
+    assert route.called
+    assert route.calls.last.request.url.params["date"] == "2026-04-30"
+
+
+@respx.mock
 async def test_epg_get_programs_handles_404():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station()).mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_epg_get_programs(
-        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf1", date="2026-04-30")
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="2026-04-30")
     )
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message or "nicht gefunden" in result.message
@@ -638,7 +714,7 @@ async def test_epg_get_programs_handles_404():
 
 def test_epg_invalid_date_format_rejected_by_pydantic():
     with pytest.raises(Exception):
-        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf1", date="30-04-2026")
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="30-04-2026")
 
 
 # ---------------------------------------------------------------------------
@@ -970,7 +1046,7 @@ async def test_polis_get_elections_empty_returns_typed_response():
 
 @respx.mock
 async def test_epg_get_programs_404_includes_recovery_hint():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station(channel="bogus")).mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_epg_get_programs(
@@ -999,7 +1075,7 @@ async def test_video_get_shows_empty_returns_typed_response():
 def _briefing_input(**overrides) -> DailyBriefingInput:
     defaults = dict(
         business_unit=BusinessUnit.SRF,
-        channel_id="srf1",
+        channel_id="srf-1",
         date="2026-04-30",
         latitude=47.3769,
         longitude=8.5417,
@@ -1028,7 +1104,7 @@ async def test_daily_briefing_combines_weather_and_epg():
             },
         )
     )
-    epg_route = respx.get(f"{EPG_BASE}/programs").mock(
+    epg_route = respx.get(_epg_station()).mock(
         return_value=httpx.Response(
             200,
             json={
@@ -1047,7 +1123,7 @@ async def test_daily_briefing_combines_weather_and_epg():
 
     assert isinstance(result, DailyBriefingResponse)
     assert result.business_unit == "srf"
-    assert result.channel_id == "srf1"
+    assert result.channel_id == "srf-1"
     assert result.date == "2026-04-30"
     assert isinstance(result.weather, WeatherForecast24hResponse)
     assert result.weather.hours[0].temperature_c == 14.0
@@ -1064,7 +1140,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
     respx.get(f"{WEATHER_BASE}/24hour").mock(
         return_value=httpx.Response(200, json={"list": []})
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station()).mock(
         return_value=httpx.Response(200, json={"programList": []})
     )
 
@@ -1083,7 +1159,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
     await srgssr_daily_briefing(
         DailyBriefingInput(
             business_unit=BusinessUnit.SRF,
-            channel_id="srf1",
+            channel_id="srf-1",
             date="2026-04-30",
             latitude=47.0,
             longitude=8.0,
@@ -1166,7 +1242,7 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
         return httpx.Response(200, json={"programList": []})
 
     respx.get(f"{WEATHER_BASE}/24hour").mock(side_effect=_trace)
-    respx.get(f"{EPG_BASE}/programs").mock(side_effect=_trace)
+    respx.get(_epg_station()).mock(side_effect=_trace)
 
     await srgssr_daily_briefing(_briefing_input())
 
@@ -1189,7 +1265,7 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
             },
         )
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station(channel="bogus")).mock(
         return_value=httpx.Response(404, text="Not Found")
     )
 
@@ -1210,7 +1286,7 @@ async def test_daily_briefing_returns_typed_sub_responses():
     respx.get(f"{WEATHER_BASE}/24hour").mock(
         return_value=httpx.Response(200, json={"list": [{"dateTime": "2026-04-30T00:00"}]})
     )
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station()).mock(
         return_value=httpx.Response(
             200, json={"programList": [{"startTime": "08:00", "title": "Echo der Zeit"}]}
         )
@@ -1219,7 +1295,7 @@ async def test_daily_briefing_returns_typed_sub_responses():
     result = await srgssr_daily_briefing(_briefing_input())
 
     assert isinstance(result, DailyBriefingResponse)
-    assert result.channel_id == "srf1"
+    assert result.channel_id == "srf-1"
     assert result.business_unit == "srf"
     assert isinstance(result.weather, WeatherForecast24hResponse)
     assert result.weather.hours[0].timestamp == "2026-04-30T00:00"
@@ -1460,7 +1536,7 @@ async def test_prompts_registered():
 
 @respx.mock
 async def test_epg_resource_returns_json_envelope():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station()).mock(
         return_value=httpx.Response(
             200,
             json={
@@ -1475,12 +1551,12 @@ async def test_epg_resource_returns_json_envelope():
             },
         )
     )
-    contents = list(await mcp.read_resource("epg://srf/srf1/2026-04-30"))
+    contents = list(await mcp.read_resource("epg://srf/srf-1/2026-04-30"))
     assert len(contents) == 1
     body = contents[0].content
     payload = json.loads(body)
     assert payload["business_unit"] == "srf"
-    assert payload["channel_id"] == "srf1"
+    assert payload["channel_id"] == "srf-1"
     assert payload["date"] == "2026-04-30"
     assert payload["programs"][0]["title"] == "Tagesschau"
     # provenance fields preserved on the JSON envelope
@@ -1497,7 +1573,7 @@ async def test_epg_resource_rejects_unsupported_business_unit():
 
 @respx.mock
 async def test_epg_resource_handles_404():
-    respx.get(f"{EPG_BASE}/programs").mock(
+    respx.get(_epg_station(channel="unknown")).mock(
         return_value=httpx.Response(404, text="not found")
     )
     contents = list(await mcp.read_resource("epg://srf/unknown/2026-04-30"))
@@ -1579,7 +1655,7 @@ async def test_tagesbriefing_kanton_prompt_default():
     text = result.messages[0].content.text
     assert "Zürich" in text
     assert "srgssr_daily_briefing" in text
-    assert "epg://srf/srf1" in text
+    assert "epg://srf/srf-1" in text
     assert "heutige Datum" in text
 
 
