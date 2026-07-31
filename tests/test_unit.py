@@ -9,6 +9,8 @@ Tools are called directly (the @mcp.tool decorator does not wrap them);
 input is constructed via the Pydantic models from server.py.
 """
 import asyncio
+import re
+
 import json  # noqa: F401  (still used by some assertions)
 
 import httpx
@@ -64,7 +66,8 @@ from srgssr_mcp.server import (
     srgssr_weather_search_location,
 )
 
-WEATHER_BASE = "https://api.srgssr.ch/forecasts/v2.0/weather"
+WEATHER_BASE = "https://api.srgssr.ch/srf-meteo/v2"
+FORECAST_POINT = f"{WEATHER_BASE}/forecastpoint/47.3769,8.5417"
 VIDEO_BASE = "https://api.srgssr.ch/videometadata/v2"
 AUDIO_BASE = "https://api.srgssr.ch/audiometadata/v2"
 VIDEO_SHOWS = f"{VIDEO_BASE}/tv_shows/alphabetical"
@@ -90,15 +93,15 @@ def _epg_station(bu: str = "srf", broadcast_type: str = "tv", channel: str = "sr
 
 @respx.mock
 async def test_weather_search_location_happy_path():
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         return_value=httpx.Response(
             200,
-            json={
-                "geolocationList": [
-                    {"id": "100001", "name": "Zürich", "canton": "ZH", "postalCode": "8001"},
-                    {"id": "100002", "name": "Zürich Flughafen", "canton": "ZH", "postalCode": "8058"},
-                ]
-            },
+            json=[
+                {"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001,
+                 "geolocation": {"id": "100001"}},
+                {"id": 2, "name": "Zürich Flughafen", "province": "ZH", "plz": 8058,
+                 "geolocation": {"id": "100002"}},
+            ],
         )
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
@@ -110,8 +113,82 @@ async def test_weather_search_location_happy_path():
 
 
 @respx.mock
+async def test_weather_search_by_postal_code_uses_the_zip_parameter():
+    """v2 has no combined search term — a postal code goes to `zip`, a name to `name`."""
+    route = respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
+        return_value=httpx.Response(
+            200, json=[{"id": 1, "name": "Zürich", "geolocation": {"id": "100001"}}]
+        )
+    )
+    result = await srgssr_weather_search_location(WeatherSearchInput(query="8001"))
+    assert isinstance(result, WeatherLocationsResponse)
+    assert route.calls.last.request.url.params["zip"] == "8001"
+    assert "name" not in route.calls.last.request.url.params
+
+
+@respx.mock
+async def test_weather_search_accepts_a_single_object_response():
+    """The endpoint answers with a bare object for some queries and an array for others."""
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
+        return_value=httpx.Response(
+            200, json={"id": 7, "name": "Chur", "geolocation": {"id": "100007"}}
+        )
+    )
+    result = await srgssr_weather_search_location(WeatherSearchInput(query="Chur"))
+    assert isinstance(result, WeatherLocationsResponse)
+    assert result.count == 1
+    assert result.locations[0].id == "100007"
+
+
+@respx.mock
+async def test_weather_forecast_point_id_is_built_from_coordinates():
+    """Documented as '[lat],[lon]' rounded to four digits."""
+    route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": [], "days": []})
+    )
+    await srgssr_weather_current(
+        WeatherForecastInput(latitude=47.376887, longitude=8.541694)
+    )
+    assert route.calls.last.request.url.path.endswith("/forecastpoint/47.3769,8.5417")
+
+
+@respx.mock
+async def test_weather_explicit_geolocation_id_wins_over_coordinates():
+    route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": [], "days": []})
+    )
+    await srgssr_weather_current(
+        WeatherForecastInput(
+            latitude=47.3769, longitude=8.5417, geolocation_id="100001"
+        )
+    )
+    assert route.calls.last.request.url.path.endswith("/forecastpoint/100001")
+
+
+@respx.mock
+async def test_weather_all_three_tools_share_one_endpoint():
+    """v2 has no current/24h/7day split — one payload carries hours and days."""
+    payload = {
+        "hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 9.0, "symbol_code": 3}],
+        "days": [{"date_time": "2026-04-30", "TN_C": 4, "TX_C": 12, "symbol_code": 3}],
+    }
+    route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json=payload)
+    )
+    coords = {"latitude": 47.3769, "longitude": 8.5417}
+    current = await srgssr_weather_current(WeatherForecastInput(**coords))
+    hourly = await srgssr_weather_forecast_24h(WeatherForecastInput(**coords))
+    daily = await srgssr_weather_forecast_7day(WeatherForecastInput(**coords))
+
+    assert current.current.temperature_c == 9.0
+    assert hourly.hours[0].temperature_c == 9.0
+    assert daily.days[0].temperature_max_c == 12
+    assert route.call_count == 3
+
+
+@respx.mock
 async def test_weather_search_location_handles_500():
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         return_value=httpx.Response(500, text="Internal Server Error")
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Bern"))
@@ -121,8 +198,8 @@ async def test_weather_search_location_handles_500():
 
 @respx.mock
 async def test_weather_search_location_empty_results():
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
-        return_value=httpx.Response(200, json={"geolocationList": []})
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
+        return_value=httpx.Response(200, json=[])
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Atlantis"))
     assert isinstance(result, WeatherLocationsResponse)
@@ -136,20 +213,21 @@ async def test_weather_search_location_empty_results():
 
 @respx.mock
 async def test_weather_current_happy_path():
-    respx.get(f"{WEATHER_BASE}/current").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
             json={
-                "currentForecast": {
-                    "values": {
-                        "ttt": {"value": 18.5},
-                        "weatherCode": {"value": 1},
-                        "ff": {"value": 12},
-                        "dd": {"value": 270},
-                        "rr": {"value": 0.0},
-                        "relhum": {"value": 65},
+                "hours": [
+                    {
+                        "date_time": "2026-04-30T12:00:00+02:00",
+                        "TTT_C": 18.5,
+                        "symbol_code": 1,
+                        "FF_KMH": 12,
+                        "DD_DEG": 270,
+                        "RRR_MM": 0.0,
+                        "RELHUM_PERCENT": 65,
                     }
-                }
+                ]
             },
         )
     )
@@ -164,7 +242,7 @@ async def test_weather_current_happy_path():
 
 @respx.mock
 async def test_weather_current_handles_429():
-    respx.get(f"{WEATHER_BASE}/current").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(429, text="Too Many Requests")
     )
     result = await srgssr_weather_current(
@@ -176,8 +254,8 @@ async def test_weather_current_handles_429():
 
 @respx.mock
 async def test_weather_current_returns_typed_response():
-    payload = {"currentForecast": {"values": {"ttt": {"value": 5.0}}}}
-    respx.get(f"{WEATHER_BASE}/current").mock(
+    payload = {"hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 5.0}]}
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json=payload)
     )
     result = await srgssr_weather_current(
@@ -197,17 +275,15 @@ async def test_weather_current_returns_typed_response():
 async def test_weather_forecast_24h_happy_path():
     hours = [
         {
-            "dateTime": f"2026-04-30T{h:02d}:00",
-            "values": {
-                "ttt": {"value": 10 + h % 5},
-                "rr": {"value": 0.0},
-                "weatherCode": {"value": 1},
-            },
+            "date_time": f"2026-04-30T{h:02d}:00",
+            "TTT_C": 10 + h % 5,
+            "RRR_MM": 0.0,
+            "symbol_code": 1,
         }
         for h in range(24)
     ]
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
-        return_value=httpx.Response(200, json={"list": hours})
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": hours})
     )
     result = await srgssr_weather_forecast_24h(
         WeatherForecastInput(latitude=47.0, longitude=8.0)
@@ -220,7 +296,7 @@ async def test_weather_forecast_24h_happy_path():
 
 @respx.mock
 async def test_weather_forecast_24h_handles_404():
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_weather_forecast_24h(
@@ -232,7 +308,7 @@ async def test_weather_forecast_24h_handles_404():
 
 @respx.mock
 async def test_weather_forecast_24h_empty_returns_empty_hours():
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"unexpected": "shape"})
     )
     result = await srgssr_weather_forecast_24h(
@@ -251,18 +327,16 @@ async def test_weather_forecast_24h_empty_returns_empty_hours():
 async def test_weather_forecast_7day_happy_path():
     days = [
         {
-            "dateTime": f"2026-05-{d:02d}",
-            "values": {
-                "ttn": {"value": 5 + d},
-                "ttx": {"value": 15 + d},
-                "rr": {"value": 1.2},
-                "weatherCode": {"value": 2},
-            },
+            "date_time": f"2026-05-{d:02d}",
+            "TN_C": 5 + d,
+            "TX_C": 15 + d,
+            "RRR_MM": 1.0,
+            "symbol_code": 2,
         }
         for d in range(1, 8)
     ]
-    respx.get(f"{WEATHER_BASE}/7day").mock(
-        return_value=httpx.Response(200, json={"list": days})
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"days": days})
     )
     result = await srgssr_weather_forecast_7day(
         WeatherForecastInput(latitude=47.0, longitude=8.0)
@@ -275,7 +349,7 @@ async def test_weather_forecast_7day_happy_path():
 
 @respx.mock
 async def test_weather_forecast_7day_handles_401():
-    respx.get(f"{WEATHER_BASE}/7day").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(401, text="Unauthorized")
     )
     result = await srgssr_weather_forecast_7day(
@@ -287,9 +361,9 @@ async def test_weather_forecast_7day_handles_401():
 
 @respx.mock
 async def test_weather_forecast_7day_typed_payload():
-    days = [{"dateTime": "2026-05-01", "values": {"ttn": {"value": 5}, "ttx": {"value": 15}}}]
-    respx.get(f"{WEATHER_BASE}/7day").mock(
-        return_value=httpx.Response(200, json={"list": days})
+    days = [{"date_time": "2026-05-01", "TN_C": 5, "TX_C": 15}]
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"days": days})
     )
     result = await srgssr_weather_forecast_7day(
         WeatherForecastInput(latitude=47.0, longitude=8.0)
@@ -1113,12 +1187,13 @@ async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
     SDK-002 typed model: the matched variant + tried list now live as
     structured fields on WeatherLocationsResponse.
     """
-    route = respx.get(f"{WEATHER_BASE}/geolocations").mock(
+    route = respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         side_effect=[
-            httpx.Response(200, json={"geolocationList": []}),
+            httpx.Response(200, json=[]),
             httpx.Response(
                 200,
-                json={"geolocationList": [{"id": "100001", "name": "Zürich", "canton": "ZH", "postalCode": "8001"}]},
+                json=[{"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001,
+                       "geolocation": {"id": "100001"}}],
             ),
         ]
     )
@@ -1136,8 +1211,8 @@ async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
 @respx.mock
 async def test_weather_search_location_empty_includes_tried_variants():
     """All variants empty → response carries empty list and full tried trace."""
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
-        return_value=httpx.Response(200, json={"geolocationList": []})
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
+        return_value=httpx.Response(200, json=[])
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Atlantis"))
     assert isinstance(result, WeatherLocationsResponse)
@@ -1283,18 +1358,16 @@ def _briefing_input(**overrides) -> DailyBriefingInput:
 @respx.mock
 async def test_daily_briefing_combines_weather_and_epg():
     """Both upstream calls succeed → markdown briefing carries both sections."""
-    weather_route = respx.get(f"{WEATHER_BASE}/24hour").mock(
+    weather_route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
             json={
-                "list": [
+                "hours": [
                     {
-                        "dateTime": "2026-04-30T18:00",
-                        "values": {
-                            "ttt": {"value": 14.0},
-                            "rr": {"value": 0.0},
-                            "weatherCode": {"value": 1},
-                        },
+                        "date_time": "2026-04-30T18:00",
+                        "TTT_C": 14.0,
+                        "RRR_MM": 0.0,
+                        "symbol_code": 1,
                     }
                 ]
             },
@@ -1333,8 +1406,8 @@ async def test_daily_briefing_combines_weather_and_epg():
 async def test_daily_briefing_emits_ctx_progress_and_info():
     """SDK-003: when invoked with a Context, the aggregator emits structured
     log + progress events that an MCP client can surface as activity."""
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
-        return_value=httpx.Response(200, json={"list": []})
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": []})
     )
     respx.get(_epg_station()).mock(
         return_value=httpx.Response(200, json={"programList": []})
@@ -1375,10 +1448,10 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
 async def test_tools_accept_no_ctx_unchanged():
     """SDK-003: omitting ``ctx`` (the existing call shape) must keep working —
     no test in the suite passes ctx, and the optional default must not break."""
-    respx.get(f"{WEATHER_BASE}/current").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
-            json={"currentForecast": {"values": {"ttt": {"value": 10.0}}}},
+            json={"hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 10.0}]},
         )
     )
     result = await srgssr_weather_current(
@@ -1400,7 +1473,7 @@ async def test_tools_accept_no_ctx_unchanged():
 async def test_typed_response_carries_provenance_fields():
     """Every typed Response inherits ProvenanceFields → source / license /
     provenance_url / fetched_at are present on the model itself."""
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -1434,10 +1507,10 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
         await asyncio.sleep(0)
         inflight -= 1
         if "/24hour" in str(request.url):
-            return httpx.Response(200, json={"list": []})
+            return httpx.Response(200, json={"hours": []})
         return httpx.Response(200, json={"programList": []})
 
-    respx.get(f"{WEATHER_BASE}/24hour").mock(side_effect=_trace)
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(side_effect=_trace)
     respx.get(_epg_station()).mock(side_effect=_trace)
 
     await srgssr_daily_briefing(_briefing_input())
@@ -1448,14 +1521,16 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
 @respx.mock
 async def test_daily_briefing_partial_failure_renders_remaining_section():
     """When EPG returns 404 the weather section must still render (graceful degradation)."""
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
             json={
-                "list": [
+                "hours": [
                     {
-                        "dateTime": "2026-04-30T12:00",
-                        "values": {"ttt": {"value": 22.5}, "rr": {"value": 0.0}, "weatherCode": {"value": 2}},
+                        "date_time": "2026-04-30T12:00",
+                        "TTT_C": 22.5,
+                        "RRR_MM": 0.0,
+                        "symbol_code": 2,
                     }
                 ]
             },
@@ -1479,8 +1554,8 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
 
 @respx.mock
 async def test_daily_briefing_returns_typed_sub_responses():
-    respx.get(f"{WEATHER_BASE}/24hour").mock(
-        return_value=httpx.Response(200, json={"list": [{"dateTime": "2026-04-30T00:00"}]})
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": [{"date_time": "2026-04-30T00:00"}]})
     )
     respx.get(_epg_station()).mock(
         return_value=httpx.Response(

@@ -48,10 +48,16 @@ class WeatherForecastInput(BaseModel):
     )
     geolocation_id: str | None = Field(
         default=None,
-        description="Optionale geolocationId aus srgssr_weather_search_location für präzisere Vorhersagen",
+        description=(
+            "Optionale geolocationId aus srgssr_weather_search_location. Ohne "
+            "Angabe wird sie aus latitude/longitude aufgelöst."
+        ),
         min_length=1,
         max_length=50,
-        pattern=r"^[A-Za-z0-9_-]+$",
+        # SRF Meteo ids are either numeric or the documented '[lat],[lon]'
+        # form, so dot and comma have to pass. '/' stays excluded, which is
+        # what keeps the value from escaping its path segment.
+        pattern=r"^[A-Za-z0-9_.,-]+$",
     )
 
 
@@ -94,11 +100,16 @@ async def srgssr_weather_search_location(
     try:
         for variant in _query_variants(params.query):
             tried.append(variant)
-            data = await _api_get(
-                f"{WEATHER_BASE}/geolocations",
-                params={"searchterm": variant},
+            # The v2 search takes `zip` for postal codes and `name` for
+            # everything else; there is no combined search term.
+            query_params = (
+                {"zip": int(variant)} if variant.isdigit() else {"name": variant}
             )
-            raw_locations = data.get("geolocationList", [])
+            data = await _api_get(
+                f"{WEATHER_BASE}/geolocationNames",
+                params={**query_params, "limit": 10},
+            )
+            raw_locations = _as_location_list(data)
             if raw_locations:
                 matched_variant = variant
                 break
@@ -113,7 +124,7 @@ async def srgssr_weather_search_location(
         variants_tried=len(tried),
     )
 
-    locations = [WeatherLocation.model_validate(loc) for loc in raw_locations]
+    locations = [_location_from_dict(loc) for loc in raw_locations]
     return WeatherLocationsResponse(
         query=params.query,
         matched_variant=matched_variant,
@@ -123,12 +134,57 @@ async def srgssr_weather_search_location(
     )
 
 
-def _extract_value(values: dict, key: str) -> float | int | None:
-    """Pluck the ``value`` from SRF Meteo's nested ``{key: {value: x}}`` shape."""
-    entry = values.get(key)
-    if isinstance(entry, dict):
-        return entry.get("value")
-    return None
+def _as_location_list(data) -> list:
+    """Normalise the geolocationNames response to a list.
+
+    The endpoint answers with a bare array for some queries and a single
+    object for others, so both shapes are flattened here rather than at
+    every call site.
+    """
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        if data.get("id") is not None:
+            return [data]
+        for key in ("geolocationNames", "geolocationList", "results"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return value
+    return []
+
+
+def _location_from_dict(d: dict) -> WeatherLocation:
+    geo = d.get("geolocation") or {}
+    plz = d.get("plz") or d.get("zip")
+    return WeatherLocation(
+        # The forecast endpoint keys off the geolocation id, not the name id.
+        id=str(geo.get("id") or d.get("location_id") or d.get("id") or "?"),
+        name=str(d.get("name") or d.get("default_name") or "Unbekannt"),
+        canton=d.get("province") or d.get("district") or None,
+        postalCode=str(plz) if plz is not None else None,
+    )
+
+
+def _forecast_point_id(latitude: float, longitude: float, explicit: str | None) -> str:
+    """The path segment for /forecastpoint.
+
+    Documented as ``'[lat],[lon]' rounded to 4 digits``. An explicit id from
+    the search wins, because a named location resolves to a station the API
+    actually has data for.
+    """
+    return explicit or f"{latitude:.4f},{longitude:.4f}"
+
+
+async def _fetch_forecast_point(
+    latitude: float, longitude: float, geolocation_id: str | None
+) -> dict:
+    """One call to /forecastpoint — it carries days, three_hours and hours.
+
+    v2 has no separate current/24h/7day endpoints; the three tools slice
+    different arrays out of this same payload.
+    """
+    point_id = _forecast_point_id(latitude, longitude, geolocation_id)
+    return await _api_get(f"{WEATHER_BASE}/forecastpoint/{point_id}")
 
 
 @mcp.tool(
@@ -170,28 +226,25 @@ async def srgssr_weather_current(
             longitude=params.longitude,
         )
     try:
-        query_params: dict = {
-            "latitude": params.latitude,
-            "longitude": params.longitude,
-        }
-        if params.geolocation_id:
-            query_params["geolocationId"] = params.geolocation_id
-        data = await _api_get(f"{WEATHER_BASE}/current", params=query_params)
+        data = await _fetch_forecast_point(
+            params.latitude, params.longitude, params.geolocation_id
+        )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
     log.info("tool_succeeded")
 
-    fc = data.get("currentForecast", data) or {}
-    values = fc.get("values", {}) if isinstance(fc, dict) else {}
+    # v2 has no "current" endpoint — the nearest hourly interval is it.
+    hours = data.get("hours") or []
+    now = hours[0] if hours else {}
     current = WeatherCurrent(
-        temperature_c=_extract_value(values, "ttt"),
-        weather_code=_extract_value(values, "weatherCode"),
-        wind_speed_kmh=_extract_value(values, "ff"),
-        wind_direction_deg=_extract_value(values, "dd"),
-        precipitation_mm=_extract_value(values, "rr"),
-        relative_humidity_pct=_extract_value(values, "relhum"),
+        temperature_c=now.get("TTT_C"),
+        weather_code=now.get("symbol_code"),
+        wind_speed_kmh=now.get("FF_KMH"),
+        wind_direction_deg=now.get("DD_DEG"),
+        precipitation_mm=now.get("RRR_MM"),
+        relative_humidity_pct=now.get("RELHUM_PERCENT"),
     )
     return WeatherCurrentResponse(
         latitude=params.latitude,
@@ -238,31 +291,25 @@ async def srgssr_weather_forecast_24h(
             longitude=params.longitude,
         )
     try:
-        query_params: dict = {
-            "latitude": params.latitude,
-            "longitude": params.longitude,
-        }
-        if params.geolocation_id:
-            query_params["geolocationId"] = params.geolocation_id
-        data = await _api_get(f"{WEATHER_BASE}/24hour", params=query_params)
+        data = await _fetch_forecast_point(
+            params.latitude, params.longitude, params.geolocation_id
+        )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
-    raw_hours = data.get("list", data.get("hour", [])) or []
+    raw_hours = data.get("hours") or []
     log.info("tool_succeeded", hours=len(raw_hours))
 
-    hours: list[WeatherHour] = []
-    for h in raw_hours[:24]:
-        vals = h.get("values", {}) if isinstance(h, dict) else {}
-        hours.append(
-            WeatherHour(
-                timestamp=str(h.get("dateTime", h.get("hour", "?"))),
-                temperature_c=_extract_value(vals, "ttt"),
-                precipitation_mm=_extract_value(vals, "rr"),
-                weather_code=_extract_value(vals, "weatherCode"),
-            )
+    hours: list[WeatherHour] = [
+        WeatherHour(
+            timestamp=str(h.get("date_time", "?")),
+            temperature_c=h.get("TTT_C"),
+            precipitation_mm=h.get("RRR_MM"),
+            weather_code=h.get("symbol_code"),
         )
+        for h in raw_hours[:24]
+    ]
 
     return WeatherForecast24hResponse(
         latitude=params.latitude,
@@ -310,32 +357,26 @@ async def srgssr_weather_forecast_7day(
             longitude=params.longitude,
         )
     try:
-        query_params: dict = {
-            "latitude": params.latitude,
-            "longitude": params.longitude,
-        }
-        if params.geolocation_id:
-            query_params["geolocationId"] = params.geolocation_id
-        data = await _api_get(f"{WEATHER_BASE}/7day", params=query_params)
+        data = await _fetch_forecast_point(
+            params.latitude, params.longitude, params.geolocation_id
+        )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
-    raw_days = data.get("list", data.get("day", [])) or []
+    raw_days = data.get("days") or []
     log.info("tool_succeeded", days=len(raw_days))
 
-    days: list[WeatherDay] = []
-    for d in raw_days[:7]:
-        vals = d.get("values", {}) if isinstance(d, dict) else {}
-        days.append(
-            WeatherDay(
-                date=str(d.get("dateTime", d.get("date", "?"))),
-                temperature_min_c=_extract_value(vals, "ttn"),
-                temperature_max_c=_extract_value(vals, "ttx"),
-                precipitation_mm=_extract_value(vals, "rr"),
-                weather_code=_extract_value(vals, "weatherCode"),
-            )
+    days: list[WeatherDay] = [
+        WeatherDay(
+            date=str(d.get("date_time", "?")),
+            temperature_min_c=d.get("TN_C"),
+            temperature_max_c=d.get("TX_C"),
+            precipitation_mm=d.get("RRR_MM"),
+            weather_code=d.get("symbol_code"),
         )
+        for d in raw_days[:7]
+    ]
 
     return WeatherForecast7dayResponse(
         latitude=params.latitude,

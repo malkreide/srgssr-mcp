@@ -6,6 +6,36 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Wetter-Tools auf die SRF-Meteo-v2-API umgestellt.** `WEATHER_BASE` zeigte
+  auf `/forecasts/v2.0/weather` — einen Basispfad, den das Gateway nicht kennt
+  (`302` aufs Developer-Portal). Laut Spec `SRF Weather 2.0.1` ist es
+  `/srf-meteo/v2`.
+
+  Der Umbau geht tiefer als ein Pfadwechsel, weil v2 anders geschnitten ist:
+  Es gibt **keine getrennten `current`-, `24hour`- und `7day`-Endpunkte**. Ein
+  einziger Aufruf `/forecastpoint/{geolocationId}` liefert `days`,
+  `three_hours` und `hours` zusammen; die drei Tools schneiden daraus
+  verschiedene Arrays. «Aktuell» ist das erste Stundenintervall — eine
+  Echtzeit-Messung bietet die API nicht an, und so zu tun als ob wäre eine
+  Erfindung.
+
+  Auch die Feldnamen sind andere: flach und in Grossbuchstaben (`TTT_C`,
+  `RRR_MM`, `FF_KMH`, `DD_DEG`, `RELHUM_PERCENT`, `TN_C`/`TX_C`,
+  `symbol_code`, `date_time`) statt der verschachtelten
+  `values.ttt.value`-Form. `_extract_value` entfällt damit.
+
+  Die Standortsuche liegt neu auf `/geolocationNames` und kennt keinen
+  kombinierten Suchbegriff: Postleitzahlen gehen an `zip`, alles andere an
+  `name`. Die Antwort kommt mal als Array, mal als einzelnes Objekt — beides
+  wird normalisiert. Zurückgegeben wird die **geolocation**-ID, nicht die ID
+  des Namenseintrags, denn nur erstere funktioniert am Forecast-Endpunkt.
+
+  `geolocation_id` akzeptiert jetzt Punkt und Komma, weil die dokumentierte
+  Form `'[lat],[lon]'` auf vier Nachkommastellen ist; `/` bleibt ausgeschlossen
+  und hält den Wert in seinem Pfadsegment. Ohne explizite ID wird sie aus
+  latitude/longitude gebildet.
+
+### Fixed
 - **Video- und Audio-Tools auf die tatsächlichen v2-Routen umgestellt.** Der
   Basispfad war seit 1.1.0 richtig, die Pfade darunter nicht — sie stammten
   noch aus v3 und lieferten `404`. Grundlage sind jetzt die OpenAPI-Specs aus
