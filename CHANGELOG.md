@@ -5,6 +5,60 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Video- und Audio-Tools auf die tatsächlichen v2-Routen umgestellt.** Der
+  Basispfad war seit 1.1.0 richtig, die Pfade darunter nicht — sie stammten
+  noch aus v3 und lieferten `404`. Grundlage sind jetzt die OpenAPI-Specs aus
+  dem Developer-Portal (`SRGSSR Video 2.0.4`, `SRGSSR Audio 2.0.5`), nicht mehr
+  Rateversuche:
+
+  | Tool | Alt | Neu |
+  |---|---|---|
+  | `srgssr_video_get_shows` | `{bu}/showList` | `/tv_shows/alphabetical?bu=&characterFilter=` |
+  | `srgssr_video_get_episodes` | `{bu}/showEpisodesList/{id}` | `/latest_episodes/shows/{showId}?bu=` |
+  | `srgssr_video_get_livestreams` | `{bu}/channels` | `/tv_channels?bu=` |
+  | `srgssr_audio_get_shows` | `{bu}/showList` | `/radioshows/byChannel?bu=&channelId=&characterFilter=` |
+  | `srgssr_audio_get_episodes` | `{bu}/showEpisodesList/{id}` | `/episodeComposition/shows/{showId}?bu=` |
+  | `srgssr_audio_get_livestreams` | `{bu}/channels` | `/radio/channels?bu=` |
+
+  `bu` ist durchgehend Query-Parameter statt Pfadsegment. Episoden liegen unter
+  `episodeComposition` statt `episodeList`; die alten Feldnamen bleiben als
+  Fallback.
+
+### Changed (BREAKING)
+- **`srgssr_video_get_shows`: neues optionales `character_filter`.** Die
+  v2-API gruppiert Sendungen nach Anfangsbuchstabe und kennt keinen
+  «alles»-Aufruf. Mit `character_filter` (`a`–`z` oder `#`) ist es eine
+  Abfrage; ohne fächert der Server über alle 27 Buckets auf und führt
+  zusammen. Der Fan-out ist der Default, weil die Alternative — still nur
+  einen Buchstaben liefern — eine Teilmenge als Gesamtkatalog ausgäbe.
+
+- **`srgssr_audio_get_shows`: `channel_id` ist neu Pflicht.** Die v2-API listet
+  Radiosendungen ausschliesslich pro Kanal; eine Liste pro Unternehmenseinheit
+  gibt es nicht. Gültige IDs liefert `srgssr_audio_get_livestreams`, und der
+  Fehler-Hint sagt das auch. Das Tool hat dafür ein eigenes Eingabemodell
+  `AudioShowsInput` statt wie bisher `VideoShowsInput` mitzubenutzen.
+
+- **`has_more` folgt jetzt dem `next`-Cursor der API.** v2 paginiert über ein
+  opakes Token statt über Offsets und meldet keine Gesamtzahl. `total` ist
+  deshalb, was der Aufruf geliefert hat, und `has_more` spiegelt, ob die API
+  eine Fortsetzung anbietet — statt aus `page * page_size` geschätzt zu werden.
+
+- **Ein Totalausfall im Fan-out ist ein Fehler, kein leerer Katalog.**
+  Schlagen alle 27 Buckets fehl, kommt eine `ToolErrorResponse` zurück. Sonst
+  hätten 27 verschluckte Fehler exakt wie 27 leere Buchstaben ausgesehen und
+  das Modell hätte «SRF hat keine Sendungen» berichtet. Teilausfälle liefern
+  weiter, was funktioniert hat, und protokollieren `partial_result`.
+
+- **Live-Tests entrümpelt.** `tests/test_live.py` prüfte Strings
+  (`assert "TV-Sendungen" in result`), obwohl die Tools seit SDK-002
+  Pydantic-Modelle zurückgeben — die Assertions konnten gegen ein `BaseModel`
+  gar nicht fehlschlagen, und `_is_error` rief `str.startswith` auf einem
+  Modell auf. Dazu setzten drei Tests `response_format`, ein Feld, das es seit
+  SDK-002 nicht mehr gibt und das `extra="forbid"` abgelehnt hätte. Das
+  Nightly, das die Pfadfehler hätte melden sollen, war damit blind. Jetzt
+  typisierte Assertions auf echte Felder.
+
 ### Added
 - **Sender-Register für das EPG, direkt von der API erhoben.** Die gültigen
   Sender-IDs standen bisher nirgends; `srf1` in allen Beispielen war schlicht

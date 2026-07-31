@@ -123,10 +123,10 @@ async def test_tool_emits_invoked_and_succeeded(caplog):
 
 @respx.mock
 async def test_tool_emits_failure_with_error_context(caplog):
-    respx.get("https://api.srgssr.ch/videometadata/v2/srf/showList").mock(
+    respx.get("https://api.srgssr.ch/videometadata/v2/tv_shows/alphabetical").mock(
         return_value=httpx.Response(500, text="Boom")
     )
-    await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     failed = [
         r for r in _records_for(caplog)
         if r.get("event") == "tool_failed" and r.get("tool") == "srgssr_video_get_shows"

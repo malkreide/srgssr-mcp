@@ -14,11 +14,11 @@ import pytest
 
 from srgssr_mcp.server import (
     AudioEpisodesInput,
+    AudioShowsInput,
     BusinessUnit,
     EpgProgramsInput,
     PolisListInput,
     PolisResultInput,
-    ResponseFormat,
     VideoEpisodesInput,
     VideoLivestreamsInput,
     VideoShowsInput,
@@ -43,8 +43,15 @@ from srgssr_mcp.server import (
 pytestmark = [pytest.mark.live]
 
 
-def _is_error(result: str) -> bool:
-    return result.startswith(("Fehler", "API-Fehler", "Konfigurationsfehler", "Unerwarteter Fehler"))
+def _is_error(result) -> bool:
+    """Tools return typed models since SDK-002; an error is a ToolErrorResponse.
+
+    The string check this used to do could never fail against a BaseModel, so
+    every live assertion below it was decorative.
+    """
+    from srgssr_mcp._models import ToolErrorResponse
+
+    return isinstance(result, ToolErrorResponse)
 
 
 # ---------------------------------------------------------------------------
@@ -87,10 +94,11 @@ async def test_live_weather_forecast_7day(live_credentials):
 
 async def test_live_video_get_shows(live_credentials):
     result = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, page_size=5),
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="t", page_size=5),
     )
     assert not _is_error(result), result
-    assert "TV-Sendungen" in result
+    assert result.shows, "expected at least one show for SRF/'t'"
+    assert result.shows[0].id and result.shows[0].title
 
 
 async def test_live_video_get_livestreams(live_credentials):
@@ -98,26 +106,19 @@ async def test_live_video_get_livestreams(live_credentials):
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
     assert not _is_error(result), result
-    assert "Live-TV-Sender" in result
+    assert result.channels, "expected at least one SRF TV channel"
 
 
 async def test_live_video_get_episodes(live_credentials):
     """Discover a real show id via the live shows endpoint, then list episodes."""
-    shows_json = await srgssr_video_get_shows(
-        VideoShowsInput(
-            business_unit=BusinessUnit.SRF,
-            page_size=5,
-            response_format=ResponseFormat.JSON,
-        ),
+    shows = await srgssr_video_get_shows(
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="t", page_size=5),
     )
-    assert not _is_error(shows_json), shows_json
-    import json
-    payload = json.loads(shows_json)
-    shows = payload.get("shows") or []
-    if not shows:
+    assert not _is_error(shows), shows
+    if not shows.shows:
         pytest.skip("Live show list returned no shows; cannot test episodes")
-    show_id = shows[0].get("id")
-    assert show_id, "Live show payload missing 'id' field — schema drift?"
+    show_id = shows.shows[0].id
+    assert show_id, "Live show payload missing 'id' — schema drift?"
     result = await srgssr_video_get_episodes(
         VideoEpisodesInput(
             business_unit=BusinessUnit.SRF,
@@ -133,11 +134,22 @@ async def test_live_video_get_episodes(live_credentials):
 # ---------------------------------------------------------------------------
 
 async def test_live_audio_get_shows(live_credentials):
+    """Discover a real channel id first — the v2 listing is per channel."""
+    channels = await srgssr_audio_get_livestreams(
+        VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
+    )
+    assert not _is_error(channels), channels
+    assert channels.channels, "no SRF radio channels to list shows for"
+
     result = await srgssr_audio_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, page_size=5),
+        AudioShowsInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id=channels.channels[0].id,
+            character_filter="e",
+            page_size=5,
+        ),
     )
     assert not _is_error(result), result
-    assert "Radiosendungen" in result
 
 
 async def test_live_audio_get_livestreams(live_credentials):
@@ -145,25 +157,28 @@ async def test_live_audio_get_livestreams(live_credentials):
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
     assert not _is_error(result), result
-    assert "Live-Radiosender" in result
+    assert result.channels, "expected at least one SRF radio channel"
 
 
 async def test_live_audio_get_episodes(live_credentials):
-    shows_json = await srgssr_audio_get_shows(
-        VideoShowsInput(
+    channels = await srgssr_audio_get_livestreams(
+        VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
+    )
+    assert not _is_error(channels), channels
+    if not channels.channels:
+        pytest.skip("No SRF radio channels; cannot test audio episodes")
+    shows = await srgssr_audio_get_shows(
+        AudioShowsInput(
             business_unit=BusinessUnit.SRF,
+            channel_id=channels.channels[0].id,
             page_size=5,
-            response_format=ResponseFormat.JSON,
         ),
     )
-    assert not _is_error(shows_json), shows_json
-    import json
-    payload = json.loads(shows_json)
-    shows = payload.get("shows") or []
-    if not shows:
+    assert not _is_error(shows), shows
+    if not shows.shows:
         pytest.skip("Live audio show list returned no shows; cannot test episodes")
-    show_id = shows[0].get("id")
-    assert show_id, "Live audio show payload missing 'id' field — schema drift?"
+    show_id = shows.shows[0].id
+    assert show_id, "Live audio show payload missing 'id' — schema drift?"
     result = await srgssr_audio_get_episodes(
         AudioEpisodesInput(
             business_unit=BusinessUnit.SRF,
@@ -189,7 +204,7 @@ async def test_live_epg_get_programs(live_credentials):
         ),
     )
     assert not _is_error(result), result
-    assert "Programm" in result
+    assert result.programs, "expected a schedule for srf-1"
 
 
 # ---------------------------------------------------------------------------
@@ -214,22 +229,14 @@ async def test_live_polis_get_elections(live_credentials):
 
 async def test_live_polis_get_votation_results(live_credentials):
     """Discover a real votation id, then fetch its results."""
-    votations_json = await srgssr_polis_get_votations(
-        PolisListInput(
-            year_from=2020,
-            year_to=2024,
-            page_size=5,
-            response_format=ResponseFormat.JSON,
-        ),
+    votations = await srgssr_polis_get_votations(
+        PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
-    assert not _is_error(votations_json), votations_json
-    import json
-    payload = json.loads(votations_json)
-    votations = payload.get("votations") or []
-    if not votations:
+    assert not _is_error(votations), votations
+    if not votations.votations:
         pytest.skip("Live votations list returned empty; cannot test results")
-    votation_id = votations[0].get("id")
-    assert votation_id, "Live votation payload missing 'id' field — schema drift?"
+    votation_id = votations.votations[0].id
+    assert votation_id, "Live votation payload missing 'id' — schema drift?"
     result = await srgssr_polis_get_votation_results(
         PolisResultInput(votation_id=str(votation_id)),
     )

@@ -1,5 +1,8 @@
 """Video tools: TV shows, episodes and livestreams across SRG SSR business units."""
 
+import asyncio
+import string
+
 from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,12 +21,24 @@ from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.video")
 
+# The v2 alphabetical listing is keyed by a single leading character; there is
+# no "give me everything" call. These are the buckets the API accepts.
+ALPHABET_BUCKETS: tuple[str, ...] = (*string.ascii_lowercase, "#")
+
 
 class VideoShowsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     business_unit: BusinessUnit = Field(
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
+    )
+    character_filter: str | None = Field(
+        default=None,
+        pattern=r"^[a-z#]$",
+        description=(
+            "Anfangsbuchstabe der Sendungstitel: 'a'–'z' oder '#' für alles "
+            "Übrige. Weglassen, um alle Buchstaben abzufragen."
+        ),
     )
     page_size: int | None = Field(default=20, ge=1, le=100)
     page: int | None = Field(default=1, ge=1)
@@ -75,15 +90,49 @@ def _channel_from_dict(d: dict) -> VideoChannel:
     )
 
 
+def _extract_shows(data: dict) -> list:
+    """Pull the show list out of a ShowList payload."""
+    return data.get("showList", data.get("shows", [])) or []
+
+
+async def _fetch_show_bucket(bu: str, character: str, page_size: int) -> dict | Exception:
+    """One alphabetical bucket. Returns the exception instead of raising.
+
+    The caller fans out over 27 of these; one failing letter must not sink the
+    whole listing. But the exception is carried back rather than dropped, so
+    the caller can tell "this letter has no shows" from "this letter could not
+    be fetched" — a total outage has to surface as an error, not as an empty
+    catalogue.
+    """
+    try:
+        data = await _api_get(
+            f"{VIDEO_BASE}/tv_shows/alphabetical",
+            params={"bu": bu, "characterFilter": character, "pageSize": page_size},
+        )
+    except Exception as e:  # noqa: BLE001 — returned to the caller, not swallowed
+        logger.warning(
+            "show_bucket_failed",
+            business_unit=bu,
+            character=character,
+            error_type=type(e).__name__,
+        )
+        return e
+    return data
+
+
 @mcp.tool(
     name="srgssr_video_get_shows",
     description=(
-        "Listet alle TV-Sendungen einer SRG SSR Unternehmenseinheit auf "
+        "Listet TV-Sendungen einer SRG SSR Unternehmenseinheit auf "
         "(SRF, RTS, RSI, RTR, SWI) mit Sendungstitel, ID und Beschreibung.\n\n"
         "<use_case>Katalog-Browsing für TV-Sendungen, Programmanalysen.</use_case>\n\n"
-        "<important_notes>Paginiert (page_size 1–100). Episoden über "
+        "<important_notes>Die API gruppiert Sendungen nach Anfangsbuchstabe. "
+        "Ohne character_filter werden alle Buchstaben abgefragt und "
+        "zusammengeführt — das sind 27 Abfragen, also nur nutzen, wenn "
+        "wirklich der ganze Katalog gebraucht wird. Mit character_filter ist "
+        "es eine einzige Abfrage. page_size gilt pro Buchstabe. Episoden über "
         "srgssr_video_get_episodes mit der show_id.</important_notes>\n\n"
-        "<example>business_unit='srf'</example>"
+        "<example>business_unit='srf', character_filter='t'</example>"
     ),
     annotations={
         "title": "SRG SSR Video – Sendungen auflisten",
@@ -101,27 +150,67 @@ async def srgssr_video_get_shows(
     log = logger.bind(
         tool="srgssr_video_get_shows",
         business_unit=bu,
+        character_filter=params.character_filter,
         page=params.page,
         page_size=params.page_size,
     )
     log.info("tool_invoked")
     if ctx is not None:
         await ctx.info("srgssr_video_get_shows invoked", business_unit=bu)
-    try:
-        data = await _api_get(
-            f"{VIDEO_BASE}/{bu}/showList",
-            params={"pageSize": params.page_size, "pageNumber": params.page},
-        )
-    except Exception as e:
-        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
-        return _build_error_response(e)
 
-    raw_shows = data.get("showList", data.get("shows", [])) or []
-    total = int(data.get("total", len(raw_shows)))
+    if params.character_filter is not None:
+        # Single bucket: let the error surface so the caller sees why.
+        try:
+            data = await _api_get(
+                f"{VIDEO_BASE}/tv_shows/alphabetical",
+                params={
+                    "bu": bu,
+                    "characterFilter": params.character_filter,
+                    "pageSize": params.page_size,
+                },
+            )
+        except Exception as e:
+            log.error("tool_failed", error_type=type(e).__name__, error=str(e))
+            return _build_error_response(e)
+        raw_shows = _extract_shows(data)
+        has_more = bool(data.get("next"))
+    else:
+        buckets = await asyncio.gather(
+            *(
+                _fetch_show_bucket(bu, character, params.page_size)
+                for character in ALPHABET_BUCKETS
+            )
+        )
+        # Deduplicate across buckets: a show can only sit in one, but the API
+        # is not ours to assume that about.
+        failures = [b for b in buckets if isinstance(b, Exception)]
+        if len(failures) == len(ALPHABET_BUCKETS):
+            # Every letter failed — that is an outage, not an empty catalogue.
+            # Returning [] here would have the model report "no shows".
+            log.error("tool_failed", error_type=type(failures[0]).__name__)
+            return _build_error_response(failures[0])
+        if failures:
+            log.warning("partial_result", failed_buckets=len(failures))
+        seen: set[str] = set()
+        raw_shows = []
+        has_more = False
+        for bucket in buckets:
+            if isinstance(bucket, Exception):
+                continue
+            has_more = has_more or bool(bucket.get("next"))
+            for show in _extract_shows(bucket):
+                show_id = str(show.get("id", ""))
+                if show_id and show_id in seen:
+                    continue
+                seen.add(show_id)
+                raw_shows.append(show)
+
+    # v2 reports no catalogue size, only an opaque `next` cursor — so `total`
+    # is what this call actually returned, and `has_more` carries the rest.
+    total = len(raw_shows)
     log.info("tool_succeeded", result_count=len(raw_shows), total=total)
 
     shows = [_show_from_dict(s) for s in raw_shows]
-    offset = (params.page - 1) * params.page_size + len(shows)
     return VideoShowsResponse(
         business_unit=bu,
         page=params.page,
@@ -129,7 +218,7 @@ async def srgssr_video_get_shows(
         total=total,
         shows=shows,
         count=len(shows),
-        has_more=offset < total,
+        has_more=has_more,
     )
 
 
@@ -141,7 +230,8 @@ async def srgssr_video_get_shows(
         "<use_case>Recherche zu konkreten Sendungsausgaben.</use_case>\n\n"
         "<important_notes>Episoden in chronologisch absteigender Reihenfolge. "
         "Paginiert mit page_size 1–50.</important_notes>\n\n"
-        "<example>business_unit='srf', show_id='tagesschau'</example>"
+        "<example>business_unit='srf', show_id='tagesschau'</example>\n\n"
+        "<important_notes>Gültige show_id liefert srgssr_video_get_shows.</important_notes>"
     ),
     annotations={
         "title": "SRG SSR Video – Episoden einer Sendung",
@@ -172,14 +262,21 @@ async def srgssr_video_get_episodes(
         )
     try:
         data = await _api_get(
-            f"{VIDEO_BASE}/{bu}/showEpisodesList/{params.show_id}",
-            params={"pageSize": params.page_size, "pageNumber": params.page},
+            f"{VIDEO_BASE}/latest_episodes/shows/{params.show_id}",
+            params={"bu": bu, "pageSize": params.page_size},
         )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
-    raw_episodes = data.get("episodeList", data.get("medias", [])) or []
+    # `episodeComposition` is what the v2 EpisodeComposition payload carries;
+    # the older names stay as fallbacks.
+    raw_episodes = (
+        data.get("episodeComposition")
+        or data.get("episodeList")
+        or data.get("medias")
+        or []
+    )
     total = int(data.get("total", len(raw_episodes)))
     log.info("tool_succeeded", result_count=len(raw_episodes), total=total)
 
@@ -222,7 +319,7 @@ async def srgssr_video_get_livestreams(
     if ctx is not None:
         await ctx.info("srgssr_video_get_livestreams invoked", business_unit=bu)
     try:
-        data = await _api_get(f"{VIDEO_BASE}/{bu}/channels")
+        data = await _api_get(f"{VIDEO_BASE}/tv_channels", params={"bu": bu})
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)

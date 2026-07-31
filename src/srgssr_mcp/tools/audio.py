@@ -1,9 +1,12 @@
 """Audio tools: radio shows, episodes and livestreams across SRG SSR business units.
 
-The shows-list and livestreams tools reuse the same input shape as their video
-counterparts (:class:`VideoShowsInput`, :class:`VideoLivestreamsInput`); only
-the upstream URL differs.
+The livestreams tool reuses the video input shape
+(:class:`VideoLivestreamsInput`); only the upstream URL differs. The shows
+listing cannot: the v2 radio endpoint is keyed by channel as well as by
+leading character, so it carries its own :class:`AudioShowsInput`.
 """
+
+import asyncio
 
 from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
@@ -20,9 +23,68 @@ from srgssr_mcp._models import (
     ToolErrorResponse,
 )
 from srgssr_mcp.logging_config import get_logger
-from srgssr_mcp.tools.video import VideoLivestreamsInput, VideoShowsInput
+from srgssr_mcp.tools.video import ALPHABET_BUCKETS, VideoLivestreamsInput
 
 logger = get_logger("mcp.srgssr.audio")
+
+
+def _extract_shows(data: dict) -> list:
+    return data.get("showList", data.get("shows", [])) or []
+
+
+async def _fetch_show_bucket(
+    bu: str, channel_id: str, character: str, page_size: int
+) -> dict | Exception:
+    """One alphabetical bucket for one channel. Returns the exception instead
+    of raising, so the caller can tell an empty letter from a failed one."""
+    try:
+        data = await _api_get(
+            f"{AUDIO_BASE}/radioshows/byChannel",
+            params={
+                "bu": bu,
+                "channelId": channel_id,
+                "characterFilter": character,
+                "pageSize": page_size,
+            },
+        )
+    except Exception as e:  # noqa: BLE001 — returned to the caller, not swallowed
+        logger.warning(
+            "show_bucket_failed",
+            business_unit=bu,
+            channel_id=channel_id,
+            character=character,
+            error_type=type(e).__name__,
+        )
+        return e
+    return data
+
+
+class AudioShowsInput(BaseModel):
+    model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    business_unit: BusinessUnit = Field(
+        ...,
+        description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
+    )
+    channel_id: str = Field(
+        ...,
+        min_length=1,
+        max_length=200,
+        pattern=r"^[A-Za-z0-9_-]+$",
+        description=(
+            "Radiokanal-ID. Die v2-API listet Radiosendungen nur pro Kanal — "
+            "gültige IDs liefert srgssr_audio_get_livestreams."
+        ),
+    )
+    character_filter: str | None = Field(
+        default=None,
+        pattern=r"^[a-z#]$",
+        description=(
+            "Anfangsbuchstabe der Sendungstitel: 'a'–'z' oder '#' für alles "
+            "Übrige. Weglassen, um alle Buchstaben abzufragen."
+        ),
+    )
+    page_size: int | None = Field(default=20, ge=1, le=100)
+    page: int | None = Field(default=1, ge=1)
 
 
 class AudioEpisodesInput(BaseModel):
@@ -66,10 +128,17 @@ def _audio_channel_from_dict(d: dict) -> AudioChannel:
 @mcp.tool(
     name="srgssr_audio_get_shows",
     description=(
-        "Listet alle Radiosendungen einer SRG SSR Unternehmenseinheit auf.\n\n"
+        "Listet Radiosendungen eines SRG SSR Radiokanals auf.\n\n"
         "<use_case>Katalog-Browsing für Radio- und Podcast-Formate.</use_case>\n\n"
-        "<important_notes>Audio-Kataloge enthalten häufig auch reine Podcasts.</important_notes>\n\n"
-        "<example>business_unit='srf'</example>"
+        "<important_notes>Die API listet Radiosendungen nur pro Kanal — "
+        "channel_id ist Pflicht und stammt aus srgssr_audio_get_livestreams. "
+        "Innerhalb eines Kanals sind die Sendungen nach Anfangsbuchstabe "
+        "gruppiert: ohne character_filter werden alle 27 Buchstaben abgefragt "
+        "und zusammengeführt, mit character_filter ist es eine einzige "
+        "Abfrage. Audio-Kataloge enthalten häufig auch reine "
+        "Podcasts.</important_notes>\n\n"
+        "<example>business_unit='srf', channel_id='69e8ac16-4327-4af4-b873-fd5cd6e895a7', "
+        "character_filter='e'</example>"
     ),
     annotations={
         "title": "SRG SSR Audio – Radiosendungen auflisten",
@@ -80,34 +149,79 @@ def _audio_channel_from_dict(d: dict) -> AudioChannel:
     },
 )
 async def srgssr_audio_get_shows(
-    params: VideoShowsInput,
+    params: AudioShowsInput,
     ctx: Context | None = None,
 ) -> AudioShowsResponse | ToolErrorResponse:
     bu = params.business_unit.value
     log = logger.bind(
         tool="srgssr_audio_get_shows",
         business_unit=bu,
+        channel_id=params.channel_id,
+        character_filter=params.character_filter,
         page=params.page,
         page_size=params.page_size,
     )
     log.info("tool_invoked")
     if ctx is not None:
         await ctx.info("srgssr_audio_get_shows invoked", business_unit=bu)
-    try:
-        data = await _api_get(
-            f"{AUDIO_BASE}/{bu}/showList",
-            params={"pageSize": params.page_size, "pageNumber": params.page},
-        )
-    except Exception as e:
-        log.error("tool_failed", error_type=type(e).__name__, error=str(e))
-        return _build_error_response(e)
 
-    raw_shows = data.get("showList", data.get("shows", [])) or []
-    total = int(data.get("total", len(raw_shows)))
+    if params.character_filter is not None:
+        try:
+            data = await _api_get(
+                f"{AUDIO_BASE}/radioshows/byChannel",
+                params={
+                    "bu": bu,
+                    "channelId": params.channel_id,
+                    "characterFilter": params.character_filter,
+                    "pageSize": params.page_size,
+                },
+            )
+        except Exception as e:
+            log.error("tool_failed", error_type=type(e).__name__, error=str(e))
+            return _build_error_response(
+                e,
+                not_found_hint=(
+                    f"channel_id='{params.channel_id}' nicht gefunden. Gültige "
+                    f"Radiokanal-IDs liefert srgssr_audio_get_livestreams."
+                ),
+            )
+        raw_shows = _extract_shows(data)
+        has_more = bool(data.get("next"))
+    else:
+        buckets = await asyncio.gather(
+            *(
+                _fetch_show_bucket(
+                    bu, params.channel_id, character, params.page_size
+                )
+                for character in ALPHABET_BUCKETS
+            )
+        )
+        failures = [b for b in buckets if isinstance(b, Exception)]
+        if len(failures) == len(ALPHABET_BUCKETS):
+            # Every letter failed — that is an outage, not an empty catalogue.
+            # Returning [] here would have the model report "no shows".
+            log.error("tool_failed", error_type=type(failures[0]).__name__)
+            return _build_error_response(failures[0])
+        if failures:
+            log.warning("partial_result", failed_buckets=len(failures))
+        seen: set[str] = set()
+        raw_shows = []
+        has_more = False
+        for bucket in buckets:
+            if isinstance(bucket, Exception):
+                continue
+            has_more = has_more or bool(bucket.get("next"))
+            for show in _extract_shows(bucket):
+                show_id = str(show.get("id", ""))
+                if show_id and show_id in seen:
+                    continue
+                seen.add(show_id)
+                raw_shows.append(show)
+
+    total = len(raw_shows)
     log.info("tool_succeeded", result_count=len(raw_shows), total=total)
 
     shows = [_audio_show_from_dict(s) for s in raw_shows]
-    offset = (params.page - 1) * params.page_size + len(shows)
     return AudioShowsResponse(
         business_unit=bu,
         page=params.page,
@@ -115,7 +229,7 @@ async def srgssr_audio_get_shows(
         total=total,
         shows=shows,
         count=len(shows),
-        has_more=offset < total,
+        has_more=has_more,
     )
 
 
@@ -156,14 +270,19 @@ async def srgssr_audio_get_episodes(
         )
     try:
         data = await _api_get(
-            f"{AUDIO_BASE}/{bu}/showEpisodesList/{params.show_id}",
-            params={"pageSize": params.page_size, "pageNumber": params.page},
+            f"{AUDIO_BASE}/episodeComposition/shows/{params.show_id}",
+            params={"bu": bu, "pageSize": params.page_size},
         )
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
-    raw_episodes = data.get("episodeList", data.get("medias", [])) or []
+    raw_episodes = (
+        data.get("episodeComposition")
+        or data.get("episodeList")
+        or data.get("medias")
+        or []
+    )
     total = int(data.get("total", len(raw_episodes)))
     log.info("tool_succeeded", result_count=len(raw_episodes), total=total)
 
@@ -210,7 +329,7 @@ async def srgssr_audio_get_livestreams(
     if ctx is not None:
         await ctx.info("srgssr_audio_get_livestreams invoked", business_unit=bu)
     try:
-        data = await _api_get(f"{AUDIO_BASE}/{bu}/channels")
+        data = await _api_get(f"{AUDIO_BASE}/radio/channels", params={"bu": bu})
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)

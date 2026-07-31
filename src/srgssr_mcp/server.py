@@ -56,6 +56,7 @@ from srgssr_mcp.tools import (  # noqa: F401  (import for side-effect: registrat
 from srgssr_mcp.tools.aggregation import DailyBriefingInput, srgssr_daily_briefing
 from srgssr_mcp.tools.audio import (
     AudioEpisodesInput,
+    AudioShowsInput,
     srgssr_audio_get_episodes,
     srgssr_audio_get_livestreams,
     srgssr_audio_get_shows,
@@ -97,6 +98,7 @@ __all__ = [
     "ALLOWED_HOSTS",
     "AUDIO_BASE",
     "AudioEpisodesInput",
+    "AudioShowsInput",
     "BASE_URL",
     "BusinessUnit",
     "DailyBriefingInput",

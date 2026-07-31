@@ -42,7 +42,7 @@ Allgemeine Öffentlichkeit, politisch und gesellschaftlich Interessierte
 
 **Zugriff auf regionale Nachrichten im Radio**
 «Welche regionalen Radiosendungen laufen aktuell bei Radio Télévision Suisse (RTS) und was sind die neuesten Audio-Episoden des Regionaljournals?»
-→ `srgssr_audio_get_shows(business_unit="rts")`
+→ `srgssr_audio_get_livestreams(business_unit="rts")` → `srgssr_audio_get_shows(business_unit="rts", channel_id="<aus dem vorigen Aufruf>")`
 → `srgssr_audio_get_episodes(business_unit="rts", show_id="rts-info")`
 **Warum nützlich:** Verbindet die Bevölkerung direkt mit vertrauenswürdigen, regionalen Audio-Informationen und fördert die gesellschaftliche Teilhabe über Sprachgrenzen hinweg.
 

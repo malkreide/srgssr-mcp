@@ -35,6 +35,7 @@ from srgssr_mcp._models import (
 )
 from srgssr_mcp.server import (
     AudioEpisodesInput,
+    AudioShowsInput,
     BusinessUnit,
     DailyBriefingInput,
     EpgProgramsInput,
@@ -66,6 +67,9 @@ from srgssr_mcp.server import (
 WEATHER_BASE = "https://api.srgssr.ch/forecasts/v2.0/weather"
 VIDEO_BASE = "https://api.srgssr.ch/videometadata/v2"
 AUDIO_BASE = "https://api.srgssr.ch/audiometadata/v2"
+VIDEO_SHOWS = f"{VIDEO_BASE}/tv_shows/alphabetical"
+AUDIO_SHOWS = f"{AUDIO_BASE}/radioshows/byChannel"
+AUDIO_CHANNEL = "69e8ac16-4327-4af4-b873-fd5cd6e895a7"
 EPG_BASE = "https://api.srgssr.ch/epg/v3"
 POLIS_BASE = "https://api.srgssr.ch/polis/v1"
 
@@ -303,7 +307,7 @@ async def test_weather_forecast_7day_typed_payload():
 
 @respx.mock
 async def test_video_get_shows_happy_path():
-    respx.get(f"{VIDEO_BASE}/srf/showList").mock(
+    respx.get(VIDEO_SHOWS).mock(
         return_value=httpx.Response(
             200,
             json={
@@ -315,7 +319,7 @@ async def test_video_get_shows_happy_path():
             },
         )
     )
-    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     assert isinstance(result, VideoShowsResponse)
     titles = [s.title for s in result.shows]
     ids = [s.id for s in result.shows]
@@ -326,29 +330,136 @@ async def test_video_get_shows_happy_path():
 
 @respx.mock
 async def test_video_get_shows_handles_403():
-    respx.get(f"{VIDEO_BASE}/rts/showList").mock(
+    respx.get(VIDEO_SHOWS).mock(
         return_value=httpx.Response(403, text="Forbidden")
     )
-    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.RTS))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.RTS, character_filter="a"))
     assert isinstance(result, ToolErrorResponse)
     assert "403" in result.message or "verweigert" in result.message
 
 
 @respx.mock
-async def test_video_get_shows_has_more_flag():
-    respx.get(f"{VIDEO_BASE}/srf/showList").mock(
+async def test_video_get_shows_has_more_follows_the_next_cursor():
+    """v2 paginates with an opaque `next` token, not offsets — has_more mirrors it."""
+    respx.get(VIDEO_SHOWS).mock(
         return_value=httpx.Response(
             200,
-            json={"total": 100, "showList": [{"id": f"s{i}", "title": f"T{i}"} for i in range(20)]},
+            json={
+                "next": "https://api.srgssr.ch/videometadata/v2/tv_shows/alphabetical?next=abc",
+                "showList": [{"id": f"s{i}", "title": f"T{i}"} for i in range(20)],
+            },
         )
     )
     result = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, page=1, page_size=20)
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a", page=1, page_size=20)
     )
     assert isinstance(result, VideoShowsResponse)
-    assert result.total == 100
+    # v2 reports no catalogue size, so total is what this call returned.
+    assert result.total == 20
     assert result.count == 20
     assert result.has_more is True
+
+
+@respx.mock
+async def test_video_get_shows_fans_out_over_every_letter():
+    """Without character_filter the tool must cover the whole alphabet.
+
+    The v2 API has no "all shows" call — it groups by leading character. If the
+    fan-out silently covered only some letters, the model would present a
+    partial catalogue as complete.
+    """
+    seen_filters: list[str] = []
+
+    def _handler(request):
+        seen_filters.append(request.url.params["characterFilter"])
+        letter = request.url.params["characterFilter"]
+        return httpx.Response(
+            200, json={"showList": [{"id": f"show-{letter}", "title": f"Show {letter}"}]}
+        )
+
+    respx.get(VIDEO_SHOWS).mock(side_effect=_handler)
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    assert isinstance(result, VideoShowsResponse)
+    assert sorted(seen_filters) == sorted([*"abcdefghijklmnopqrstuvwxyz", "#"])
+    assert result.count == 27
+
+
+@respx.mock
+async def test_video_get_shows_fan_out_deduplicates():
+    respx.get(VIDEO_SHOWS).mock(
+        return_value=httpx.Response(
+            200, json={"showList": [{"id": "same", "title": "Immer dieselbe"}]}
+        )
+    )
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    assert isinstance(result, VideoShowsResponse)
+    assert result.count == 1
+
+
+@respx.mock
+async def test_video_get_shows_total_outage_is_an_error_not_an_empty_list():
+    """If every bucket fails, an empty catalogue would be a lie.
+
+    This is the failure mode a fan-out invites: 27 swallowed errors look
+    exactly like 27 empty letters, and the model reports "SRF has no shows".
+    """
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(500, text="upstream down"))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    assert isinstance(result, ToolErrorResponse)
+    assert "500" in result.message
+
+
+@respx.mock
+async def test_video_get_shows_partial_outage_still_returns_what_worked():
+    def _handler(request):
+        if request.url.params["characterFilter"] == "q":
+            return httpx.Response(500, text="boom")
+        return httpx.Response(200, json={"showList": [{"id": "ok", "title": "Da"}]})
+
+    respx.get(VIDEO_SHOWS).mock(side_effect=_handler)
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    assert isinstance(result, VideoShowsResponse)
+    assert result.count == 1
+
+
+@respx.mock
+async def test_audio_get_shows_requires_a_channel_and_fans_out():
+    seen: list[str] = []
+
+    def _handler(request):
+        assert request.url.params["channelId"] == AUDIO_CHANNEL
+        seen.append(request.url.params["characterFilter"])
+        return httpx.Response(200, json={"showList": []})
+
+    respx.get(AUDIO_SHOWS).mock(side_effect=_handler)
+    result = await srgssr_audio_get_shows(
+        AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL)
+    )
+    assert isinstance(result, AudioShowsResponse)
+    assert len(seen) == 27
+
+
+def test_audio_shows_input_requires_channel_id():
+    with pytest.raises(Exception):
+        AudioShowsInput(business_unit=BusinessUnit.SRF)  # type: ignore[call-arg]
+
+
+def test_character_filter_rejects_multi_character_values():
+    for bad in ("ab", "A", "1", ""):
+        with pytest.raises(Exception):
+            VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter=bad)
+
+
+@respx.mock
+async def test_video_get_shows_has_more_false_without_cursor():
+    respx.get(VIDEO_SHOWS).mock(
+        return_value=httpx.Response(200, json={"showList": [{"id": "s1", "title": "T"}]})
+    )
+    result = await srgssr_video_get_shows(
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
+    )
+    assert isinstance(result, VideoShowsResponse)
+    assert result.has_more is False
 
 
 # ---------------------------------------------------------------------------
@@ -357,7 +468,7 @@ async def test_video_get_shows_has_more_flag():
 
 @respx.mock
 async def test_video_get_episodes_happy_path():
-    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/srf-tagesschau").mock(
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/srf-tagesschau").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -385,7 +496,7 @@ async def test_video_get_episodes_happy_path():
 
 @respx.mock
 async def test_video_get_episodes_handles_404():
-    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/does-not-exist").mock(
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/does-not-exist").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_video_get_episodes(
@@ -397,7 +508,7 @@ async def test_video_get_episodes_handles_404():
 
 @respx.mock
 async def test_video_get_episodes_empty_list():
-    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/empty-show").mock(
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/empty-show").mock(
         return_value=httpx.Response(200, json={"total": 0, "episodeList": []})
     )
     result = await srgssr_video_get_episodes(
@@ -415,7 +526,7 @@ async def test_video_get_episodes_empty_list():
 
 @respx.mock
 async def test_video_get_livestreams_happy_path():
-    respx.get(f"{VIDEO_BASE}/srf/channels").mock(
+    respx.get(f"{VIDEO_BASE}/tv_channels").mock(
         return_value=httpx.Response(
             200,
             json={"channelList": [{"id": "srf1", "title": "SRF 1"}, {"id": "srf2", "title": "SRF zwei"}]},
@@ -433,7 +544,7 @@ async def test_video_get_livestreams_happy_path():
 
 @respx.mock
 async def test_video_get_livestreams_handles_500():
-    respx.get(f"{VIDEO_BASE}/rsi/channels").mock(
+    respx.get(f"{VIDEO_BASE}/tv_channels").mock(
         return_value=httpx.Response(500, text="Server Error")
     )
     result = await srgssr_video_get_livestreams(
@@ -445,7 +556,7 @@ async def test_video_get_livestreams_handles_500():
 
 @respx.mock
 async def test_video_get_livestreams_typed_payload():
-    respx.get(f"{VIDEO_BASE}/rtr/channels").mock(
+    respx.get(f"{VIDEO_BASE}/tv_channels").mock(
         return_value=httpx.Response(200, json={"channelList": [{"id": "rtr", "title": "RTR"}]})
     )
     result = await srgssr_video_get_livestreams(
@@ -463,7 +574,7 @@ async def test_video_get_livestreams_typed_payload():
 
 @respx.mock
 async def test_audio_get_shows_happy_path():
-    respx.get(f"{AUDIO_BASE}/srf/showList").mock(
+    respx.get(AUDIO_SHOWS).mock(
         return_value=httpx.Response(
             200,
             json={
@@ -472,7 +583,7 @@ async def test_audio_get_shows_happy_path():
             },
         )
     )
-    result = await srgssr_audio_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
     assert isinstance(result, AudioShowsResponse)
     assert result.shows[0].title == "Echo der Zeit"
     assert result.shows[0].id == "echo"
@@ -480,23 +591,23 @@ async def test_audio_get_shows_happy_path():
 
 @respx.mock
 async def test_audio_get_shows_handles_401():
-    respx.get(f"{AUDIO_BASE}/srf/showList").mock(
+    respx.get(AUDIO_SHOWS).mock(
         return_value=httpx.Response(401, text="Unauthorized")
     )
-    result = await srgssr_audio_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
     assert isinstance(result, ToolErrorResponse)
     assert "401" in result.message or "Credentials" in result.message
 
 
 @respx.mock
 async def test_audio_get_shows_alternative_keys():
-    respx.get(f"{AUDIO_BASE}/srf/showList").mock(
+    respx.get(AUDIO_SHOWS).mock(
         return_value=httpx.Response(
             200,
             json={"shows": [{"id": "x", "name": "Alt-Format-Show", "lead": "lead-text"}]},
         )
     )
-    result = await srgssr_audio_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
+    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
     assert isinstance(result, AudioShowsResponse)
     titles = [s.title for s in result.shows]
     assert "Alt-Format-Show" in titles
@@ -508,7 +619,7 @@ async def test_audio_get_shows_alternative_keys():
 
 @respx.mock
 async def test_audio_get_episodes_happy_path():
-    respx.get(f"{AUDIO_BASE}/srf/showEpisodesList/echo").mock(
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/echo").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -529,7 +640,7 @@ async def test_audio_get_episodes_happy_path():
 
 @respx.mock
 async def test_audio_get_episodes_handles_429():
-    respx.get(f"{AUDIO_BASE}/rts/showEpisodesList/foo").mock(
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/foo").mock(
         return_value=httpx.Response(429, text="Slow down")
     )
     result = await srgssr_audio_get_episodes(
@@ -541,7 +652,7 @@ async def test_audio_get_episodes_handles_429():
 
 @respx.mock
 async def test_audio_get_episodes_typed_payload():
-    respx.get(f"{AUDIO_BASE}/rts/showEpisodesList/foo").mock(
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/foo").mock(
         return_value=httpx.Response(
             200,
             json={"episodeList": [{"id": "x", "title": "T", "duration": 60}]},
@@ -562,7 +673,7 @@ async def test_audio_get_episodes_typed_payload():
 
 @respx.mock
 async def test_audio_get_livestreams_happy_path():
-    respx.get(f"{AUDIO_BASE}/srf/channels").mock(
+    respx.get(f"{AUDIO_BASE}/radio/channels").mock(
         return_value=httpx.Response(
             200,
             json={"channelList": [{"id": "srf3", "title": "Radio SRF 3"}]},
@@ -578,7 +689,7 @@ async def test_audio_get_livestreams_happy_path():
 
 @respx.mock
 async def test_audio_get_livestreams_handles_500():
-    respx.get(f"{AUDIO_BASE}/swi/channels").mock(
+    respx.get(f"{AUDIO_BASE}/radio/channels").mock(
         return_value=httpx.Response(500, text="Boom")
     )
     result = await srgssr_audio_get_livestreams(
@@ -590,7 +701,7 @@ async def test_audio_get_livestreams_handles_500():
 
 @respx.mock
 async def test_audio_get_livestreams_empty():
-    respx.get(f"{AUDIO_BASE}/swi/channels").mock(
+    respx.get(f"{AUDIO_BASE}/radio/channels").mock(
         return_value=httpx.Response(200, json={"channelList": []})
     )
     result = await srgssr_audio_get_livestreams(
@@ -1045,7 +1156,7 @@ async def test_video_get_episodes_404_returns_typed_error():
     _build_error_response — only EPG and Polis-results do. The recovery hint
     therefore lives on those tools' error messages, not here.
     """
-    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/typo-id").mock(
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/typo-id").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_video_get_episodes(
@@ -1060,7 +1171,7 @@ async def test_video_get_episodes_404_returns_typed_error():
 @respx.mock
 async def test_video_get_episodes_empty_list_returns_typed_response():
     """Empty episode list → typed response with count=0 (no suggestion engine)."""
-    respx.get(f"{VIDEO_BASE}/srf/showEpisodesList/empty-show").mock(
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/empty-show").mock(
         return_value=httpx.Response(200, json={"total": 0, "episodeList": []})
     )
     result = await srgssr_video_get_episodes(
@@ -1073,7 +1184,7 @@ async def test_video_get_episodes_empty_list_returns_typed_response():
 
 @respx.mock
 async def test_audio_get_episodes_404_includes_recovery_hint():
-    respx.get(f"{AUDIO_BASE}/rts/showEpisodesList/missing").mock(
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/missing").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
     result = await srgssr_audio_get_episodes(
@@ -1144,10 +1255,10 @@ async def test_epg_get_programs_404_includes_recovery_hint():
 
 @respx.mock
 async def test_video_get_shows_empty_returns_typed_response():
-    respx.get(f"{VIDEO_BASE}/swi/showList").mock(
+    respx.get(VIDEO_SHOWS).mock(
         return_value=httpx.Response(200, json={"total": 0, "showList": []})
     )
-    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI, character_filter="a"))
     assert isinstance(result, VideoShowsResponse)
     assert result.count == 0
     assert result.business_unit == "swi"
