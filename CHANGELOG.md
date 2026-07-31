@@ -3,71 +3,48 @@
 Alle wesentlichen Änderungen werden in dieser Datei dokumentiert.
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
-## [Unreleased]
+## [2.0.0] – 2026-07-31
 
-### Fixed
-- **Polis-Jahresfilter las die falschen vier Ziffern.** Der zweite Live-Lauf
-  holte 570 Abstimmungstage und wählte davon keinen einzigen für 2020–2024 aus
-  — ohne Fehler, weil die Daten sich ja lesen liessen. Nur eben falsch.
+Ein Major-Release, obwohl fast alles darin eine Reparatur ist. Der Grund für
+die 2: `srgssr_audio_get_shows` verlangt neu einen Pflichtparameter, und
+`srgssr_weather_current` liefert Werte aus einer anderen API mit anderer
+Bedeutung. Wer auf `^1.1` pinnt, bekommt keine kompatible Fortsetzung.
 
-  Die API ist durchgehend .NET-XML-abgeleitet (PascalCase,
-  `EventDateSpecified`-Flags), und dazu gehört die Datumsform
-  `/Date(1601164800000)/`. Die ersten vier Ziffern daraus ergeben **1601** —
-  eine plausibel aussehende Jahreszahl, die jeden Filter passiert und dabei
-  jeden Treffer ausschliesst. Aus einem vollständigen Datensatz wurde so ein
-  leerer Zeitraum, ohne dass irgendwo etwas rot wurde.
+Was 1.1.0 tatsächlich war: 13 der 15 Tools riefen Routen auf, die es am
+Gateway nicht gibt — die Basispfade `/video/v3`, `/audio/v3`,
+`/forecasts/v2.0/weather` und `/polis/v1` sind dort nicht registriert, und
+video/audio verwendeten unter dem korrigierten v2-Basispfad weiterhin die
+v3-Unterpfade. Vollständig funktioniert hat einzig `srgssr_epg_get_programs`;
+das zusammenfassende `srgssr_daily_briefing` lieferte dank Graceful
+Degradation immerhin seine EPG-Hälfte und für das Wetter einen Fehler.
 
-  `_year_of` versteht jetzt beide Formen — ISO-Strings und
-  Epoch-Millisekunden — und prüft das Ergebnis gegen 1800–2100. Ein Wert
-  ausserhalb gilt als nicht lesbar und löst denselben `case_dates_unparseable`
-  -Fehler aus wie ein fehlendes Datum, statt sich als Filter zu tarnen.
+Alle 15 Tools sind jetzt gegen die Live-API verifiziert (Stand 2026-07-31).
+Grundlage sind die OpenAPI-Specs aus dem Developer-Portal statt Rateversuche.
 
-### Security
-- **Die `live_credentials`-Fixture gab Key und Secret zurück.** pytest druckt
-  Fixture-Werte in jeden Fehlerbericht, also standen beide im Klartext zuoberst
-  in der Ausgabe jedes fehlschlagenden Live-Tests — und solche Ausgaben landen
-  in Issues, Chats und Bug-Reports. Kein Test hat den Rückgabewert je benutzt;
-  die Tools lesen die Zugangsdaten selbst aus der Umgebung. Die Fixture gibt
-  jetzt nichts mehr zurück.
+### Changed (BREAKING)
+- **`srgssr_audio_get_shows`: `channel_id` ist neu Pflicht.** Die v2-API listet
+  Radiosendungen ausschliesslich pro Kanal; eine Liste pro Unternehmenseinheit
+  gibt es nicht. Gültige IDs liefert `srgssr_audio_get_livestreams`, und der
+  Fehler-Hint sagt das auch. Das Tool hat dafür ein eigenes Eingabemodell
+  `AudioShowsInput` statt wie bisher `VideoShowsInput` mitzubenutzen.
 
-### Fixed
-- **Live-Tests scheiterten an `RuntimeError: Event loop is closed`.** Der
-  geteilte `httpx.AsyncClient` wird einmal erzeugt und für die Prozesslaufzeit
-  gehalten — richtig für einen Server, falsch unter pytest-asyncio, das jedem
-  Test einen frischen Event-Loop gibt. Ab dem zweiten Test erbte der Lauf einen
-  Client, dessen gepoolte Verbindungen zu einem bereits geschlossenen Loop
-  gehörten.
+- **`srgssr_weather_current` meldet keine Messung mehr, sondern eine Prognose.**
+  SRF Meteo v2 bietet keinen Echtzeitwert an. «Aktuell» ist jetzt das erste
+  Stundenintervall der Prognose — der ehrlichste verfügbare Wert. Ein
+  gleichnamiges Tool mit anderer Semantik ist ein Bruch, auch wenn die Signatur
+  gleich bleibt.
 
-  Das sah aus wie eine kaputte API und war keine: sechs der acht
-  Fehlschläge im ersten echten Live-Lauf gingen darauf zurück, nicht auf die
-  Endpunkte. Eine Autouse-Fixture schliesst den Client jetzt nach jedem Test,
-  analog zum bestehenden DNS-Pin-Reset.
+- **`srgssr_video_get_shows`: neues optionales `character_filter`.** Die
+  v2-API gruppiert Sendungen nach Anfangsbuchstabe und kennt keinen
+  «alles»-Aufruf. Mit `character_filter` (`a`–`z` oder `#`) ist es eine
+  Abfrage; ohne fächert der Server über alle 27 Buckets auf und führt
+  zusammen. Der Fan-out ist der Default, weil die Alternative — still nur
+  einen Buchstaben liefern — eine Teilmenge als Gesamtkatalog ausgäbe.
 
-- **Wetter: die Koordinaten taugen nicht als `geolocationId`.** Die Spec
-  beschreibt den Pfadparameter als `'[lat],[lon]'` auf vier Nachkommastellen,
-  was sich liest, als könnte man sie direkt einsetzen. Gemessen am 2026-07-31:
-  `/forecastpoint/47.3769,8.5417` antwortet mit `404`. Die Koordinaten werden
-  jetzt zuerst über `/geolocations` in eine Stations-ID aufgelöst; findet sich
-  keine, ist das ein Fehler statt einer leeren Prognose. Eine explizit
-  übergebene `geolocation_id` spart den Zusatz-Request.
-
-- **Polis: unlesbare Falldaten sind ein Fehler, kein leerer Zeitraum.** Der
-  Live-Lauf holte 570 Abstimmungstage und filterte daraus null heraus — das
-  Datumsfeld hat nicht die angenommene Form. Das Ergebnis war eine leere
-  Liste, also «keine Abstimmungen zwischen 2020 und 2024» statt eines
-  Hinweises auf den Parsing-Fehler.
-
-  `_year_of` flacht das Feld jetzt über `_text` ab und sucht eine
-  vierstellige Jahreszahl; IDs werden nicht mehr durch `int()` gezwungen. Lässt
-  sich aus vorhandenen Fällen *kein einziges* Datum lesen, wird das als Fehler
-  gemeldet und die Feldnamen landen im Log unter `case_dates_unparseable`.
-  Daten, die sich lesen lassen und nur ausserhalb des Bereichs liegen, bleiben
-  ein legitimes leeres Ergebnis.
-
-- **Zwei Live-Tests prüften noch Strings** (`assert "Wahlen" in result`,
-  `assert "Volksabstimmungen" in result`) — übersehen bei der Umstellung auf
-  typisierte Returns. Gegen ein `BaseModel` iteriert `in` über die Feldnamen
-  und kann nie zutreffen.
+- **`has_more` folgt jetzt dem `next`-Cursor der API.** v2 paginiert über ein
+  opakes Token statt über Offsets und meldet keine Gesamtzahl. `total` ist
+  deshalb, was der Aufruf geliefert hat, und `has_more` spiegelt, ob die API
+  eine Fortsetzung anbietet — statt aus `page * page_size` geschätzt zu werden.
 
 ### Added
 - **3xx-Guard in `_api_get`.** Ein Basispfad, den das Gateway nicht kennt,
@@ -87,127 +64,6 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   leerem Body, mit ihm eine Meldung, die `tv_shows/alphabetical` und das
   Redirect-Ziel nennt.
 
-### Fixed
-- **Polis-Tools auf `polis-api/v2` umgestellt.** `POLIS_BASE` zeigte auf
-  `/polis/v1` — ein Basispfad, den das Gateway nicht kennt. Sechs Varianten
-  hatte ich erfolglos durchprobiert; die Spec `SRGSSR Polis 2.0.2` nennt
-  `/polis-api/v2`, credential-frei bestätigt (`401` statt `302`).
-
-### Changed
-- **Jahres- und Kantonsfilter sind jetzt echte Filter.** `PolisListInput` bot
-  `year_from`, `year_to` und `canton` an — **keiner dieser Parameter existiert
-  in der v2-API**. Sie wurden mitgeschickt und ignoriert: Eine Frage nach
-  «Abstimmungen im Kanton Bern zwischen 2010 und 2020» lieferte alles und sah
-  dabei aus wie eine gefilterte Antwort. Das ist heimtückischer als ein
-  Fehler, und es ist ausgerechnet die Anker-Demo-Abfrage der README.
-
-  Die API filtert über `locationid` und `caseid`. Beides wird jetzt aufgelöst:
-  Das Kantonskürzel geht über `/locations?locationtypeid=2`, der Jahresbereich
-  über `/cases` in die Abstimmungstage des Zeitraums, von denen dann nur so
-  viele abgefragt werden, wie die Seitengrösse verlangt. Ein unbekanntes
-  Kantonskürzel ist ein Fehler statt einer stillschweigend ungefilterten
-  Liste.
-
-  `/cases?listAllCases=true` ist laut Spec langsam und «nicht öfter als einmal
-  täglich» aufzurufen; die Kantons- und Fall-Listen werden deshalb sechs
-  Stunden prozessweit gecacht.
-
-- **Response-Parsing an die gemessenen Formen angepasst.** Die Spec lässt die
-  `200`-Antworten leer (`content: {}`), die JSON-Schlüssel stammen also aus
-  echten Antworten (2026-07-31). Sie sind XML-abgeleitet und uneinheitlich:
-  Abstimmungen liegen unter `Items`, Fälle unter `Case`, Wahlen eine Ebene
-  tiefer unter `Elections.Election` — ein Dict um das Array, weshalb eine
-  «nimm die erste Liste»-Heuristik danebengegriffen hätte. Datum ist
-  `EventDate`, Titel `Title`.
-
-  Wahlen tragen weder Titel noch Datum: beides steht am `Case`-Objekt daneben,
-  das jetzt mitgeführt wird.
-
-### Fixed
-- **Wetter-Tools auf die SRF-Meteo-v2-API umgestellt.** `WEATHER_BASE` zeigte
-  auf `/forecasts/v2.0/weather` — einen Basispfad, den das Gateway nicht kennt
-  (`302` aufs Developer-Portal). Laut Spec `SRF Weather 2.0.1` ist es
-  `/srf-meteo/v2`.
-
-  Der Umbau geht tiefer als ein Pfadwechsel, weil v2 anders geschnitten ist:
-  Es gibt **keine getrennten `current`-, `24hour`- und `7day`-Endpunkte**. Ein
-  einziger Aufruf `/forecastpoint/{geolocationId}` liefert `days`,
-  `three_hours` und `hours` zusammen; die drei Tools schneiden daraus
-  verschiedene Arrays. «Aktuell» ist das erste Stundenintervall — eine
-  Echtzeit-Messung bietet die API nicht an, und so zu tun als ob wäre eine
-  Erfindung.
-
-  Auch die Feldnamen sind andere: flach und in Grossbuchstaben (`TTT_C`,
-  `RRR_MM`, `FF_KMH`, `DD_DEG`, `RELHUM_PERCENT`, `TN_C`/`TX_C`,
-  `symbol_code`, `date_time`) statt der verschachtelten
-  `values.ttt.value`-Form. `_extract_value` entfällt damit.
-
-  Die Standortsuche liegt neu auf `/geolocationNames` und kennt keinen
-  kombinierten Suchbegriff: Postleitzahlen gehen an `zip`, alles andere an
-  `name`. Die Antwort kommt mal als Array, mal als einzelnes Objekt — beides
-  wird normalisiert. Zurückgegeben wird die **geolocation**-ID, nicht die ID
-  des Namenseintrags, denn nur erstere funktioniert am Forecast-Endpunkt.
-
-  `geolocation_id` akzeptiert jetzt Punkt und Komma, weil die dokumentierte
-  Form `'[lat],[lon]'` auf vier Nachkommastellen ist; `/` bleibt ausgeschlossen
-  und hält den Wert in seinem Pfadsegment. Ohne explizite ID wird sie aus
-  latitude/longitude gebildet.
-
-### Fixed
-- **Video- und Audio-Tools auf die tatsächlichen v2-Routen umgestellt.** Der
-  Basispfad war seit 1.1.0 richtig, die Pfade darunter nicht — sie stammten
-  noch aus v3 und lieferten `404`. Grundlage sind jetzt die OpenAPI-Specs aus
-  dem Developer-Portal (`SRGSSR Video 2.0.4`, `SRGSSR Audio 2.0.5`), nicht mehr
-  Rateversuche:
-
-  | Tool | Alt | Neu |
-  |---|---|---|
-  | `srgssr_video_get_shows` | `{bu}/showList` | `/tv_shows/alphabetical?bu=&characterFilter=` |
-  | `srgssr_video_get_episodes` | `{bu}/showEpisodesList/{id}` | `/latest_episodes/shows/{showId}?bu=` |
-  | `srgssr_video_get_livestreams` | `{bu}/channels` | `/tv_channels?bu=` |
-  | `srgssr_audio_get_shows` | `{bu}/showList` | `/radioshows/byChannel?bu=&channelId=&characterFilter=` |
-  | `srgssr_audio_get_episodes` | `{bu}/showEpisodesList/{id}` | `/episodeComposition/shows/{showId}?bu=` |
-  | `srgssr_audio_get_livestreams` | `{bu}/channels` | `/radio/channels?bu=` |
-
-  `bu` ist durchgehend Query-Parameter statt Pfadsegment. Episoden liegen unter
-  `episodeComposition` statt `episodeList`; die alten Feldnamen bleiben als
-  Fallback.
-
-### Changed (BREAKING)
-- **`srgssr_video_get_shows`: neues optionales `character_filter`.** Die
-  v2-API gruppiert Sendungen nach Anfangsbuchstabe und kennt keinen
-  «alles»-Aufruf. Mit `character_filter` (`a`–`z` oder `#`) ist es eine
-  Abfrage; ohne fächert der Server über alle 27 Buckets auf und führt
-  zusammen. Der Fan-out ist der Default, weil die Alternative — still nur
-  einen Buchstaben liefern — eine Teilmenge als Gesamtkatalog ausgäbe.
-
-- **`srgssr_audio_get_shows`: `channel_id` ist neu Pflicht.** Die v2-API listet
-  Radiosendungen ausschliesslich pro Kanal; eine Liste pro Unternehmenseinheit
-  gibt es nicht. Gültige IDs liefert `srgssr_audio_get_livestreams`, und der
-  Fehler-Hint sagt das auch. Das Tool hat dafür ein eigenes Eingabemodell
-  `AudioShowsInput` statt wie bisher `VideoShowsInput` mitzubenutzen.
-
-- **`has_more` folgt jetzt dem `next`-Cursor der API.** v2 paginiert über ein
-  opakes Token statt über Offsets und meldet keine Gesamtzahl. `total` ist
-  deshalb, was der Aufruf geliefert hat, und `has_more` spiegelt, ob die API
-  eine Fortsetzung anbietet — statt aus `page * page_size` geschätzt zu werden.
-
-- **Ein Totalausfall im Fan-out ist ein Fehler, kein leerer Katalog.**
-  Schlagen alle 27 Buckets fehl, kommt eine `ToolErrorResponse` zurück. Sonst
-  hätten 27 verschluckte Fehler exakt wie 27 leere Buchstaben ausgesehen und
-  das Modell hätte «SRF hat keine Sendungen» berichtet. Teilausfälle liefern
-  weiter, was funktioniert hat, und protokollieren `partial_result`.
-
-- **Live-Tests entrümpelt.** `tests/test_live.py` prüfte Strings
-  (`assert "TV-Sendungen" in result`), obwohl die Tools seit SDK-002
-  Pydantic-Modelle zurückgeben — die Assertions konnten gegen ein `BaseModel`
-  gar nicht fehlschlagen, und `_is_error` rief `str.startswith` auf einem
-  Modell auf. Dazu setzten drei Tests `response_format`, ein Feld, das es seit
-  SDK-002 nicht mehr gibt und das `extra="forbid"` abgelehnt hätte. Das
-  Nightly, das die Pfadfehler hätte melden sollen, war damit blind. Jetzt
-  typisierte Assertions auf echte Felder.
-
-### Added
 - **Sender-Register für das EPG, direkt von der API erhoben.** Die gültigen
   Sender-IDs standen bisher nirgends; `srf1` in allen Beispielen war schlicht
   falsch, und für RTS und RSI hatte niemand belastbare Werte. Der Gateway
@@ -236,7 +92,129 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   ergänzt. Echte Daten zu verweigern ist der schlechtere Fehler. Das Register
   informiert, es blockiert nicht.
 
+### Changed
+- **Polis: Jahres- und Kantonsfilter sind jetzt echte Filter.** `PolisListInput`
+  bot `year_from`, `year_to` und `canton` an — **keiner dieser Parameter
+  existiert in der v2-API**. Sie wurden mitgeschickt und ignoriert: Eine Frage
+  nach «Abstimmungen im Kanton Bern zwischen 2010 und 2020» lieferte alles und
+  sah dabei aus wie eine gefilterte Antwort. Das ist heimtückischer als ein
+  Fehler, und es ist ausgerechnet die Anker-Demo-Abfrage der README.
+
+  Die API filtert über `locationid` und `caseid`. Beides wird jetzt aufgelöst:
+  Das Kantonskürzel geht über `/locations?locationtypeid=2`, der Jahresbereich
+  über `/cases` in die Abstimmungstage des Zeitraums, von denen dann nur so
+  viele abgefragt werden, wie die Seitengrösse verlangt. Ein unbekanntes
+  Kantonskürzel ist ein Fehler statt einer stillschweigend ungefilterten
+  Liste.
+
+  `/cases?listAllCases=true` ist laut Spec langsam und «nicht öfter als einmal
+  täglich» aufzurufen; die Kantons- und Fall-Listen werden deshalb sechs
+  Stunden prozessweit gecacht.
+
+- **Polis: Response-Parsing an die gemessenen Formen angepasst.** Die Spec
+  lässt die `200`-Antworten leer (`content: {}`), die JSON-Schlüssel stammen
+  also aus echten Antworten (2026-07-31). Sie sind XML-abgeleitet und
+  uneinheitlich: Abstimmungen liegen unter `Items`, Fälle unter `Case`, Wahlen
+  eine Ebene tiefer unter `Elections.Election` — ein Dict um das Array,
+  weshalb eine «nimm die erste Liste»-Heuristik danebengegriffen hätte. Datum
+  ist `EventDate`, Titel `Title`.
+
+  Wahlen tragen weder Titel noch Datum: beides steht am `Case`-Objekt daneben,
+  das jetzt mitgeführt wird.
+
+- **Ein Totalausfall im Fan-out ist ein Fehler, kein leerer Katalog.**
+  Schlagen alle 27 Buckets fehl, kommt eine `ToolErrorResponse` zurück. Sonst
+  hätten 27 verschluckte Fehler exakt wie 27 leere Buchstaben ausgesehen und
+  das Modell hätte «SRF hat keine Sendungen» berichtet. Teilausfälle liefern
+  weiter, was funktioniert hat, und protokollieren `partial_result`.
+
+- **Live-Tests entrümpelt.** `tests/test_live.py` prüfte Strings
+  (`assert "TV-Sendungen" in result`), obwohl die Tools seit SDK-002
+  Pydantic-Modelle zurückgeben — die Assertions konnten gegen ein `BaseModel`
+  gar nicht fehlschlagen, und `_is_error` rief `str.startswith` auf einem
+  Modell auf. Dazu setzten drei Tests `response_format`, ein Feld, das es seit
+  SDK-002 nicht mehr gibt und das `extra="forbid"` abgelehnt hätte. Das
+  Nightly, das die Pfadfehler hätte melden sollen, war damit blind. Jetzt
+  typisierte Assertions auf echte Felder.
+
 ### Fixed
+- **Video- und Audio-Tools auf die tatsächlichen v2-Routen umgestellt.** Der
+  Basispfad war seit 1.1.0 richtig, die Pfade darunter nicht — sie stammten
+  noch aus v3 und lieferten `404`. Grundlage sind jetzt die OpenAPI-Specs aus
+  dem Developer-Portal (`SRGSSR Video 2.0.4`, `SRGSSR Audio 2.0.5`), nicht mehr
+  Rateversuche:
+
+  | Tool | Alt | Neu |
+  |---|---|---|
+  | `srgssr_video_get_shows` | `{bu}/showList` | `/tv_shows/alphabetical?bu=&characterFilter=` |
+  | `srgssr_video_get_episodes` | `{bu}/showEpisodesList/{id}` | `/latest_episodes/shows/{showId}?bu=` |
+  | `srgssr_video_get_livestreams` | `{bu}/channels` | `/tv_channels?bu=` |
+  | `srgssr_audio_get_shows` | `{bu}/showList` | `/radioshows/byChannel?bu=&channelId=&characterFilter=` |
+  | `srgssr_audio_get_episodes` | `{bu}/showEpisodesList/{id}` | `/episodeComposition/shows/{showId}?bu=` |
+  | `srgssr_audio_get_livestreams` | `{bu}/channels` | `/radio/channels?bu=` |
+
+  `bu` ist durchgehend Query-Parameter statt Pfadsegment. Episoden liegen unter
+  `episodeComposition` statt `episodeList`; die alten Feldnamen bleiben als
+  Fallback.
+
+- **Wetter-Tools auf die SRF-Meteo-v2-API umgestellt.** `WEATHER_BASE` zeigte
+  auf `/forecasts/v2.0/weather` — einen Basispfad, den das Gateway nicht kennt
+  (`302` aufs Developer-Portal). Laut Spec `SRF Weather 2.0.1` ist es
+  `/srf-meteo/v2`.
+
+  Der Umbau geht tiefer als ein Pfadwechsel, weil v2 anders geschnitten ist:
+  Es gibt **keine getrennten `current`-, `24hour`- und `7day`-Endpunkte**. Ein
+  einziger Aufruf `/forecastpoint/{geolocationId}` liefert `days`,
+  `three_hours` und `hours` zusammen; die drei Tools schneiden daraus
+  verschiedene Arrays.
+
+  Auch die Feldnamen sind andere: flach und in Grossbuchstaben (`TTT_C`,
+  `RRR_MM`, `FF_KMH`, `DD_DEG`, `RELHUM_PERCENT`, `TN_C`/`TX_C`,
+  `symbol_code`, `date_time`) statt der verschachtelten
+  `values.ttt.value`-Form. `_extract_value` entfällt damit.
+
+  Die Standortsuche liegt neu auf `/geolocationNames` und kennt keinen
+  kombinierten Suchbegriff: Postleitzahlen gehen an `zip`, alles andere an
+  `name`. Die Antwort kommt mal als Array, mal als einzelnes Objekt — beides
+  wird normalisiert. Zurückgegeben wird die **geolocation**-ID, nicht die ID
+  des Namenseintrags, denn nur erstere funktioniert am Forecast-Endpunkt.
+
+- **Wetter: die Koordinaten taugen nicht als `geolocationId`.** Die Spec
+  beschreibt den Pfadparameter als `'[lat],[lon]'` auf vier Nachkommastellen,
+  was sich liest, als könnte man sie direkt einsetzen. Gemessen am 2026-07-31:
+  `/forecastpoint/47.3769,8.5417` antwortet mit `404`. Die Koordinaten werden
+  jetzt zuerst über `/geolocations` in eine Stations-ID aufgelöst; findet sich
+  keine, ist das ein Fehler statt einer leeren Prognose. Eine explizit
+  übergebene `geolocation_id` spart den Zusatz-Request.
+
+- **Polis-Tools auf `polis-api/v2` umgestellt.** `POLIS_BASE` zeigte auf
+  `/polis/v1` — ein Basispfad, den das Gateway nicht kennt. Sechs Varianten
+  hatte ich erfolglos durchprobiert; die Spec `SRGSSR Polis 2.0.2` nennt
+  `/polis-api/v2`, credential-frei bestätigt (`401` statt `302`).
+
+- **Polis-Jahresfilter las die falschen vier Ziffern.** Der zweite Live-Lauf
+  holte 570 Abstimmungstage und wählte davon keinen einzigen für 2020–2024 aus
+  — ohne Fehler, weil die Daten sich ja lesen liessen. Nur eben falsch.
+
+  Die API ist durchgehend .NET-XML-abgeleitet (PascalCase,
+  `EventDateSpecified`-Flags), und dazu gehört die Datumsform
+  `/Date(1601164800000)/`. Die ersten vier Ziffern daraus ergeben **1601** —
+  eine plausibel aussehende Jahreszahl, die jeden Filter passiert und dabei
+  jeden Treffer ausschliesst. Aus einem vollständigen Datensatz wurde so ein
+  leerer Zeitraum, ohne dass irgendwo etwas rot wurde.
+
+  `_year_of` versteht jetzt beide Formen — ISO-Strings und
+  Epoch-Millisekunden — und prüft das Ergebnis gegen 1800–2100. Ein Wert
+  ausserhalb gilt als nicht lesbar und löst denselben `case_dates_unparseable`
+  -Fehler aus wie ein fehlendes Datum, statt sich als Filter zu tarnen.
+
+- **Polis: unlesbare Falldaten sind ein Fehler, kein leerer Zeitraum.** Lässt
+  sich aus vorhandenen Fällen *kein einziges* Datum lesen, wird das gemeldet
+  und die Feldnamen landen im Log unter `case_dates_unparseable` — statt als
+  «keine Abstimmungen in diesem Zeitraum» durchzugehen. Daten, die sich lesen
+  lassen und nur ausserhalb des Bereichs liegen, bleiben ein legitimes leeres
+  Ergebnis.
+
 - **Fehler-Hints erscheinen jetzt auch bei `400`, nicht nur bei `404`.** Eine
   unbekannte Sender-ID beantwortet das EPG mit `400`, nicht mit `404` — der
   Hint, der genau für diesen Fall geschrieben ist, hätte den Aufrufer also nie
@@ -244,55 +222,58 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   Hint macht das reparierbar. Andere Statuscodes bleiben unberührt, inklusive
   Test dafür.
 
-### Security
-- **Token-Endpunkt zurück auf `api.srgssr.ch`, Egress-Allowlist wieder bei einem
-  Host.** Mit dem Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` als
-  Token-Aussteller und damit als zweiter Eintrag in `ALLOWED_HOSTS` — dorthin
-  gingen seither die Basic-Auth-Client-Credentials. Mit echten Credentials
-  nachgemessen: **beide Token-Endpunkte liefern 200, und beide Tokens verhalten
-  sich auf allen 14 geprüften Endpunkten identisch** (Video, Audio, EPG, Wetter,
-  Polis, jeweils Status und Response-Grösse gleich). Der zweite Host war also
-  nie nötig.
+- **Live-Tests scheiterten an `RuntimeError: Event loop is closed`.** Der
+  geteilte `httpx.AsyncClient` wird einmal erzeugt und für die Prozesslaufzeit
+  gehalten — richtig für einen Server, falsch unter pytest-asyncio, das jedem
+  Test einen frischen Event-Loop gibt. Ab dem zweiten Test erbte der Lauf einen
+  Client, dessen gepoolte Verbindungen zu einem bereits geschlossenen Loop
+  gehörten.
 
-  Die Begründung in PR #46 stützte sich auf die Fault-Meldung
-  `"Invalid access token"`. Die liefert der Gateway aber auf *jeden*
-  unauthentifizierten Request an einen v2-Basepath, ist also kein Beleg für
-  einen Issuer-Mismatch. Die tatsächliche Ursache lag woanders — bei den
+  Das sah aus wie eine kaputte API und war keine: sechs der acht
+  Fehlschläge im ersten echten Live-Lauf gingen darauf zurück, nicht auf die
+  Endpunkte. Eine Autouse-Fixture schliesst den Client jetzt nach jedem Test,
+  analog zum bestehenden DNS-Pin-Reset.
+
+- **Zwei Live-Tests prüften noch Strings** (`assert "Wahlen" in result`,
+  `assert "Volksabstimmungen" in result`) — übersehen bei der Umstellung auf
+  typisierte Returns. Gegen ein `BaseModel` iteriert `in` über die Feldnamen
+  und kann nie zutreffen.
+
+### Security
+- **Die `live_credentials`-Fixture gab Key und Secret zurück.** pytest druckt
+  Fixture-Werte in jeden Fehlerbericht, also standen beide im Klartext zuoberst
+  in der Ausgabe jedes fehlschlagenden Live-Tests — und solche Ausgaben landen
+  in Issues, Chats und Bug-Reports. Kein Test hat den Rückgabewert je benutzt;
+  die Tools lesen die Zugangsdaten selbst aus der Umgebung. Die Fixture gibt
+  jetzt nichts mehr zurück.
+
+- **Egress-Allowlist wieder bei genau einem Host — und die Doku stimmt dazu.**
+  Mit dem Endpunkt-Fix in 1.1.0 war `srgssr-prod.apigee.net` in `ALLOWED_HOSTS`
+  gelandet; dorthin gingen seither die Basic-Auth-Client-Credentials. Die
+  Sicherheitsdokumentation nannte an fünf Stellen weiterhin `{"api.srgssr.ch"}`
+  als vollständige Allowlist — sie beschrieb also eine engere Vertrauensgrenze,
+  als der Code zog.
+
+  Mit echten Credentials nachgemessen: **beide Token-Endpunkte liefern 200, und
+  beide Tokens verhalten sich auf allen 14 geprüften Endpunkten identisch**
+  (Video, Audio, EPG, Wetter, Polis, jeweils Status und Response-Grösse
+  gleich). Der zweite Host war nie nötig. Die Begründung in PR #46 stützte sich
+  auf die Fault-Meldung `"Invalid access token"` — die der Gateway aber auf
+  *jeden* unauthentifizierten Request an einen v2-Basepath liefert, also kein
+  Beleg für einen Issuer-Mismatch ist. Die tatsächliche Ursache lag bei den
   Pfaden.
 
-  Damit verschwindet die erweiterte Vertrauensgrenze ganz, statt nur
-  dokumentiert zu sein: keine Client-Credentials mehr an multi-tenant-
-  Infrastruktur unter Google-Betrieb. Die Doku aus dem vorherigen Eintrag wird
-  entsprechend zurückgebaut, `test_allowed_hosts_is_pinned` pinnt wieder auf
-  `{"api.srgssr.ch"}`.
+  Der Host ist damit wieder draussen, statt nur dokumentiert zu sein: keine
+  Client-Credentials mehr an multi-tenant-Infrastruktur unter Google-Betrieb.
+  `test_allowed_hosts_is_pinned` pinnt die Menge jetzt explizit auf
+  `{"api.srgssr.ch"}` — die bestehenden Wächter-Tests prüften nur
+  *Mitgliedschaft* und werden durch jede Erweiterung per Konstruktion grün, sie
+  konnten den neuen Egress-Zielhost gar nicht bemerken.
 
-- **Egress-Allowlist-Doku an den Code-Stand angeglichen.** Mit dem
-  Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` in `ALLOWED_HOSTS` — der
-  Host, an den seither die Basic-Auth-Client-Credentials für das OAuth2-Token
-  gehen. Die Sicherheitsdokumentation nannte weiterhin an fünf Stellen
-  `{"api.srgssr.ch"}` als vollständige Allowlist: beide READMEs,
-  `docs/network-egress.md`, `SECURITY.md` und `SECURITY.de.md`. Sie beschrieben
-  damit eine engere Vertrauensgrenze, als der Code tatsächlich zieht.
-
-  Nicht nur kosmetisch: `docs/network-egress.md` liefert
+  Für Betreiber relevant: `docs/network-egress.md` liefert
   Kubernetes-NetworkPolicy-, Cilium-FQDN-, AWS-Security-Group- und
-  Cloudflare-Zero-Trust-Beispiele. Wer sie so übernommen hätte, hätte den
-  Token-Endpunkt ausgesperrt und damit jeden Request — die Beispiele führen
-  jetzt beide Hosts, und der Verifikations-`curl` prüft beide.
-
-  Die Doku benennt den Host als das, was er ist: multi-tenant-Infrastruktur
-  unter Google-Betrieb, keine SRG-SSR-Domain. Der Eintrag ist als provisorisch
-  markiert, weil die Begründung aus #46 nicht unabhängig reproduziert ist —
-  `https://api.srgssr.ch/oauth/v1/accesstoken` antwortet ebenfalls, und
-  `"Invalid access token"` ist die Standardantwort auf jeden
-  unauthentifizierten Request an einen v2-Basepath, also kein Beleg für einen
-  Issuer-Mismatch.
-
-  `test_allowed_hosts_is_pinned` pinnt die Menge jetzt explizit. Die
-  bestehenden Wächter-Tests prüfen nur *Mitgliedschaft* in `ALLOWED_HOSTS` und
-  werden durch jede Erweiterung per Konstruktion grün — sie konnten den neuen
-  Egress-Zielhost nicht bemerken. Dazu ein positiver Pfad-Test für den
-  Token-Host, wie ihn die README-Prozedur für neue Domains verlangt.
+  Cloudflare-Zero-Trust-Beispiele. Wer sie unter 1.1.0 übernommen hätte, hätte
+  den Token-Endpunkt ausgesperrt und damit jeden Request.
 
 ## [1.1.0] – 2026-07-30
 
