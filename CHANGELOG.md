@@ -3,6 +3,30 @@
 Alle wesentlichen Änderungen werden in dieser Datei dokumentiert.
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+- **Das Nightly wäre ohne Secrets grün geblieben.** `live-test.yml` liest
+  `LIVE_TEST_CONSUMER_KEY`/`_SECRET`; fehlen sie, überspringt die
+  `live_credentials`-Fixture jeden Test, pytest endet mit 0 und der Lauf meldet
+  Erfolg — ohne einen einzigen Endpunkt berührt zu haben. Genau diese Form von
+  blindem Nightly hat vier tote Basispfade ein Release überleben lassen. Ein
+  Preflight-Schritt bricht jetzt ab, wenn die Secrets fehlen: eine fehlende
+  Konfiguration ist ein Fehler, keine bestandene Prüfung.
+
+- **Ein Drift hätte jede Nacht ein neues Issue erzeugt.** Der Failure-Handler
+  rief `issues.create()` ohne Prüfung auf. Eine API, die sich ändert, bleibt
+  geändert — aus einem Befund wären so pro Woche sieben Issues geworden, und
+  ein zugestelltes Issue-Board wird ignoriert. Der Handler sucht jetzt das
+  offene Issue mit dem Label `live-tests` und kommentiert es; erst nach dem
+  Schliessen legt der nächste Fehlschlag ein neues an.
+
+### Added
+- **Explizite `permissions` in `live-test.yml`** (`contents: read`,
+  `issues: write`). Der Handler braucht Schreibrechte auf Issues; ohne
+  Deklaration hängt das am Repo-Default, der auf read-only stehen kann — dann
+  scheitert die Meldung stillschweigend genau dann, wenn sie gebraucht wird.
+
 ## [2.0.0] – 2026-07-31
 
 Ein Major-Release, obwohl fast alles darin eine Reparatur ist. Der Grund für

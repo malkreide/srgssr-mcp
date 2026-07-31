@@ -5,6 +5,10 @@ on:
     - cron: "0 4 * * *"  # 04:00 UTC daily
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write   # the failure reporter opens or updates an issue
+
 jobs:
   live-tests:
     runs-on: ubuntu-latest
@@ -18,6 +22,21 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
+      # Without this, missing secrets are indistinguishable from a healthy API:
+      # the live_credentials fixture skips every test, pytest exits 0, and the
+      # nightly reports green while checking nothing. That is the exact failure
+      # mode that let four dead API basepaths survive a release.
+      - name: Verify credentials are configured
+        env:
+          KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
+          SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$SECRET" ]; then
+            echo "::error::LIVE_TEST_CONSUMER_KEY / LIVE_TEST_CONSUMER_SECRET are not set."
+            echo "::error::Every live test would skip and this job would pass green while verifying nothing."
+            exit 1
+          fi
+
       - name: Run live tests
         run: pytest -m live -v
         env:
@@ -29,10 +48,45 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
-            github.rest.issues.create({
+            const title = "Nightly live tests failed (possible API schema drift)";
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            // A drifted API stays drifted, so an unconditional issues.create()
+            // would file one report per night for the same break. Reuse the
+            // open one and let the comment count show how long it has run.
+            const open = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: "Nightly live tests failed (possible API schema drift)",
-              body: `Nightly live tests against SRG SSR APIs failed.\n\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\nIf this recurs, the upstream API schema may have drifted — review the failing assertions in tests/test_live.py.`,
-              labels: ["bug", "live-tests"]
-            })
+              state: "open",
+              labels: "live-tests",
+              per_page: 100,
+            });
+            const existing = open.find((issue) => issue.title === title);
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Still failing — run: ${runUrl}`,
+              });
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                "Nightly live tests against the SRG SSR APIs failed.",
+                "",
+                `Workflow run: ${runUrl}`,
+                "",
+                "Check the failing assertions in `tests/test_live.py` — they read typed",
+                "fields off the tool responses, so a failure points at the field that",
+                "changed shape rather than at a missing substring.",
+                "",
+                "Close this issue once the tests pass again; the next failure opens a new one.",
+              ].join("\n"),
+              labels: ["bug", "live-tests"],
+            });
