@@ -209,7 +209,7 @@ All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefi
 
 | Tool | Description | Data Source |
 |---|---|---|
-| `srgssr_video_get_shows` | List TV shows for a business unit | SRG SSR IL |
+| `srgssr_video_get_shows` | List TV shows for a business unit (`character_filter` a–z/# selects one initial; omit it to fan out over all 27) | SRG SSR IL |
 | `srgssr_video_get_episodes` | Retrieve latest episodes of a show | SRG SSR IL |
 | `srgssr_video_get_livestreams` | List live TV channels | SRG SSR IL |
 
@@ -217,7 +217,7 @@ All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefi
 
 | Tool | Description | Data Source |
 |---|---|---|
-| `srgssr_audio_get_shows` | List radio shows for a business unit | SRG SSR IL |
+| `srgssr_audio_get_shows` | List radio shows for one radio channel (`channel_id` required — the v2 API has no per-unit listing) | SRG SSR IL |
 | `srgssr_audio_get_episodes` | Retrieve audio episodes of a show | SRG SSR IL |
 | `srgssr_audio_get_livestreams` | List live radio stations | SRG SSR IL |
 
@@ -254,7 +254,7 @@ All tools follow the pattern `srgssr_<domain>_<action>` with the namespace prefi
 | *"Latest Tagesschau episodes?"* | `srgssr_video_get_episodes` |
 | *"Popular votes in Canton Bern 2010–2020?"* | `srgssr_polis_get_votations` |
 | *"Cantonal results of the mask initiative vote?"* | `srgssr_polis_get_votation_results` |
-| *"All current RTS radio shows?"* | `srgssr_audio_get_shows` |
+| *"All current RTS radio shows?"* | `srgssr_audio_get_livestreams` → `srgssr_audio_get_shows` |
 
 → [More use cases by audience](EXAMPLES.md) →
 

@@ -201,7 +201,7 @@ Alle Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfi
 
 | Tool | Beschreibung | Datenquelle |
 |---|---|---|
-| `srgssr_video_get_shows` | TV-Sendungen einer Unternehmenseinheit auflisten | SRG SSR IL |
+| `srgssr_video_get_shows` | TV-Sendungen einer Unternehmenseinheit auflisten (`character_filter` a–z/# wählt einen Anfangsbuchstaben; weglassen fragt alle 27 ab) | SRG SSR IL |
 | `srgssr_video_get_episodes` | Neueste Episoden einer Sendung abrufen | SRG SSR IL |
 | `srgssr_video_get_livestreams` | Live-TV-Kanäle auflisten | SRG SSR IL |
 
@@ -209,7 +209,7 @@ Alle Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfi
 
 | Tool | Beschreibung | Datenquelle |
 |---|---|---|
-| `srgssr_audio_get_shows` | Radiosendungen einer Unternehmenseinheit auflisten | SRG SSR IL |
+| `srgssr_audio_get_shows` | Radiosendungen eines Radiokanals auflisten (`channel_id` ist Pflicht — die v2-API kennt keine Liste pro Unternehmenseinheit) | SRG SSR IL |
 | `srgssr_audio_get_episodes` | Audio-Episoden einer Sendung abrufen | SRG SSR IL |
 | `srgssr_audio_get_livestreams` | Live-Radiostationen auflisten | SRG SSR IL |
 
@@ -246,7 +246,7 @@ Alle Tools folgen dem Schema `srgssr_<domain>_<action>` mit dem Namespace-Präfi
 | *«Neueste Tagesschau-Episoden?»* | `srgssr_video_get_episodes` |
 | *«Volksabstimmungen im Kanton Bern 2010–2020?»* | `srgssr_polis_get_votations` |
 | *«Kantonale Resultate zur Maskeninitiative?»* | `srgssr_polis_get_votation_results` |
-| *«Alle aktuellen RTS-Radiosendungen?»* | `srgssr_audio_get_shows` |
+| *«Alle aktuellen RTS-Radiosendungen?»* | `srgssr_audio_get_livestreams` → `srgssr_audio_get_shows` |
 
 → [Weitere Anwendungsbeispiele nach Zielgruppe](EXAMPLES.md) →
 
