@@ -165,14 +165,28 @@ def _location_from_dict(d: dict) -> WeatherLocation:
     )
 
 
-def _forecast_point_id(latitude: float, longitude: float, explicit: str | None) -> str:
-    """The path segment for /forecastpoint.
+async def _resolve_geolocation_id(latitude: float, longitude: float) -> str:
+    """Look up the geolocation id the forecast endpoint expects.
 
-    Documented as ``'[lat],[lon]' rounded to 4 digits``. An explicit id from
-    the search wins, because a named location resolves to a station the API
-    actually has data for.
+    The spec describes the path parameter as ``'[lat],[lon]' rounded to 4
+    digits``, which reads like the coordinates can be used directly. They
+    cannot — measured 2026-07-31, ``/forecastpoint/47.3769,8.5417`` answers
+    404 while the same request with an id from ``/geolocations`` succeeds. So
+    the coordinates are resolved to a station first.
     """
-    return explicit or f"{latitude:.4f},{longitude:.4f}"
+    data = await _api_get(
+        f"{WEATHER_BASE}/geolocations",
+        params={"latitude": f"{latitude:.4f}", "longitude": f"{longitude:.4f}"},
+    )
+    for entry in _as_location_list(data):
+        candidate = entry.get("id")
+        if candidate is not None:
+            return str(candidate)
+    raise ValueError(
+        f"Für die Koordinaten {latitude:.4f}, {longitude:.4f} liefert SRF Meteo "
+        f"keinen Standort. Nur Schweizer Koordinaten sind abgedeckt; alternativ "
+        f"eine geolocation_id aus srgssr_weather_search_location übergeben."
+    )
 
 
 async def _fetch_forecast_point(
@@ -181,9 +195,10 @@ async def _fetch_forecast_point(
     """One call to /forecastpoint — it carries days, three_hours and hours.
 
     v2 has no separate current/24h/7day endpoints; the three tools slice
-    different arrays out of this same payload.
+    different arrays out of this same payload. Without an explicit id this
+    costs one extra request to resolve the coordinates.
     """
-    point_id = _forecast_point_id(latitude, longitude, geolocation_id)
+    point_id = geolocation_id or await _resolve_geolocation_id(latitude, longitude)
     return await _api_get(f"{WEATHER_BASE}/forecastpoint/{point_id}")
 
 

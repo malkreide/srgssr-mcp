@@ -143,19 +143,61 @@ async def test_weather_search_accepts_a_single_object_response():
 
 
 @respx.mock
-async def test_weather_forecast_point_id_is_built_from_coordinates():
-    """Documented as '[lat],[lon]' rounded to four digits."""
+async def test_weather_forecast_point_id_comes_from_the_geolocation_lookup():
+    """The coordinates are not usable as an id.
+
+    The spec describes the path parameter as '[lat],[lon]' rounded to four
+    digits, which reads like they are — but /forecastpoint/47.3769,8.5417
+    answers 404 against the live API. The coordinates resolve to a station
+    first, and that station's id goes into the path.
+    """
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [], "days": []})
     )
     await srgssr_weather_current(
         WeatherForecastInput(latitude=47.376887, longitude=8.541694)
     )
-    assert route.calls.last.request.url.path.endswith("/forecastpoint/47.3769,8.5417")
+    assert route.calls.last.request.url.path.endswith("/forecastpoint/100001")
+
+
+@respx.mock
+async def test_weather_no_station_for_coordinates_is_an_error():
+    """An empty geolocation lookup must not become an empty forecast."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[])
+    )
+    result = await srgssr_weather_current(
+        WeatherForecastInput(latitude=47.3769, longitude=8.5417)
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "keinen Standort" in result.message
+
+
+@respx.mock
+async def test_weather_explicit_geolocation_id_skips_the_lookup():
+    """A known id means one request instead of two."""
+    lookup = respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 1}])
+    )
+    respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
+        return_value=httpx.Response(200, json={"hours": [], "days": []})
+    )
+    await srgssr_weather_current(
+        WeatherForecastInput(
+            latitude=47.3769, longitude=8.5417, geolocation_id="100001"
+        )
+    )
+    assert not lookup.called
 
 
 @respx.mock
 async def test_weather_explicit_geolocation_id_wins_over_coordinates():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [], "days": []})
     )
@@ -174,6 +216,9 @@ async def test_weather_all_three_tools_share_one_endpoint():
         "hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 9.0, "symbol_code": 3}],
         "days": [{"date_time": "2026-04-30", "TN_C": 4, "TX_C": 12, "symbol_code": 3}],
     }
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json=payload)
     )
@@ -215,6 +260,9 @@ async def test_weather_search_location_empty_results():
 
 @respx.mock
 async def test_weather_current_happy_path():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
@@ -244,6 +292,9 @@ async def test_weather_current_happy_path():
 
 @respx.mock
 async def test_weather_current_handles_429():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(429, text="Too Many Requests")
     )
@@ -257,6 +308,9 @@ async def test_weather_current_handles_429():
 @respx.mock
 async def test_weather_current_returns_typed_response():
     payload = {"hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 5.0}]}
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json=payload)
     )
@@ -284,6 +338,9 @@ async def test_weather_forecast_24h_happy_path():
         }
         for h in range(24)
     ]
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": hours})
     )
@@ -298,6 +355,9 @@ async def test_weather_forecast_24h_happy_path():
 
 @respx.mock
 async def test_weather_forecast_24h_handles_404():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
@@ -310,6 +370,9 @@ async def test_weather_forecast_24h_handles_404():
 
 @respx.mock
 async def test_weather_forecast_24h_empty_returns_empty_hours():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"unexpected": "shape"})
     )
@@ -337,6 +400,9 @@ async def test_weather_forecast_7day_happy_path():
         }
         for d in range(1, 8)
     ]
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"days": days})
     )
@@ -351,6 +417,9 @@ async def test_weather_forecast_7day_happy_path():
 
 @respx.mock
 async def test_weather_forecast_7day_handles_401():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(401, text="Unauthorized")
     )
@@ -364,6 +433,9 @@ async def test_weather_forecast_7day_handles_401():
 @respx.mock
 async def test_weather_forecast_7day_typed_payload():
     days = [{"date_time": "2026-05-01", "TN_C": 5, "TX_C": 15}]
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"days": days})
     )
@@ -1128,6 +1200,48 @@ async def test_polis_unknown_canton_is_an_error_not_an_unfiltered_list():
 
 
 @respx.mock
+async def test_polis_unparseable_case_dates_are_an_error():
+    """570 cases and not one readable date is a bug, not an empty period.
+
+    Returning [] there would have the model report "no votations between 2020
+    and 2024" when the truth is that the date field changed shape.
+    """
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200, json={"Case": [{"id": 1, "EventDate": None}, {"id": 2}]}
+        )
+    )
+    result = await srgssr_polis_get_votations(
+        PolisListInput(year_from=2020, year_to=2024)
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "nicht auswerten" in result.message
+    _clear_reference_cache()
+
+
+@respx.mock
+async def test_polis_empty_period_is_not_an_error():
+    """Dates that parse but fall outside the range are a legitimate empty."""
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200, json={"Case": [{"id": 1, "EventDate": "1999-03-07"}]}
+        )
+    )
+    result = await srgssr_polis_get_votations(
+        PolisListInput(year_from=2020, year_to=2024)
+    )
+    assert isinstance(result, VotationsResponse)
+    assert result.count == 0
+    _clear_reference_cache()
+
+
+@respx.mock
 async def test_polis_year_range_is_resolved_via_cases():
     """v2 has no year filter — a range becomes one request per voting day."""
     from srgssr_mcp.tools.polis import _clear_reference_cache
@@ -1520,6 +1634,9 @@ def _briefing_input(**overrides) -> DailyBriefingInput:
 @respx.mock
 async def test_daily_briefing_combines_weather_and_epg():
     """Both upstream calls succeed → markdown briefing carries both sections."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     weather_route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
@@ -1568,6 +1685,9 @@ async def test_daily_briefing_combines_weather_and_epg():
 async def test_daily_briefing_emits_ctx_progress_and_info():
     """SDK-003: when invoked with a Context, the aggregator emits structured
     log + progress events that an MCP client can surface as activity."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": []})
     )
@@ -1610,6 +1730,9 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
 async def test_tools_accept_no_ctx_unchanged():
     """SDK-003: omitting ``ctx`` (the existing call shape) must keep working —
     no test in the suite passes ctx, and the optional default must not break."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
@@ -1672,6 +1795,9 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
             return httpx.Response(200, json={"hours": []})
         return httpx.Response(200, json={"programList": []})
 
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(side_effect=_trace)
     respx.get(_epg_station()).mock(side_effect=_trace)
 
@@ -1683,6 +1809,9 @@ async def test_daily_briefing_runs_upstreams_in_parallel():
 @respx.mock
 async def test_daily_briefing_partial_failure_renders_remaining_section():
     """When EPG returns 404 the weather section must still render (graceful degradation)."""
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(
             200,
@@ -1716,6 +1845,9 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
 
 @respx.mock
 async def test_daily_briefing_returns_typed_sub_responses():
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
+    )
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [{"date_time": "2026-04-30T00:00"}]})
     )
