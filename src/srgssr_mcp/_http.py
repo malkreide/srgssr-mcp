@@ -343,7 +343,15 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
             return f"{base}\n\n**Tipp:** {not_found_hint}" if not_found_hint else base
         if sc == 429:
             return "Fehler 429: Rate-Limit überschritten. Bitte etwas warten und erneut versuchen."
-        return f"API-Fehler {sc}: {e.response.text[:200]}"
+        base = f"API-Fehler {sc}: {e.response.text[:200]}"
+        # A bad identifier does not always come back as 404. The EPG rejects an
+        # unknown station with 400 (`400.01.004`), so a hint attached to 404
+        # only would never reach the caller in the very case it was written
+        # for. 400 means "your input was wrong" just as 404 does, and the hint
+        # is what makes that recoverable.
+        if sc == 400 and not_found_hint:
+            return f"{base}\n\n**Tipp:** {not_found_hint}"
+        return base
     if isinstance(e, httpx.TimeoutException):
         return "Fehler: Anfrage hat das Timeout überschritten. Bitte erneut versuchen."
     # Defense-in-Depth (OBS-002): never include str(e) in the user-facing

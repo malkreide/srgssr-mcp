@@ -162,6 +162,15 @@ Tools decken parametrisierte Abfragen ab (Jahres-Ranges, Freitext, Paginierung),
 | `epg://{bu}/{channel_id}/{date}` | Tagesprogramm eines TV- oder Radiosenders (SRF, RTS, RSI) — z.B. `epg://srf/srf-1/2026-04-30` |
 | `votation://{votation_id}` | Detailresultat einer abgeschlossenen Schweizer Volksabstimmung — z.B. `votation://v1` |
 
+**EPG-Sender-IDs** — mit Bindestrich, und nicht identisch mit den Livestream-IDs:
+
+| Unternehmenseinheit | TV | Radio |
+|---|---|---|
+| SRF | `srf-1`, `srf-2`, `srf-info` | `srf-1`, `srf-2`, `srf-2-kultur`, `srf-3`, `srf-4`, `srf-musikwelle`, `srf-virus` |
+| RTS | `rts-1`, `rts-2`, `rts-info` | `LA1ERE`, `ESPACE2`, `COULEUR3`, `OPTION_MUSIQUE` |
+| RSI | `la-1`, `la-2` | `rete-uno`, `rete-due`, `rete-tre` |
+
+
 ### Prompts
 
 | Name | Argumente | Zweck |

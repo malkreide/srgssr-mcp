@@ -170,6 +170,15 @@ Tools cover parametrized searches (year ranges, free-text, paginated listings) w
 | `epg://{bu}/{channel_id}/{date}` | Daily TV/radio program guide for SRF, RTS, RSI (e.g. `epg://srf/srf-1/2026-04-30`) |
 | `votation://{votation_id}` | Detailed result of a closed Swiss popular vote (e.g. `votation://v1`) |
 
+**EPG station ids** — hyphenated, and not the same as the livestream ids:
+
+| Business unit | TV | Radio |
+|---|---|---|
+| SRF | `srf-1`, `srf-2`, `srf-info` | `srf-1`, `srf-2`, `srf-2-kultur`, `srf-3`, `srf-4`, `srf-musikwelle`, `srf-virus` |
+| RTS | `rts-1`, `rts-2`, `rts-info` | `LA1ERE`, `ESPACE2`, `COULEUR3`, `OPTION_MUSIQUE` |
+| RSI | `la-1`, `la-2` | `rete-uno`, `rete-due`, `rete-tre` |
+
+
 ### Prompts
 
 | Name | Arguments | Purpose |

@@ -20,6 +20,8 @@ from srgssr_mcp.tools.epg import (
     _build_epg_response,
     _epg_station_url,
     _extract_raw_programs,
+    _known_stations,
+    _station_hint,
 )
 
 logger = get_logger("mcp.srgssr.resources")
@@ -44,7 +46,9 @@ def _normalize_bu(bu: str) -> str:
         "cache-freundlich. Verfügbar für SRF, RTS und RSI. "
         "Beispiel-URI: epg://srf/srf-1/2026-04-30\n\n"
         "Nur TV: die URI-Vorlage hat kein Feld für den Sendertyp. Für Radio das "
-        "Tool srgssr_epg_get_programs mit broadcast_type='radio' verwenden."
+        "Tool srgssr_epg_get_programs mit broadcast_type='radio' verwenden.\n\n"
+        "TV-Sender: srf → " + _known_stations("srf", "tv") + "; rts → "
+        + _known_stations("rts", "tv") + "; rsi → " + _known_stations("rsi", "tv")
     ),
     mime_type="application/json",
 )
@@ -53,7 +57,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
 
     URI template parameters:
         bu: 'srf', 'rts' or 'rsi' (RTR/SWI have no EPG).
-        channel_id: channel identifier from the livestream listings (e.g. 'srf1').
+        channel_id: EPG station id, hyphenated (e.g. 'srf-1', 'rts-info', 'la-1').
         date: ISO date YYYY-MM-DD.
     """
     bu_norm = _normalize_bu(bu)
@@ -81,11 +85,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
         log.error("resource_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(
             e,
-            not_found_hint=(
-                f"channel_id='{channel_id}' nicht gefunden für business_unit='{bu_norm}'. "
-                f"Verwende das Tool srgssr_video_get_livestreams oder "
-                f"srgssr_audio_get_livestreams, um eine gültige channel_id zu finden."
-            ),
+            not_found_hint=_station_hint(bu_norm, "tv", channel_id),
         ).model_dump_json(indent=2)
 
     raw_programs = _extract_raw_programs(data)

@@ -68,8 +68,8 @@ def tagesbriefing_kanton_prompt(
 
     Args:
         location: Schweizer Ort oder PLZ (z.B. 'Zürich', '8001', 'Lausanne').
-        channel_id: Sender-ID des EPG (z.B. 'srf-1'); gültige IDs liefern
-            srgssr_video_get_livestreams / srgssr_audio_get_livestreams.
+        channel_id: EPG-Sender-ID mit Bindestrich — srf: 'srf-1', 'srf-2',
+            'srf-info'; rts: 'rts-1', 'rts-2', 'rts-info'; rsi: 'la-1', 'la-2'.
         business_unit: 'srf', 'rts' oder 'rsi'.
         date: ISO-Datum YYYY-MM-DD; leer = heute.
     """

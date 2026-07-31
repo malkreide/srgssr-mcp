@@ -700,6 +700,89 @@ async def test_epg_resource_uses_the_station_endpoint():
     assert route.calls.last.request.url.params["date"] == "2026-04-30"
 
 
+def test_epg_station_registry_matches_what_the_api_reported():
+    """Pinned to the values the gateway itself enumerated on 2026-07-31.
+
+    An unsupported station comes back as 400.01.004/005/006 listing the valid
+    inputs; that is where these came from. Pinning them means a silent edit
+    (or a well-meant "correction" to srf1-style ids) fails here rather than in
+    production.
+    """
+    from srgssr_mcp.tools.epg import EPG_STATIONS
+
+    assert EPG_STATIONS[("srf", "tv")] == ("srf-1", "srf-2", "srf-info")
+    assert EPG_STATIONS[("rts", "tv")] == ("rts-1", "rts-2", "rts-info")
+    assert EPG_STATIONS[("rsi", "tv")] == ("la-1", "la-2")
+    assert EPG_STATIONS[("rsi", "radio")] == ("rete-uno", "rete-due", "rete-tre")
+    # RTS radio is the odd one out: upper case with an underscore.
+    assert EPG_STATIONS[("rts", "radio")] == (
+        "LA1ERE",
+        "ESPACE2",
+        "COULEUR3",
+        "OPTION_MUSIQUE",
+    )
+    assert "srf-musikwelle" in EPG_STATIONS[("srf", "radio")]
+
+
+@respx.mock
+async def test_epg_bad_station_hint_names_the_valid_ids():
+    """The API answers a wrong station with 400, not 404 — the hint must still
+    reach the caller, and it must name the ids that work."""
+    respx.get(_epg_station(channel="srf1")).mock(
+        return_value=httpx.Response(
+            400,
+            json={
+                "code": "400.01.004",
+                "message": "srf1 is not a supported SRF tv station",
+            },
+        )
+    )
+    result = await srgssr_epg_get_programs(
+        EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf1", date="2026-04-30")
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "srf-1" in result.message
+    assert "srf-info" in result.message
+    assert "Bindestrich" in result.message
+
+
+@respx.mock
+async def test_epg_radio_hint_lists_radio_stations_not_tv():
+    respx.get(_epg_station(bu="rsi", broadcast_type="radio", channel="bogus")).mock(
+        return_value=httpx.Response(400, json={"code": "400.01.005"})
+    )
+    result = await srgssr_epg_get_programs(
+        EpgProgramsInput(
+            business_unit=BusinessUnit.RSI,
+            broadcast_type="radio",
+            channel_id="bogus",
+            date="2026-04-30",
+        )
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "rete-uno" in result.message
+    assert "la-1" not in result.message  # that is the TV list
+
+
+def test_handle_error_attaches_hint_on_400_as_well_as_404():
+    req = httpx.Request("GET", "https://api.srgssr.ch/epg/v3/srf/tv/stations/x")
+    for status in (400, 404):
+        err = httpx.HTTPStatusError(
+            "boom", request=req, response=httpx.Response(status, text="nope", request=req)
+        )
+        msg = _server._handle_error(err, not_found_hint="nimm srf-1")
+        assert "nimm srf-1" in msg, f"hint missing on {status}"
+
+
+def test_handle_error_leaves_other_statuses_alone():
+    req = httpx.Request("GET", "https://api.srgssr.ch/epg/v3/x")
+    err = httpx.HTTPStatusError(
+        "boom", request=req, response=httpx.Response(500, text="nope", request=req)
+    )
+    msg = _server._handle_error(err, not_found_hint="nimm srf-1")
+    assert "nimm srf-1" not in msg
+
+
 @respx.mock
 async def test_epg_get_programs_handles_404():
     respx.get(_epg_station()).mock(
@@ -1054,7 +1137,9 @@ async def test_epg_get_programs_404_includes_recovery_hint():
     )
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message
-    assert "srgssr_video_get_livestreams" in result.message
+    # The hint names the ids that work instead of pointing at the livestream
+    # tools, whose ids come from a different API and need not match.
+    assert "srf-1" in result.message
 
 
 @respx.mock
@@ -1278,7 +1363,7 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
     # EPG side carries a typed error with the recovery hint
     assert isinstance(result.epg, ToolErrorResponse)
     assert "404" in result.epg.message
-    assert "srgssr_video_get_livestreams" in result.epg.message
+    assert "srf-1" in result.epg.message
 
 
 @respx.mock
@@ -1581,7 +1666,7 @@ async def test_epg_resource_handles_404():
     payload = json.loads(body)
     assert payload["is_error"] is True
     assert "404" in payload["message"]
-    assert "srgssr_video_get_livestreams" in payload["message"]
+    assert "srf-1" in payload["message"]
 
 
 @respx.mock
@@ -1664,15 +1749,15 @@ async def test_tagesbriefing_kanton_prompt_with_date_and_channel():
         "tagesbriefing_kanton",
         {
             "location": "Lausanne",
-            "channel_id": "rts1",
+            "channel_id": "rts-1",
             "business_unit": "rts",
             "date": "2026-05-01",
         },
     )
     text = result.messages[0].content.text
     assert "Lausanne" in text
-    assert "rts1" in text
-    assert "epg://rts/rts1" in text
+    assert "rts-1" in text
+    assert "epg://rts/rts-1" in text
     assert "2026-05-01" in text
 
 
@@ -2129,7 +2214,7 @@ def test_daily_briefing_extra_field_rejected():
     with pytest.raises(_ValidationError):
         DailyBriefingInput(  # type: ignore[call-arg]
             business_unit=BusinessUnit.SRF,
-            channel_id="srf1",
+            channel_id="srf-1",
             date="2026-04-30",
             latitude=47.0,
             longitude=8.0,
