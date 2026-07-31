@@ -2,7 +2,7 @@
 
 # 📺 srgssr-mcp
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io/)
@@ -334,7 +334,7 @@ The version is pinned explicitly as `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.
 srgssr-mcp/
 ├── src/srgssr_mcp/
 │   ├── __init__.py          # Package
-│   └── server.py            # FastMCP server: 14 tools, OAuth2 client
+│   └── server.py            # FastMCP server: 15 tools, OAuth2 client
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI (Python 3.11–3.13)
