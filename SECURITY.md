@@ -36,13 +36,13 @@ are tracked in [`CHANGELOG.md`](CHANGELOG.md) once a fix ships.
 ## Posture Summary
 
 This is a **read-only**, **no-PII** MCP server. All tools only issue
-`GET`-style requests (via OAuth2 Client Credentials) against the **SRG SSR
-Public API V2** (`api.srgssr.ch`); the OAuth2 token itself is fetched from the
-Apigee runtime host `srgssr-prod.apigee.net`. Hardening already in place:
+`GET`-style requests (via OAuth2 Client Credentials) against a single fixed
+upstream host — the **SRG SSR Public API V2** (`api.srgssr.ch`). Hardening
+already in place:
 
 | Area | Control |
 |---|---|
-| Egress | HTTPS-only code-layer allowlist to `api.srgssr.ch` (data) and `srgssr-prod.apigee.net` (token endpoint only); no user-controlled URLs are constructed (SEC-004 / SEC-021) — see [Egress Allowlist](README.md#egress-allowlist), which also records why the second host is provisional |
+| Egress | HTTPS-only code-layer allowlist to `api.srgssr.ch`; no user-controlled URLs are constructed (SEC-004 / SEC-021) — see [Egress Allowlist](README.md#egress-allowlist) |
 | SSRF / DNS rebinding | Every resolved IP is checked against private, loopback, link-local (incl. `169.254.169.254`), CGNAT, multicast and reserved ranges; a single shared TTL-cached DNS resolution closes the TOCTOU window (SEC-005) |
 | TLS | Certificate verification on by default (httpx default); never disabled |
 | Binding | stdio transport by default; the optional HTTP/SSE transport binds via the SDK default and is driven by explicit env vars (`SRGSSR_MCP_HOST`/`PORT`) |

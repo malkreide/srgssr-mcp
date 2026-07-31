@@ -379,14 +379,7 @@ Der Server implementiert eine **Code-Layer-Egress-Allowlist** (SEC-021, kombinie
 **Drei Kontrollen pro Request:**
 
 1. **HTTPS-only** — `http://`, `file://`, `ftp://` und andere Nicht-HTTPS-Schemata werden abgewiesen.
-2. **Host-Allowlist** — der URL-Hostname muss exakt einem Eintrag aus `ALLOWED_HOSTS` entsprechen (Exact-Match — Subdomain-Tricks wie `api.srgssr.ch.attacker.example` werden geblockt):
-
-   | Host | Wird angesprochen von |
-   |---|---|
-   | `api.srgssr.ch` | allen Daten-Endpunkten — Wetter, Video, Audio, EPG, Polis |
-   | `srgssr-prod.apigee.net` | ausschliesslich dem OAuth2-Token-Endpunkt (`TOKEN_URL`) |
-
-   `srgssr-prod.apigee.net` ist der Apigee-Runtime-Host hinter demselben Gateway und der Ort, an den die Basic-Auth-Client-Credentials gehen. Es handelt sich um multi-tenant-Infrastruktur unter Google-Betrieb, nicht um eine SRG-SSR-Domain — die Vertrauensgrenze wird damit über `api.srgssr.ch` hinaus erweitert. Der Eintrag kam mit [#46](https://github.com/malkreide/srgssr-mcp/pull/46) hinzu, um `Invalid access token`-Antworten zu beheben; diese Diagnose ist nicht unabhängig reproduziert — `https://api.srgssr.ch/oauth/v1/accesstoken` antwortet ebenfalls, und dieselbe Fault-Meldung liefert jeder unauthentifizierte Request an einen v2-Basepath. Der zweite Eintrag gilt als provisorisch, bis mit echten Credentials belegt ist, welchen Issuer die Daten-APIs akzeptieren.
+2. **Host-Allowlist** — der URL-Hostname muss exakt `ALLOWED_HOSTS = {"api.srgssr.ch"}` entsprechen (Exact-Match — Subdomain-Tricks wie `api.srgssr.ch.attacker.example` werden geblockt). Ein Host deckt alles ab: den OAuth2-Token-Endpunkt und sämtliche Daten-Endpunkte.
 3. **IP-Blocklist** — jede aufgelöste IP des Hostnamens wird gegen private, Loopback-, Link-Local- (inkl. `169.254.169.254` Cloud-Metadata), CGNAT-, Multicast- und Reserved-Ranges (IPv4 + IPv6) geprüft. Jeder einzelne Treffer bricht den Request ab — Defense-in-Depth gegen DNS-Rebinding.
 
 Verstöße werden als `ValueError` propagiert und durch `_handle_error` zu einer lokalisierten `Konfigurationsfehler: …`-Meldung gemappt; interne Netz-Details werden niemals an den MCP-Client geleakt.
