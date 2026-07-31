@@ -5,6 +5,24 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **3xx-Guard in `_api_get`.** Ein Basispfad, den das Gateway nicht kennt,
+  wird mit `302` auf `developer.srgssr.ch` beantwortet statt mit `404`.
+  `raise_for_status()` wirft darauf zwar, aber der Fehler fiel in den
+  generischen Zweig von `_handle_error` und erzeugte `API-Fehler 302:` plus
+  den leeren Redirect-Body: ein Statuscode und sonst nichts — kein Endpunkt,
+  kein Hinweis auf die Ursache.
+
+  Hinter dieser Meldung haben vier tote Basispfade (`/video/v3`, `/audio/v3`,
+  `/forecasts/v2.0/weather`, `/polis/v1`) ein Release überlebt. Der Guard
+  nennt jetzt Pfad und Redirect-Ziel und stuft es als
+  «Konfigurationsfehler» ein — was ein nicht mehr existierender Basispfad
+  auch ist. Gilt für Daten- und Token-Requests gleichermassen.
+
+  Gegenprobe: ohne den Guard liefert derselbe Test `API-Fehler 302:` mit
+  leerem Body, mit ihm eine Meldung, die `tv_shows/alphabetical` und das
+  Redirect-Ziel nennt.
+
 ### Fixed
 - **Polis-Tools auf `polis-api/v2` umgestellt.** `POLIS_BASE` zeigte auf
   `/polis/v1` — ein Basispfad, den das Gateway nicht kennt. Sechs Varianten
@@ -218,9 +236,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 - **API-Basispfade und EPG-Endpunkt korrigiert** (Basis: PR #46 von @aburossi).
   `/video/v3` und `/audio/v3` sind bei Apigee nicht mehr als Basepath
   registriert — sie antworten mit **302 auf `developer.srgssr.ch`**, exakt wie
-  ein frei erfundener Pfad. Weil 302 kein 4xx ist, greift `raise_for_status()`
-  nicht: `resp.json()` lief auf HTML und der User sah nur «Unerwarteter
-  Fehler». Neu `/videometadata/v2` und `/audiometadata/v2`.
+  ein frei erfundener Pfad. Der Aufrufer sah davon nur `API-Fehler 302:` samt
+  leerem Redirect-Body — Statuscode und sonst nichts. Neu
+  `/videometadata/v2` und `/audiometadata/v2`.
+
+  *Korrektur (2026-07-31):* Dieser Eintrag behauptete ursprünglich,
+  `raise_for_status()` greife bei 302 nicht und `resp.json()` sei auf HTML
+  gelaufen. Das stimmt nicht — httpx wirft auch bei 3xx. Der Fehler landete im
+  generischen Zweig von `_handle_error`, nicht in einem `JSONDecodeError`. Am
+  Befund und am Fix ändert das nichts, an der Begründung schon.
 
   Das EPG adressiert einen Tag über `/{bu}/{tv|radio}/stations/{station}` —
   Unternehmenseinheit und Sendertyp sind Pfadsegmente, nicht Query-Parameter.
