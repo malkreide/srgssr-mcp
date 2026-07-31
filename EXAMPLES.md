@@ -61,7 +61,7 @@ MCP-Enthusiast:innen, Forscher:innen, Prompt Engineers, öffentliche Verwaltung
 → `srgssr_video_get_livestreams(business_unit="srf")`
 → `srgssr_video_get_livestreams(business_unit="rts")`
 → `srgssr_epg_get_programs(business_unit="srf", channel_id="srf-1", date="2024-05-15")`
-→ `srgssr_epg_get_programs(business_unit="rts", channel_id="rts1", date="2024-05-15")`
+→ `srgssr_epg_get_programs(business_unit="rts", channel_id="rts-1", date="2024-05-15")`
 **Warum nützlich:** Zeigt Entwicklerinnen und Entwicklern, wie sie mit wenigen API-Aufrufen cross-mediale und mehrsprachige Programmübersichten für eigene Dashboards oder Smarthome-Displays aggregieren können.
 
 ### 🔧 Technische Referenz: Tool-Auswahl nach Anwendungsfall

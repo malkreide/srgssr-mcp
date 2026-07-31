@@ -5,6 +5,43 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Sender-Register für das EPG, direkt von der API erhoben.** Die gültigen
+  Sender-IDs standen bisher nirgends; `srf1` in allen Beispielen war schlicht
+  falsch, und für RTS und RSI hatte niemand belastbare Werte. Der Gateway
+  nennt sie selbst: eine unbekannte Station beantwortet er mit
+  `400.01.004/005/006` und zählt im `info`-Feld die zulässigen Werte auf.
+  Abgefragt am 2026-07-31 für alle sechs Kombinationen:
+
+  | Unternehmenseinheit | TV | Radio |
+  |---|---|---|
+  | SRF | `srf-1`, `srf-2`, `srf-info` | `srf-1`, `srf-2`, `srf-2-kultur`, `srf-3`, `srf-4`, `srf-musikwelle`, `srf-virus` |
+  | RTS | `rts-1`, `rts-2`, `rts-info` | `LA1ERE`, `ESPACE2`, `COULEUR3`, `OPTION_MUSIQUE` |
+  | RSI | `la-1`, `la-2` | `rete-uno`, `rete-due`, `rete-tre` |
+
+  RTS-Radio fällt aus dem Schema — Grossbuchstaben mit Unterstrich. Ein
+  geratenes `rts-1` wäre dort ebenso falsch gewesen wie das alte `rts1`.
+
+  `EPG_STATIONS` in `tools/epg.py` hält die Werte und speist zwei Stellen: die
+  Tool-Description, damit das Modell gleich eine gültige ID wählt, und den
+  Fehler-Hint, damit eine falsche ID in einem Schritt korrigierbar ist. Der
+  bisherige Hint verwies auf `srgssr_video_get_livestreams` — ein Umweg, denn
+  jene IDs stammen aus einer anderen API und müssen mit den EPG-IDs nicht
+  übereinstimmen.
+
+  **Bewusst keine Eingabe-Validierung.** Eine harte lokale Prüfung würde einen
+  Request ablehnen, den die API beantworten würde, sobald SRG SSR einen Sender
+  ergänzt. Echte Daten zu verweigern ist der schlechtere Fehler. Das Register
+  informiert, es blockiert nicht.
+
+### Fixed
+- **Fehler-Hints erscheinen jetzt auch bei `400`, nicht nur bei `404`.** Eine
+  unbekannte Sender-ID beantwortet das EPG mit `400`, nicht mit `404` — der
+  Hint, der genau für diesen Fall geschrieben ist, hätte den Aufrufer also nie
+  erreicht. `400` heisst wie `404` «deine Eingabe war falsch», und erst der
+  Hint macht das reparierbar. Andere Statuscodes bleiben unberührt, inklusive
+  Test dafür.
+
 ### Security
 - **Token-Endpunkt zurück auf `api.srgssr.ch`, Egress-Allowlist wieder bei einem
   Host.** Mit dem Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` als

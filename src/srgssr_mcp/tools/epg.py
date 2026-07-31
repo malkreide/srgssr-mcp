@@ -10,6 +10,63 @@ from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.epg")
 
+# Harvested from the gateway itself rather than from documentation: an
+# unsupported station name comes back as 400.01.004/005/006 with the valid
+# inputs enumerated in the ``info`` field. Measured 2026-07-31 against
+# https://api.srgssr.ch/epg/v3.
+#
+# Deliberately NOT enforced as input validation. If SRG SSR adds a station,
+# a hard local check would reject a request the API would happily answer —
+# refusing real data is the worse failure. The registry feeds the tool
+# description (so the model picks a valid id up front) and the not-found hint
+# (so a wrong id is recoverable in one step) and nothing else.
+EPG_STATIONS: dict[tuple[str, str], tuple[str, ...]] = {
+    ("srf", "tv"): ("srf-1", "srf-2", "srf-info"),
+    ("srf", "radio"): (
+        "srf-1",
+        "srf-2",
+        "srf-2-kultur",
+        "srf-3",
+        "srf-4",
+        "srf-musikwelle",
+        "srf-virus",
+    ),
+    ("rts", "tv"): ("rts-1", "rts-2", "rts-info"),
+    ("rts", "radio"): ("LA1ERE", "ESPACE2", "COULEUR3", "OPTION_MUSIQUE"),
+    ("rsi", "tv"): ("la-1", "la-2"),
+    ("rsi", "radio"): ("rete-uno", "rete-due", "rete-tre"),
+}
+
+
+def _known_stations(bu: str, broadcast_type: str) -> str:
+    """Render the known station ids for one (bu, broadcast_type) pair."""
+    stations = EPG_STATIONS.get((bu, broadcast_type))
+    return ", ".join(stations) if stations else "(keine bekannt)"
+
+
+def _station_hint(bu: str, broadcast_type: str, channel_id: str) -> str:
+    """Recovery hint naming the station ids the API accepts.
+
+    The previous hint pointed at the livestream tools for discovery, which is
+    a detour at best: their ids come from a different API and need not match
+    the EPG's. Naming the accepted values makes a wrong id a one-step fix.
+    """
+    return (
+        f"channel_id='{channel_id}' ist für business_unit='{bu}' und "
+        f"broadcast_type='{broadcast_type}' nicht gültig. Bekannte Sender: "
+        f"{_known_stations(bu, broadcast_type)}. Beachte die Schreibweise mit "
+        f"Bindestrich ('srf-1', nicht 'srf1'). EPG gibt es nur für SRF, RTS "
+        f"und RSI."
+    )
+
+
+def _station_overview() -> str:
+    """One line per (bu, broadcast_type) for the tool description."""
+    return "\n".join(
+        f"{bu} {bt}: {', '.join(stations)}"
+        for (bu, bt), stations in EPG_STATIONS.items()
+    )
+
 
 class EpgProgramsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
@@ -78,8 +135,14 @@ def _build_epg_response(
         "SRG SSR TV- oder Radiosenders für einen bestimmten Tag ab.\n\n"
         "<use_case>TV-/Radio-Programmvorschauen, redaktionelle Programm-Tipps.</use_case>\n\n"
         "<important_notes>Verfügbar nur für SRF, RTS und RSI — nicht für RTR "
-        "oder SWI.</important_notes>\n\n"
-        "<example>business_unit='srf', channel_id='srf-1', date='2026-04-30'</example>"
+        "oder SWI. Die channel_id ist eine Sender-Kennung der EPG-API und wird "
+        "mit Bindestrich geschrieben ('srf-1', nicht 'srf1'); RTS-Radio "
+        "verwendet Grossbuchstaben. Bekannte Sender:\n"
+        f"{_station_overview()}</important_notes>\n\n"
+        "<example>business_unit='srf', broadcast_type='tv', channel_id='srf-1', "
+        "date='2026-04-30'</example>\n\n"
+        "<example>business_unit='rsi', broadcast_type='radio', "
+        "channel_id='rete-uno', date='2026-04-30'</example>"
     ),
     annotations={
         "title": "SRG SSR EPG – Programmvorschau",
@@ -117,12 +180,8 @@ async def srgssr_epg_get_programs(
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(
             e,
-            not_found_hint=(
-                f"channel_id='{params.channel_id}' nicht gefunden für "
-                f"business_unit='{params.business_unit.value}'. Verwende "
-                f"srgssr_video_get_livestreams oder srgssr_audio_get_livestreams, "
-                f"um eine gültige channel_id zu finden. EPG ist nur für SRF, RTS "
-                f"und RSI verfügbar."
+            not_found_hint=_station_hint(
+                bu, params.broadcast_type, params.channel_id
             ),
         )
 
