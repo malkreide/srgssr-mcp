@@ -6,6 +6,42 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Polis-Tools auf `polis-api/v2` umgestellt.** `POLIS_BASE` zeigte auf
+  `/polis/v1` — ein Basispfad, den das Gateway nicht kennt. Sechs Varianten
+  hatte ich erfolglos durchprobiert; die Spec `SRGSSR Polis 2.0.2` nennt
+  `/polis-api/v2`, credential-frei bestätigt (`401` statt `302`).
+
+### Changed
+- **Jahres- und Kantonsfilter sind jetzt echte Filter.** `PolisListInput` bot
+  `year_from`, `year_to` und `canton` an — **keiner dieser Parameter existiert
+  in der v2-API**. Sie wurden mitgeschickt und ignoriert: Eine Frage nach
+  «Abstimmungen im Kanton Bern zwischen 2010 und 2020» lieferte alles und sah
+  dabei aus wie eine gefilterte Antwort. Das ist heimtückischer als ein
+  Fehler, und es ist ausgerechnet die Anker-Demo-Abfrage der README.
+
+  Die API filtert über `locationid` und `caseid`. Beides wird jetzt aufgelöst:
+  Das Kantonskürzel geht über `/locations?locationtypeid=2`, der Jahresbereich
+  über `/cases` in die Abstimmungstage des Zeitraums, von denen dann nur so
+  viele abgefragt werden, wie die Seitengrösse verlangt. Ein unbekanntes
+  Kantonskürzel ist ein Fehler statt einer stillschweigend ungefilterten
+  Liste.
+
+  `/cases?listAllCases=true` ist laut Spec langsam und «nicht öfter als einmal
+  täglich» aufzurufen; die Kantons- und Fall-Listen werden deshalb sechs
+  Stunden prozessweit gecacht.
+
+- **Response-Parsing an die gemessenen Formen angepasst.** Die Spec lässt die
+  `200`-Antworten leer (`content: {}`), die JSON-Schlüssel stammen also aus
+  echten Antworten (2026-07-31). Sie sind XML-abgeleitet und uneinheitlich:
+  Abstimmungen liegen unter `Items`, Fälle unter `Case`, Wahlen eine Ebene
+  tiefer unter `Elections.Election` — ein Dict um das Array, weshalb eine
+  «nimm die erste Liste»-Heuristik danebengegriffen hätte. Datum ist
+  `EventDate`, Titel `Title`.
+
+  Wahlen tragen weder Titel noch Datum: beides steht am `Case`-Objekt daneben,
+  das jetzt mitgeführt wird.
+
+### Fixed
 - **Wetter-Tools auf die SRF-Meteo-v2-API umgestellt.** `WEATHER_BASE` zeigte
   auf `/forecasts/v2.0/weather` — einen Basispfad, den das Gateway nicht kennt
   (`302` aufs Developer-Portal). Laut Spec `SRF Weather 2.0.1` ist es

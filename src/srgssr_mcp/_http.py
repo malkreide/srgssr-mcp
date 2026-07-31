@@ -22,7 +22,7 @@ WEATHER_BASE = f"{BASE_URL}/srf-meteo/v2"
 VIDEO_BASE = f"{BASE_URL}/videometadata/v2"
 AUDIO_BASE = f"{BASE_URL}/audiometadata/v2"
 EPG_BASE = f"{BASE_URL}/epg/v3"
-POLIS_BASE = f"{BASE_URL}/polis/v1"
+POLIS_BASE = f"{BASE_URL}/polis-api/v2"
 
 TIMEOUT = 30.0
 # Derived from the package version, not hand-maintained: this literal read
