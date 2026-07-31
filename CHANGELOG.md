@@ -5,6 +5,53 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Security
+- **Die `live_credentials`-Fixture gab Key und Secret zurück.** pytest druckt
+  Fixture-Werte in jeden Fehlerbericht, also standen beide im Klartext zuoberst
+  in der Ausgabe jedes fehlschlagenden Live-Tests — und solche Ausgaben landen
+  in Issues, Chats und Bug-Reports. Kein Test hat den Rückgabewert je benutzt;
+  die Tools lesen die Zugangsdaten selbst aus der Umgebung. Die Fixture gibt
+  jetzt nichts mehr zurück.
+
+### Fixed
+- **Live-Tests scheiterten an `RuntimeError: Event loop is closed`.** Der
+  geteilte `httpx.AsyncClient` wird einmal erzeugt und für die Prozesslaufzeit
+  gehalten — richtig für einen Server, falsch unter pytest-asyncio, das jedem
+  Test einen frischen Event-Loop gibt. Ab dem zweiten Test erbte der Lauf einen
+  Client, dessen gepoolte Verbindungen zu einem bereits geschlossenen Loop
+  gehörten.
+
+  Das sah aus wie eine kaputte API und war keine: sechs der acht
+  Fehlschläge im ersten echten Live-Lauf gingen darauf zurück, nicht auf die
+  Endpunkte. Eine Autouse-Fixture schliesst den Client jetzt nach jedem Test,
+  analog zum bestehenden DNS-Pin-Reset.
+
+- **Wetter: die Koordinaten taugen nicht als `geolocationId`.** Die Spec
+  beschreibt den Pfadparameter als `'[lat],[lon]'` auf vier Nachkommastellen,
+  was sich liest, als könnte man sie direkt einsetzen. Gemessen am 2026-07-31:
+  `/forecastpoint/47.3769,8.5417` antwortet mit `404`. Die Koordinaten werden
+  jetzt zuerst über `/geolocations` in eine Stations-ID aufgelöst; findet sich
+  keine, ist das ein Fehler statt einer leeren Prognose. Eine explizit
+  übergebene `geolocation_id` spart den Zusatz-Request.
+
+- **Polis: unlesbare Falldaten sind ein Fehler, kein leerer Zeitraum.** Der
+  Live-Lauf holte 570 Abstimmungstage und filterte daraus null heraus — das
+  Datumsfeld hat nicht die angenommene Form. Das Ergebnis war eine leere
+  Liste, also «keine Abstimmungen zwischen 2020 und 2024» statt eines
+  Hinweises auf den Parsing-Fehler.
+
+  `_year_of` flacht das Feld jetzt über `_text` ab und sucht eine
+  vierstellige Jahreszahl; IDs werden nicht mehr durch `int()` gezwungen. Lässt
+  sich aus vorhandenen Fällen *kein einziges* Datum lesen, wird das als Fehler
+  gemeldet und die Feldnamen landen im Log unter `case_dates_unparseable`.
+  Daten, die sich lesen lassen und nur ausserhalb des Bereichs liegen, bleiben
+  ein legitimes leeres Ergebnis.
+
+- **Zwei Live-Tests prüften noch Strings** (`assert "Wahlen" in result`,
+  `assert "Volksabstimmungen" in result`) — übersehen bei der Umstellung auf
+  typisierte Returns. Gegen ein `BaseModel` iteriert `in` über die Feldnamen
+  und kann nie zutreffen.
+
 ### Added
 - **3xx-Guard in `_api_get`.** Ein Basispfad, den das Gateway nicht kennt,
   wird mit `302` auf `developer.srgssr.ch` beantwortet statt mit `404`.

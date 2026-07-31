@@ -9,6 +9,7 @@ answer the questions people actually ask — "votes in Bern between 2010 and
 """
 
 import asyncio
+import re
 import time
 
 from mcp.server.mcpserver import Context
@@ -93,12 +94,17 @@ def _as_items(data, *path: str) -> list:
 
 
 def _year_of(entry: dict) -> int | None:
-    """Year of a case or votation. The date field is ``EventDate``."""
-    raw = entry.get("EventDate") or entry.get("date")
-    try:
-        return int(str(raw)[:4])
-    except (TypeError, ValueError):
+    """Year of a case or votation.
+
+    ``EventDate`` is the field, but its value is XML-derived and may arrive
+    wrapped rather than as a bare ISO string, so it goes through
+    :func:`_text` first. A leading four-digit year is all that is needed.
+    """
+    raw = _text(entry.get("EventDate")) or _text(entry.get("date"))
+    if not raw:
         return None
+    match = re.search(r"(\d{4})", raw)
+    return int(match.group(1)) if match else None
 
 
 def _decorate(payload, items: list) -> list:
@@ -206,19 +212,38 @@ async def _case_ids_in_range(year_from: int | None, year_to: int | None) -> list
         )
         cached = _cache("cases", _as_items(data, "Case"))
 
-    selected: list[tuple[int, int]] = []
+    selected: list[tuple[int, str]] = []
+    parsed_any = False
     for case in cached:
         year = _year_of(case)
         if year is None:
             continue
+        parsed_any = True
         if year_from is not None and year < year_from:
             continue
         if year_to is not None and year > year_to:
             continue
-        try:
-            selected.append((year, int(case.get("id"))))
-        except (TypeError, ValueError):
-            continue
+        # The API wants an integer, but the id travels as a query parameter —
+        # forcing int() here only risks discarding a usable value.
+        case_id = case.get("id")
+        if case_id is not None:
+            selected.append((year, str(case_id)))
+
+    if cached and not parsed_any:
+        # Cases came back but not one date could be read. That is a parsing
+        # fault, not an empty period, and returning [] would report it as
+        # "no votations in that range".
+        logger.error(
+            "case_dates_unparseable",
+            case_count=len(cached),
+            sample_keys=sorted(cached[0])[:15],
+        )
+        raise ValueError(
+            "Die Abstimmungstage von Polis liessen sich nicht auswerten — das "
+            "Datumsfeld hat ein unerwartetes Format. Ohne Jahresfilter abfragen; "
+            "die Feldnamen stehen im Server-Log unter 'case_dates_unparseable'."
+        )
+
     selected.sort(reverse=True)
     return [case_id for _, case_id in selected]
 

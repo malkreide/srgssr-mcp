@@ -219,7 +219,7 @@ async def test_live_polis_get_votations(live_credentials):
         PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
     assert not _is_error(result), result
-    assert "Volksabstimmungen" in result
+    assert result.votations, "expected votations between 2020 and 2024"
 
 
 async def test_live_polis_get_elections(live_credentials):
@@ -227,7 +227,7 @@ async def test_live_polis_get_elections(live_credentials):
         PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
     assert not _is_error(result), result
-    assert "Wahlen" in result
+    assert result.elections, "expected elections between 2020 and 2024"
 
 
 async def test_live_polis_get_votation_results(live_credentials):
