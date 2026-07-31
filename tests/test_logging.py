@@ -103,7 +103,7 @@ def test_warning_and_error_use_correct_level(caplog):
 
 @respx.mock
 async def test_tool_emits_invoked_and_succeeded(caplog):
-    respx.get("https://api.srgssr.ch/forecasts/v2.0/weather/geolocations").mock(
+    respx.get("https://api.srgssr.ch/srf-meteo/v2/geolocationNames").mock(
         return_value=httpx.Response(
             200,
             json={"geolocationList": [{"id": "100001", "name": "Bern", "canton": "BE", "postalCode": "3000"}]},

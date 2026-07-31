@@ -18,7 +18,7 @@ logger = get_logger("mcp.srgssr.http")
 
 BASE_URL = "https://api.srgssr.ch"
 TOKEN_URL = f"{BASE_URL}/oauth/v1/accesstoken"
-WEATHER_BASE = f"{BASE_URL}/forecasts/v2.0/weather"
+WEATHER_BASE = f"{BASE_URL}/srf-meteo/v2"
 VIDEO_BASE = f"{BASE_URL}/videometadata/v2"
 AUDIO_BASE = f"{BASE_URL}/audiometadata/v2"
 EPG_BASE = f"{BASE_URL}/epg/v3"

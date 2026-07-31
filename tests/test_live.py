@@ -61,7 +61,8 @@ def _is_error(result) -> bool:
 async def test_live_weather_search_location(live_credentials):
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
     assert not _is_error(result), result
-    assert "Zürich" in result or "ID:" in result
+    assert result.locations, "expected at least one match for Zürich"
+    assert result.locations[0].id and result.locations[0].name
 
 
 async def test_live_weather_current(live_credentials):
@@ -69,7 +70,7 @@ async def test_live_weather_current(live_credentials):
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
     assert not _is_error(result), result
-    assert "Aktuelles Wetter" in result
+    assert result.current.temperature_c is not None
 
 
 async def test_live_weather_forecast_24h(live_credentials):
@@ -77,7 +78,8 @@ async def test_live_weather_forecast_24h(live_credentials):
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
     assert not _is_error(result), result
-    assert "24-Stunden-Prognose" in result
+    assert result.hours, "expected hourly intervals"
+    assert result.hours[0].timestamp
 
 
 async def test_live_weather_forecast_7day(live_credentials):
@@ -85,7 +87,8 @@ async def test_live_weather_forecast_7day(live_credentials):
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
     assert not _is_error(result), result
-    assert "7-Tages-Prognose" in result
+    assert result.days, "expected daily intervals"
+    assert result.days[0].date
 
 
 # ---------------------------------------------------------------------------
