@@ -951,6 +951,66 @@ async def test_epg_radio_hint_lists_radio_stations_not_tv():
     assert "la-1" not in result.message  # that is the TV list
 
 
+@respx.mock
+async def test_dead_basepath_is_diagnosed_instead_of_swallowed():
+    """A 302 to the developer portal must name the URL as the problem.
+
+    Regression guard for how four basepaths (/video/v3, /audio/v3,
+    /forecasts/v2.0/weather, /polis/v1) survived a release. The gateway
+    answers an unregistered path with 302 rather than 404; raise_for_status()
+    does raise on that, but it landed in the generic branch of _handle_error
+    and produced "API-Fehler 302:" plus the redirect's empty body — a status
+    code and nothing else.
+    """
+    respx.get(VIDEO_SHOWS).mock(
+        return_value=httpx.Response(
+            302, headers={"location": "https://developer.srgssr.ch/"}
+        )
+    )
+    result = await srgssr_video_get_shows(
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "Konfigurationsfehler" in result.message
+    assert "302" in result.message
+    assert "tv_shows/alphabetical" in result.message
+    assert "Unerwarteter Fehler" not in result.message
+
+
+@respx.mock
+async def test_redirect_guard_leaves_success_and_client_errors_alone():
+    respx.get(VIDEO_SHOWS).mock(
+        return_value=httpx.Response(200, json={"showList": [{"id": "s", "title": "T"}]})
+    )
+    ok = await srgssr_video_get_shows(
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
+    )
+    assert isinstance(ok, VideoShowsResponse)
+
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(404, text="nope"))
+    missing = await srgssr_video_get_shows(
+        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
+    )
+    assert isinstance(missing, ToolErrorResponse)
+    # Still the plain 404 path, not the redirect diagnosis.
+    assert "404" in missing.message
+    assert "Gateway nicht registriert" not in missing.message
+
+
+def test_raise_for_redirect_covers_the_whole_3xx_range():
+    from srgssr_mcp._http import _raise_for_redirect
+
+    request = httpx.Request("GET", "https://api.srgssr.ch/gone/v1/x")
+    for status in (301, 302, 303, 307, 308):
+        with _pytest.raises(ValueError, match=str(status)):
+            _raise_for_redirect(
+                httpx.Response(status, request=request, headers={"location": "/elsewhere"})
+            )
+    # 2xx and 4xx pass through untouched; raise_for_status handles the latter.
+    for status in (200, 204, 404, 500):
+        _raise_for_redirect(httpx.Response(status, request=request))
+
+
 def test_handle_error_attaches_hint_on_400_as_well_as_404():
     req = httpx.Request("GET", "https://api.srgssr.ch/epg/v3/srf/tv/stations/x")
     for status in (400, 404):

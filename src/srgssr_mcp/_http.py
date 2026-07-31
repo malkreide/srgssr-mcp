@@ -287,6 +287,7 @@ async def _get_access_token() -> str:
                 "User-Agent": USER_AGENT,
             },
         )
+        _raise_for_redirect(resp)
         resp.raise_for_status()
         data = resp.json()
 
@@ -295,6 +296,40 @@ async def _get_access_token() -> str:
         _token_cache["expires_at"] = now + expires_in
         logger.info("oauth_token_acquired", expires_in=expires_in)
         return _token_cache["access_token"]
+
+
+def _raise_for_redirect(resp: httpx.Response) -> None:
+    """Turn a gateway redirect into a diagnosis.
+
+    An unregistered basepath is answered with ``302`` to
+    ``developer.srgssr.ch`` rather than ``404``. httpx's
+    ``raise_for_status()`` does raise on 3xx, so this is not about an
+    unhandled response — it is about what the caller was told. That path fell
+    through to the generic branch of :func:`_handle_error` and produced
+    ``API-Fehler 302:`` followed by the redirect's empty body: a status code
+    and nothing else, with no mention of which endpoint or why.
+
+    Four dead basepaths (``/video/v3``, ``/audio/v3``,
+    ``/forecasts/v2.0/weather``, ``/polis/v1``) survived a release behind that
+    message. Naming the path and the redirect target turns it into something
+    actionable. :class:`ValueError` maps to "Konfigurationsfehler", which is
+    what a basepath that no longer exists actually is.
+    """
+    if not 300 <= resp.status_code < 400:
+        return
+    location = resp.headers.get("location", "(keine Location)")
+    path = resp.request.url.path if resp.request else "(unbekannt)"
+    logger.error(
+        "gateway_redirect",
+        status=resp.status_code,
+        path=path,
+        location=location,
+    )
+    raise ValueError(
+        f"Der Endpunkt '{path}' ist am API-Gateway nicht registriert — er "
+        f"antwortet mit HTTP {resp.status_code} auf '{location}' statt mit "
+        f"Daten. Vermutlich hat sich der Basispfad der API geändert."
+    )
 
 
 async def _api_get(url: str, params: dict | None = None) -> dict:
@@ -308,6 +343,7 @@ async def _api_get(url: str, params: dict | None = None) -> dict:
     }
     client = await _get_http_client()
     resp = await client.get(url, params=params, headers=headers)
+    _raise_for_redirect(resp)
     resp.raise_for_status()
     return resp.json()
 
