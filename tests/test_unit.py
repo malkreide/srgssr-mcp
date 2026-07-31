@@ -1199,6 +1199,46 @@ async def test_polis_unknown_canton_is_an_error_not_an_unfiltered_list():
     _clear_reference_cache()
 
 
+def test_polis_year_extraction_handles_both_date_formats():
+    """The payload is .NET-XML-derived, so dates come in two shapes.
+
+    An epoch-milliseconds value is the trap: taking the first four digits of
+    /Date(1601164800000)/ yields 1601, which passes as a year, falls outside
+    every sane filter, and turns a full result set into an empty period
+    without any error. The plausibility check is what makes that loud.
+    """
+    from srgssr_mcp.tools.polis import _year_of
+
+    assert _year_of({"EventDate": "2020-09-27T00:00:00"}) == 2020
+    assert _year_of({"EventDate": "/Date(1601164800000)/"}) == 2020
+    assert _year_of({"EventDate": "/Date(1601164800000+0200)/"}) == 2020
+    assert _year_of({"EventDate": "27.09.2020"}) == 2020
+    assert _year_of({"EventDate": "1900-01-01"}) == 1900
+    # Unreadable rather than silently wrong.
+    assert _year_of({"EventDate": None}) is None
+    assert _year_of({}) is None
+    assert _year_of({"EventDate": "kein Datum"}) is None
+
+
+@respx.mock
+async def test_polis_implausible_year_counts_as_unparseable():
+    """A year outside 1800–2100 is a misread, and must not filter silently."""
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200, json={"Case": [{"id": 1, "EventDate": "0001-01-01T00:00:00"}]}
+        )
+    )
+    result = await srgssr_polis_get_votations(
+        PolisListInput(year_from=2020, year_to=2024)
+    )
+    assert isinstance(result, ToolErrorResponse)
+    assert "nicht auswerten" in result.message
+    _clear_reference_cache()
+
+
 @respx.mock
 async def test_polis_unparseable_case_dates_are_an_error():
     """570 cases and not one readable date is a bug, not an empty period.

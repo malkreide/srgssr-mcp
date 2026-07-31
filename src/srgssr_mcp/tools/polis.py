@@ -11,6 +11,7 @@ answer the questions people actually ask — "votes in Bern between 2010 and
 import asyncio
 import re
 import time
+from datetime import datetime, timezone
 
 from mcp.server.mcpserver import Context
 from pydantic import BaseModel, ConfigDict, Field
@@ -28,6 +29,10 @@ from srgssr_mcp._models import (
 from srgssr_mcp.logging_config import get_logger
 
 logger = get_logger("mcp.srgssr.polis")
+
+# Polis reaches back to 1900; anything outside this window is a misread date
+# rather than a real one.
+_PLAUSIBLE_YEARS = (1800, 2100)
 
 # locationtypeid 2 is "Canton (Kanton)" per the API's own enumeration.
 _LOCATIONTYPE_CANTON = 2
@@ -94,17 +99,36 @@ def _as_items(data, *path: str) -> list:
 
 
 def _year_of(entry: dict) -> int | None:
-    """Year of a case or votation.
+    """Year of a case or votation, or None if the date cannot be read.
 
-    ``EventDate`` is the field, but its value is XML-derived and may arrive
-    wrapped rather than as a bare ISO string, so it goes through
-    :func:`_text` first. A leading four-digit year is all that is needed.
+    ``EventDate`` is the field, but the service is .NET-XML-derived — the
+    payload uses PascalCase and ``*Specified`` companion flags — so the value
+    arrives either as an ISO string or in the ``/Date(1601164800000)/``
+    epoch-milliseconds form. Both are handled.
+
+    The result is checked against a plausible range. Grabbing the first four
+    digits of an epoch timestamp yields 1601, which silently passed every
+    year filter and made a full result set look like an empty period.
     """
     raw = _text(entry.get("EventDate")) or _text(entry.get("date"))
     if not raw:
         return None
-    match = re.search(r"(\d{4})", raw)
-    return int(match.group(1)) if match else None
+
+    epoch = re.search(r"/Date\((-?\d+)", raw)
+    if epoch:
+        try:
+            year = datetime.fromtimestamp(
+                int(epoch.group(1)) / 1000, tz=timezone.utc
+            ).year
+        except (ValueError, OSError, OverflowError):
+            return None
+        return year if _PLAUSIBLE_YEARS[0] <= year <= _PLAUSIBLE_YEARS[1] else None
+
+    for candidate in re.findall(r"\d{4}", raw):
+        year = int(candidate)
+        if _PLAUSIBLE_YEARS[0] <= year <= _PLAUSIBLE_YEARS[1]:
+            return year
+    return None
 
 
 def _decorate(payload, items: list) -> list:

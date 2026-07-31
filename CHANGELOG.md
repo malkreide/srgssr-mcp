@@ -5,6 +5,23 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Polis-Jahresfilter las die falschen vier Ziffern.** Der zweite Live-Lauf
+  holte 570 Abstimmungstage und wählte davon keinen einzigen für 2020–2024 aus
+  — ohne Fehler, weil die Daten sich ja lesen liessen. Nur eben falsch.
+
+  Die API ist durchgehend .NET-XML-abgeleitet (PascalCase,
+  `EventDateSpecified`-Flags), und dazu gehört die Datumsform
+  `/Date(1601164800000)/`. Die ersten vier Ziffern daraus ergeben **1601** —
+  eine plausibel aussehende Jahreszahl, die jeden Filter passiert und dabei
+  jeden Treffer ausschliesst. Aus einem vollständigen Datensatz wurde so ein
+  leerer Zeitraum, ohne dass irgendwo etwas rot wurde.
+
+  `_year_of` versteht jetzt beide Formen — ISO-Strings und
+  Epoch-Millisekunden — und prüft das Ergebnis gegen 1800–2100. Ein Wert
+  ausserhalb gilt als nicht lesbar und löst denselben `case_dates_unparseable`
+  -Fehler aus wie ein fehlendes Datum, statt sich als Filter zu tarnen.
+
 ### Security
 - **Die `live_credentials`-Fixture gab Key und Secret zurück.** pytest druckt
   Fixture-Werte in jeden Fehlerbericht, also standen beide im Klartext zuoberst
