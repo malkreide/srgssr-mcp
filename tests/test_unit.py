@@ -74,7 +74,9 @@ VIDEO_SHOWS = f"{VIDEO_BASE}/tv_shows/alphabetical"
 AUDIO_SHOWS = f"{AUDIO_BASE}/radioshows/byChannel"
 AUDIO_CHANNEL = "69e8ac16-4327-4af4-b873-fd5cd6e895a7"
 EPG_BASE = "https://api.srgssr.ch/epg/v3"
-POLIS_BASE = "https://api.srgssr.ch/polis/v1"
+POLIS_BASE = "https://api.srgssr.ch/polis-api/v2"
+POLIS_CASES = f"{POLIS_BASE}/cases"
+POLIS_LOCATIONS = f"{POLIS_BASE}/locations"
 
 
 def _epg_station(bu: str = "srf", broadcast_type: str = "tv", channel: str = "srf-1") -> str:
@@ -995,15 +997,15 @@ async def test_polis_get_votations_happy_path():
         return_value=httpx.Response(
             200,
             json={
-                "total": 2,
-                "votationList": [
-                    {"id": "v1", "title": "Bildungsinitiative", "date": "2024-09-22"},
-                    {"id": "v2", "title": "Klimaschutz-Referendum", "date": "2024-11-24"},
+                "Items": [
+                    {"id": "v1", "Title": "Bildungsinitiative", "EventDate": "2024-09-22"},
+                    {"id": "v2", "Title": "Klimaschutz-Referendum", "EventDate": "2024-11-24"},
                 ],
+                "language": "de",
             },
         )
     )
-    result = await srgssr_polis_get_votations(PolisListInput(year_from=2024))
+    result = await srgssr_polis_get_votations(PolisListInput())
     assert isinstance(result, VotationsResponse)
     titles = [v.title for v in result.votations]
     ids = [v.id for v in result.votations]
@@ -1022,13 +1024,77 @@ async def test_polis_get_votations_handles_500():
 
 
 @respx.mock
-async def test_polis_get_votations_canton_filter_uppercased():
+async def test_polis_canton_is_resolved_to_a_location_id():
+    """v2 has no canton filter — the abbreviation becomes a locationid.
+
+    Passing `canton=ZH` straight through, as the code used to, meant the API
+    ignored it and returned every canton while the response still claimed to
+    be filtered.
+    """
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    locations = respx.get(POLIS_LOCATIONS).mock(
+        return_value=httpx.Response(
+            200,
+            json={"Location": [
+                {"id": 1, "LocationName": "Bern"},
+                {"id": 26, "LocationName": "Zürich"},
+            ]},
+        )
+    )
     route = respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(200, json={"total": 0, "votationList": []})
+        return_value=httpx.Response(200, json={"Items": []})
     )
     await srgssr_polis_get_votations(PolisListInput(canton="zh"))
-    sent = route.calls.last.request.url
-    assert "canton=ZH" in str(sent)
+    assert locations.called
+    assert route.calls.last.request.url.params["locationid"] == "26"
+    assert "canton" not in route.calls.last.request.url.params
+    _clear_reference_cache()
+
+
+@respx.mock
+async def test_polis_unknown_canton_is_an_error_not_an_unfiltered_list():
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_LOCATIONS).mock(
+        return_value=httpx.Response(200, json={"Location": [{"id": 1, "LocationName": "Bern"}]})
+    )
+    result = await srgssr_polis_get_votations(PolisListInput(canton="XX"))
+    assert isinstance(result, ToolErrorResponse)
+    assert "XX" in result.message
+    _clear_reference_cache()
+
+
+@respx.mock
+async def test_polis_year_range_is_resolved_via_cases():
+    """v2 has no year filter — a range becomes one request per voting day."""
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200,
+            json={"Case": [
+                {"id": 100, "EventDate": "2024-09-22", "Title": "September"},
+                {"id": 101, "EventDate": "2019-05-19", "Title": "Mai"},
+            ]},
+        )
+    )
+    route = respx.get(f"{POLIS_BASE}/votations").mock(
+        return_value=httpx.Response(
+            200, json={"Items": [{"id": "v1", "Title": "T", "EventDate": "2024-09-22"}]}
+        )
+    )
+    result = await srgssr_polis_get_votations(
+        PolisListInput(year_from=2024, year_to=2024)
+    )
+    assert isinstance(result, VotationsResponse)
+    # Only the 2024 voting day is fetched; 2019 is outside the range.
+    assert route.call_count == 1
+    assert route.calls.last.request.url.params["caseid"] == "100"
+    _clear_reference_cache()
 
 
 # ---------------------------------------------------------------------------
@@ -1041,8 +1107,8 @@ async def test_polis_get_votation_results_happy_path():
         return_value=httpx.Response(
             200,
             json={
-                "title": "Bildungsinitiative",
-                "date": "2024-09-22",
+                "Title": "Bildungsinitiative",
+                "EventDate": "2024-09-22",
                 "result": {
                     "yesPercentage": 52.3,
                     "noPercentage": 47.7,
@@ -1083,7 +1149,7 @@ async def test_polis_get_votation_results_pending_outcome():
     respx.get(f"{POLIS_BASE}/votations/v2").mock(
         return_value=httpx.Response(
             200,
-            json={"title": "Pending", "date": "2026-05-01", "result": {}},
+            json={"Title": "Pending", "EventDate": "2026-05-01", "result": {}},
         )
     )
     result = await srgssr_polis_get_votation_results(PolisResultInput(votation_id="v2"))
@@ -1103,14 +1169,14 @@ async def test_polis_get_elections_happy_path():
         return_value=httpx.Response(
             200,
             json={
-                "total": 1,
-                "electionList": [
-                    {"id": "e1", "title": "Nationalratswahlen 2023", "date": "2023-10-22"}
-                ],
+                "Case": {"id": "c1", "Title": "Nationalratswahlen 2023",
+                         "EventDate": "2023-10-22"},
+                "Elections": {"Election": [{"id": "e1", "Official": {}}]},
+                "language": "de",
             },
         )
     )
-    result = await srgssr_polis_get_elections(PolisListInput(year_from=2023))
+    result = await srgssr_polis_get_elections(PolisListInput())
     assert isinstance(result, ElectionsResponse)
     assert result.elections[0].title == "Nationalratswahlen 2023"
     assert result.elections[0].id == "e1"
@@ -1131,7 +1197,7 @@ async def test_polis_get_elections_empty_typed_payload():
     respx.get(f"{POLIS_BASE}/elections").mock(
         return_value=httpx.Response(
             200,
-            json={"total": 0, "electionList": []},
+            json={"Elections": {"Election": []}},
         )
     )
     result = await srgssr_polis_get_elections(PolisListInput())
@@ -1287,8 +1353,25 @@ async def test_polis_get_votation_results_404_includes_recovery_hint():
 @respx.mock
 async def test_polis_get_votations_empty_returns_typed_response():
     """Empty result still produces a structured VotationsResponse (no suggestion text)."""
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_LOCATIONS).mock(
+        return_value=httpx.Response(
+            200,
+            json={"Location": [
+                {"id": 18, "LocationName": "Graubünden"},
+                {"id": 9, "LocationName": "Zug"},
+            ]},
+        )
+    )
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]}
+        )
+    )
     respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(200, json={"total": 0, "votationList": []})
+        return_value=httpx.Response(200, json={"Items": []})
     )
     result = await srgssr_polis_get_votations(
         PolisListInput(canton="GR", year_from=2020, year_to=2021)
@@ -1298,12 +1381,30 @@ async def test_polis_get_votations_empty_returns_typed_response():
     assert result.canton == "GR"
     assert result.year_from == 2020
     assert result.year_to == 2021
+    _clear_reference_cache()
 
 
 @respx.mock
 async def test_polis_get_elections_empty_returns_typed_response():
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()
+    respx.get(POLIS_LOCATIONS).mock(
+        return_value=httpx.Response(
+            200,
+            json={"Location": [
+                {"id": 18, "LocationName": "Graubünden"},
+                {"id": 9, "LocationName": "Zug"},
+            ]},
+        )
+    )
+    respx.get(POLIS_CASES).mock(
+        return_value=httpx.Response(
+            200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]}
+        )
+    )
     respx.get(f"{POLIS_BASE}/elections").mock(
-        return_value=httpx.Response(200, json={"total": 0, "electionList": []})
+        return_value=httpx.Response(200, json={"Elections": {"Election": []}})
     )
     result = await srgssr_polis_get_elections(
         PolisListInput(canton="ZG", year_from=2024)
@@ -1311,6 +1412,7 @@ async def test_polis_get_elections_empty_returns_typed_response():
     assert isinstance(result, ElectionsResponse)
     assert result.count == 0
     assert result.canton == "ZG"
+    _clear_reference_cache()
 
 
 @respx.mock
