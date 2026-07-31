@@ -1933,12 +1933,7 @@ def test_allowed_hosts_is_pinned():
     the README procedure (code + docs + test) rather than riding along with an
     endpoint fix.
     """
-    assert _server.ALLOWED_HOSTS == frozenset(
-        {
-            "api.srgssr.ch",  # every data endpoint
-            "srgssr-prod.apigee.net",  # OAuth2 token endpoint only
-        }
-    )
+    assert _server.ALLOWED_HOSTS == frozenset({"api.srgssr.ch"})
 
 
 def test_validate_url_safe_accepts_token_host(monkeypatch):

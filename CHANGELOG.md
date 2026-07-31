@@ -6,6 +6,27 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Security
+- **Token-Endpunkt zurück auf `api.srgssr.ch`, Egress-Allowlist wieder bei einem
+  Host.** Mit dem Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` als
+  Token-Aussteller und damit als zweiter Eintrag in `ALLOWED_HOSTS` — dorthin
+  gingen seither die Basic-Auth-Client-Credentials. Mit echten Credentials
+  nachgemessen: **beide Token-Endpunkte liefern 200, und beide Tokens verhalten
+  sich auf allen 14 geprüften Endpunkten identisch** (Video, Audio, EPG, Wetter,
+  Polis, jeweils Status und Response-Grösse gleich). Der zweite Host war also
+  nie nötig.
+
+  Die Begründung in PR #46 stützte sich auf die Fault-Meldung
+  `"Invalid access token"`. Die liefert der Gateway aber auf *jeden*
+  unauthentifizierten Request an einen v2-Basepath, ist also kein Beleg für
+  einen Issuer-Mismatch. Die tatsächliche Ursache lag woanders — bei den
+  Pfaden.
+
+  Damit verschwindet die erweiterte Vertrauensgrenze ganz, statt nur
+  dokumentiert zu sein: keine Client-Credentials mehr an multi-tenant-
+  Infrastruktur unter Google-Betrieb. Die Doku aus dem vorherigen Eintrag wird
+  entsprechend zurückgebaut, `test_allowed_hosts_is_pinned` pinnt wieder auf
+  `{"api.srgssr.ch"}`.
+
 - **Egress-Allowlist-Doku an den Code-Stand angeglichen.** Mit dem
   Endpunkt-Fix in 1.1.0 kam `srgssr-prod.apigee.net` in `ALLOWED_HOSTS` — der
   Host, an den seither die Basic-Auth-Client-Credentials für das OAuth2-Token
