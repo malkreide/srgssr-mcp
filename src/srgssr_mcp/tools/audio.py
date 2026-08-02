@@ -32,9 +32,7 @@ def _extract_shows(data: dict) -> list:
     return data.get("showList", data.get("shows", [])) or []
 
 
-async def _fetch_show_bucket(
-    bu: str, channel_id: str, character: str, page_size: int
-) -> dict | Exception:
+async def _fetch_show_bucket(bu: str, channel_id: str, character: str, page_size: int) -> dict | Exception:
     """One alphabetical bucket for one channel. Returns the exception instead
     of raising, so the caller can tell an empty letter from a failed one."""
     try:
@@ -93,9 +91,7 @@ class AudioEpisodesInput(BaseModel):
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
-    show_id: str = Field(
-        ..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    show_id: str = Field(..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$")
     page_size: int | None = Field(default=10, ge=1, le=50)
     page: int | None = Field(default=1, ge=1)
 
@@ -189,12 +185,7 @@ async def srgssr_audio_get_shows(
         has_more = bool(data.get("next"))
     else:
         buckets = await asyncio.gather(
-            *(
-                _fetch_show_bucket(
-                    bu, params.channel_id, character, params.page_size
-                )
-                for character in ALPHABET_BUCKETS
-            )
+            *(_fetch_show_bucket(bu, params.channel_id, character, params.page_size) for character in ALPHABET_BUCKETS)
         )
         failures = [b for b in buckets if isinstance(b, Exception)]
         if len(failures) == len(ALPHABET_BUCKETS):
@@ -277,12 +268,7 @@ async def srgssr_audio_get_episodes(
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
 
-    raw_episodes = (
-        data.get("episodeComposition")
-        or data.get("episodeList")
-        or data.get("medias")
-        or []
-    )
+    raw_episodes = data.get("episodeComposition") or data.get("episodeList") or data.get("medias") or []
     total = int(data.get("total", len(raw_episodes)))
     log.info("tool_succeeded", result_count=len(raw_episodes), total=total)
 

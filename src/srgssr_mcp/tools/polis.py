@@ -41,13 +41,32 @@ _LOCATIONTYPE_CANTON = 2
 # two-letter codes are mapped here. They are fixed by the federal constitution
 # and have not changed since 1979 — reference data, not a guess.
 _CANTON_NAMES: dict[str, str] = {
-    "ZH": "zürich", "BE": "bern", "LU": "luzern", "UR": "uri", "SZ": "schwyz",
-    "OW": "obwalden", "NW": "nidwalden", "GL": "glarus", "ZG": "zug",
-    "FR": "freiburg", "SO": "solothurn", "BS": "basel-stadt",
-    "BL": "basel-landschaft", "SH": "schaffhausen", "AR": "appenzell ausserrhoden",
-    "AI": "appenzell innerrhoden", "SG": "st. gallen", "GR": "graubünden",
-    "AG": "aargau", "TG": "thurgau", "TI": "tessin", "VD": "waadt",
-    "VS": "wallis", "NE": "neuenburg", "GE": "genf", "JU": "jura",
+    "ZH": "zürich",
+    "BE": "bern",
+    "LU": "luzern",
+    "UR": "uri",
+    "SZ": "schwyz",
+    "OW": "obwalden",
+    "NW": "nidwalden",
+    "GL": "glarus",
+    "ZG": "zug",
+    "FR": "freiburg",
+    "SO": "solothurn",
+    "BS": "basel-stadt",
+    "BL": "basel-landschaft",
+    "SH": "schaffhausen",
+    "AR": "appenzell ausserrhoden",
+    "AI": "appenzell innerrhoden",
+    "SG": "st. gallen",
+    "GR": "graubünden",
+    "AG": "aargau",
+    "TG": "thurgau",
+    "TI": "tessin",
+    "VD": "waadt",
+    "VS": "wallis",
+    "NE": "neuenburg",
+    "GE": "genf",
+    "JU": "jura",
 }
 
 # /cases?listAllCases=true is documented as slow and "should not be done more
@@ -117,9 +136,7 @@ def _year_of(entry: dict) -> int | None:
     epoch = re.search(r"/Date\((-?\d+)", raw)
     if epoch:
         try:
-            year = datetime.fromtimestamp(
-                int(epoch.group(1)) / 1000, tz=timezone.utc
-            ).year
+            year = datetime.fromtimestamp(int(epoch.group(1)) / 1000, tz=timezone.utc).year
         except (ValueError, OSError, OverflowError):
             return None
         return year if _PLAUSIBLE_YEARS[0] <= year <= _PLAUSIBLE_YEARS[1] else None
@@ -145,9 +162,7 @@ def _decorate(payload, items: list) -> list:
     return [{**item, "_case": case} for item in items]
 
 
-async def _fetch_filtered(
-    endpoint: str, container: tuple[str, ...], params: "PolisListInput"
-) -> list:
+async def _fetch_filtered(endpoint: str, container: tuple[str, ...], params: "PolisListInput") -> list:
     """Fetch votations or elections, resolving year and canton into API filters.
 
     Without a year range this is one request. With one it is one request per
@@ -178,10 +193,7 @@ async def _fetch_filtered(
     for chunk_start in range(0, len(case_ids), 5):
         chunk = case_ids[chunk_start : chunk_start + 5]
         payloads = await asyncio.gather(
-            *(
-                _api_get(f"{POLIS_BASE}/{endpoint}", params={**query, "caseid": cid})
-                for cid in chunk
-            ),
+            *(_api_get(f"{POLIS_BASE}/{endpoint}", params={**query, "caseid": cid}) for cid in chunk),
             return_exceptions=True,
         )
         for payload in payloads:
@@ -206,14 +218,9 @@ async def _canton_location_id(canton: str) -> int | None:
     code = canton.upper()
     expected_name = _CANTON_NAMES.get(code)
     for location in cached:
-        names = {
-            (_text(location.get(field)) or "").strip().lower()
-            for field in ("LocationName", "Name", "Title")
-        }
+        names = {(_text(location.get(field)) or "").strip().lower() for field in ("LocationName", "Name", "Title")}
         names.discard("")
-        if code.lower() in names or (
-            expected_name and any(expected_name in name for name in names)
-        ):
+        if code.lower() in names or (expected_name and any(expected_name in name for name in names)):
             for id_field in ("id", "LocationID", "ID"):
                 try:
                     return int(location[id_field])
@@ -231,9 +238,7 @@ async def _case_ids_in_range(year_from: int | None, year_to: int | None) -> list
     """
     cached = _cached("cases")
     if cached is None:
-        data = await _api_get(
-            f"{POLIS_BASE}/cases", params={"lang": "de", "listAllCases": "true"}
-        )
+        data = await _api_get(f"{POLIS_BASE}/cases", params={"lang": "de", "listAllCases": "true"})
         cached = _cache("cases", _as_items(data, "Case"))
 
     selected: list[tuple[int, str]] = []
@@ -276,18 +281,14 @@ class PolisListInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
     year_from: int | None = Field(default=None, ge=1900, le=2100)
     year_to: int | None = Field(default=None, ge=1900, le=2100)
-    canton: str | None = Field(
-        default=None, min_length=2, max_length=4, pattern=r"^[A-Za-z]{2,4}$"
-    )
+    canton: str | None = Field(default=None, min_length=2, max_length=4, pattern=r"^[A-Za-z]{2,4}$")
     page_size: int | None = Field(default=20, ge=1, le=100)
     page: int | None = Field(default=1, ge=1)
 
 
 class PolisResultInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
-    votation_id: str = Field(
-        ..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    votation_id: str = Field(..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$")
 
 
 def _text(value) -> str | None:
@@ -438,9 +439,7 @@ async def srgssr_polis_get_votation_results(
             votation_id=params.votation_id,
         )
     try:
-        data = await _api_get(
-            f"{POLIS_BASE}/votations/{params.votation_id}", params={"lang": "de"}
-        )
+        data = await _api_get(f"{POLIS_BASE}/votations/{params.votation_id}", params={"lang": "de"})
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(
@@ -501,9 +500,7 @@ async def srgssr_polis_get_elections(
             canton=params.canton,
         )
     try:
-        raw_elections = await _fetch_filtered(
-            "elections", ("Elections", "Election"), params
-        )
+        raw_elections = await _fetch_filtered("elections", ("Elections", "Election"), params)
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)

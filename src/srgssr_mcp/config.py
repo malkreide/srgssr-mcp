@@ -26,12 +26,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    consumer_key: SecretStr = Field(
-        default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_KEY"
-    )
-    consumer_secret: SecretStr = Field(
-        default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_SECRET"
-    )
+    consumer_key: SecretStr = Field(default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_KEY")
+    consumer_secret: SecretStr = Field(default=SecretStr(""), validation_alias="SRGSSR_CONSUMER_SECRET")
 
     transport: Transport = Field(
         default="stdio",

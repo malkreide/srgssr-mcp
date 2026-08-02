@@ -91,9 +91,7 @@ async def srgssr_weather_search_location(
     log = logger.bind(tool="srgssr_weather_search_location", query=params.query)
     log.info("tool_invoked")
     if ctx is not None:
-        await ctx.info(
-            "srgssr_weather_search_location invoked", query=params.query
-        )
+        await ctx.info("srgssr_weather_search_location invoked", query=params.query)
     raw_locations: list = []
     matched_variant = params.query
     tried: list[str] = []
@@ -102,9 +100,7 @@ async def srgssr_weather_search_location(
             tried.append(variant)
             # The v2 search takes `zip` for postal codes and `name` for
             # everything else; there is no combined search term.
-            query_params = (
-                {"zip": int(variant)} if variant.isdigit() else {"name": variant}
-            )
+            query_params = {"zip": int(variant)} if variant.isdigit() else {"name": variant}
             data = await _api_get(
                 f"{WEATHER_BASE}/geolocationNames",
                 params={**query_params, "limit": 10},
@@ -189,9 +185,7 @@ async def _resolve_geolocation_id(latitude: float, longitude: float) -> str:
     )
 
 
-async def _fetch_forecast_point(
-    latitude: float, longitude: float, geolocation_id: str | None
-) -> dict:
+async def _fetch_forecast_point(latitude: float, longitude: float, geolocation_id: str | None) -> dict:
     """One call to /forecastpoint — it carries days, three_hours and hours.
 
     v2 has no separate current/24h/7day endpoints; the three tools slice
@@ -241,9 +235,7 @@ async def srgssr_weather_current(
             longitude=params.longitude,
         )
     try:
-        data = await _fetch_forecast_point(
-            params.latitude, params.longitude, params.geolocation_id
-        )
+        data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
@@ -306,9 +298,7 @@ async def srgssr_weather_forecast_24h(
             longitude=params.longitude,
         )
     try:
-        data = await _fetch_forecast_point(
-            params.latitude, params.longitude, params.geolocation_id
-        )
+        data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)
@@ -372,9 +362,7 @@ async def srgssr_weather_forecast_7day(
             longitude=params.longitude,
         )
     try:
-        data = await _fetch_forecast_point(
-            params.latitude, params.longitude, params.geolocation_id
-        )
+        data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(e)

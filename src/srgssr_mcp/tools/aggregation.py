@@ -34,15 +34,11 @@ class DailyBriefingInput(BaseModel):
         ...,
         description="SRG SSR Unternehmenseinheit für das EPG: 'srf', 'rts' oder 'rsi' (RTR/SWI ohne EPG)",
     )
-    channel_id: str = Field(
-        ..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    channel_id: str = Field(..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$")
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     latitude: float = Field(..., ge=45.8, le=47.9)
     longitude: float = Field(..., ge=5.9, le=10.5)
-    geolocation_id: str | None = Field(
-        default=None, min_length=1, max_length=50, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    geolocation_id: str | None = Field(default=None, min_length=1, max_length=50, pattern=r"^[A-Za-z0-9_-]+$")
 
 
 @mcp.tool(
@@ -98,9 +94,7 @@ async def srgssr_daily_briefing(
             channel_id=params.channel_id,
             date=params.date,
         )
-        await ctx.report_progress(
-            0.0, total=2.0, message="Wetter und EPG parallel abrufen"
-        )
+        await ctx.report_progress(0.0, total=2.0, message="Wetter und EPG parallel abrufen")
 
     weather_input = WeatherForecastInput(
         latitude=params.latitude,
@@ -119,9 +113,7 @@ async def srgssr_daily_briefing(
     )
 
     if ctx is not None:
-        await ctx.report_progress(
-            2.0, total=2.0, message="Beide Quellen geladen, Antwort rendern"
-        )
+        await ctx.report_progress(2.0, total=2.0, message="Beide Quellen geladen, Antwort rendern")
 
     log.info(
         "tool_succeeded",

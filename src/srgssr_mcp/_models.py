@@ -47,9 +47,7 @@ class ProvenanceFields(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    source: Literal["SRG SSR Public API V2"] = Field(
-        default=SOURCE, description="Upstream provider identity."
-    )
+    source: Literal["SRG SSR Public API V2"] = Field(default=SOURCE, description="Upstream provider identity.")
     license: str = Field(default=LICENSE, description="Licensing terms.")
     provenance_url: Literal["https://developer.srgssr.ch"] = Field(
         default=PROVENANCE_URL,
@@ -64,6 +62,7 @@ class ProvenanceFields(BaseModel):
 # ---------------------------------------------------------------------------
 # Generic error model
 # ---------------------------------------------------------------------------
+
 
 class ToolErrorResponse(ProvenanceFields):
     """Returned by any tool whose underlying call failed.
@@ -81,6 +80,7 @@ class ToolErrorResponse(ProvenanceFields):
 # ---------------------------------------------------------------------------
 # Weather (4 tools)
 # ---------------------------------------------------------------------------
+
 
 class WeatherLocation(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -152,6 +152,7 @@ class WeatherForecast7dayResponse(ProvenanceFields):
 # Video (3 tools)
 # ---------------------------------------------------------------------------
 
+
 class VideoShow(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
@@ -203,6 +204,7 @@ class VideoLivestreamsResponse(ProvenanceFields):
 # ---------------------------------------------------------------------------
 # Audio (3 tools)
 # ---------------------------------------------------------------------------
+
 
 class AudioShow(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -256,6 +258,7 @@ class AudioLivestreamsResponse(ProvenanceFields):
 # EPG (1 tool)
 # ---------------------------------------------------------------------------
 
+
 class EpgProgram(BaseModel):
     model_config = ConfigDict(extra="ignore")
     title: str
@@ -275,6 +278,7 @@ class EpgProgramsResponse(ProvenanceFields):
 # ---------------------------------------------------------------------------
 # Polis (3 tools)
 # ---------------------------------------------------------------------------
+
 
 class Votation(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -326,6 +330,7 @@ class ElectionsResponse(ProvenanceFields):
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
+
 
 class DailyBriefingResponse(ProvenanceFields):
     """Cross-domain composition: weather (24h) + EPG for one day.
