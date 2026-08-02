@@ -26,10 +26,7 @@ from srgssr_mcp.tools.epg import (
 
 logger = get_logger("mcp.srgssr.resources")
 
-_RESOURCE_BU_HINT = (
-    "Erlaubte Unternehmenseinheiten: 'srf', 'rts', 'rsi'. EPG ist für RTR und SWI "
-    "nicht verfügbar."
-)
+_RESOURCE_BU_HINT = "Erlaubte Unternehmenseinheiten: 'srf', 'rts', 'rsi'. EPG ist für RTR und SWI nicht verfügbar."
 
 
 def _normalize_bu(bu: str) -> str:
@@ -47,8 +44,12 @@ def _normalize_bu(bu: str) -> str:
         "Beispiel-URI: epg://srf/srf-1/2026-04-30\n\n"
         "Nur TV: die URI-Vorlage hat kein Feld für den Sendertyp. Für Radio das "
         "Tool srgssr_epg_get_programs mit broadcast_type='radio' verwenden.\n\n"
-        "TV-Sender: srf → " + _known_stations("srf", "tv") + "; rts → "
-        + _known_stations("rts", "tv") + "; rsi → " + _known_stations("rsi", "tv")
+        "TV-Sender: srf → "
+        + _known_stations("srf", "tv")
+        + "; rts → "
+        + _known_stations("rts", "tv")
+        + "; rsi → "
+        + _known_stations("rsi", "tv")
     ),
     mime_type="application/json",
 )
@@ -71,10 +72,7 @@ async def epg_resource(bu: str, channel_id: str, date: str) -> str:
     if bu_norm not in {"srf", "rts", "rsi"}:
         log.warning("resource_unsupported_business_unit")
         return _build_error_response(
-            ValueError(
-                f"Unternehmenseinheit '{bu}' wird vom EPG nicht unterstützt. "
-                f"{_RESOURCE_BU_HINT}"
-            )
+            ValueError(f"Unternehmenseinheit '{bu}' wird vom EPG nicht unterstützt. {_RESOURCE_BU_HINT}")
         ).model_dump_json(indent=2)
     try:
         data = await _api_get(

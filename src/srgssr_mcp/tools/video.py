@@ -50,9 +50,7 @@ class VideoEpisodesInput(BaseModel):
         ...,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
-    show_id: str = Field(
-        ..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    show_id: str = Field(..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$")
     page_size: int | None = Field(default=10, ge=1, le=50)
     page: int | None = Field(default=1, ge=1)
 
@@ -176,10 +174,7 @@ async def srgssr_video_get_shows(
         has_more = bool(data.get("next"))
     else:
         buckets = await asyncio.gather(
-            *(
-                _fetch_show_bucket(bu, character, params.page_size)
-                for character in ALPHABET_BUCKETS
-            )
+            *(_fetch_show_bucket(bu, character, params.page_size) for character in ALPHABET_BUCKETS)
         )
         # Deduplicate across buckets: a show can only sit in one, but the API
         # is not ours to assume that about.
@@ -271,12 +266,7 @@ async def srgssr_video_get_episodes(
 
     # `episodeComposition` is what the v2 EpisodeComposition payload carries;
     # the older names stay as fallbacks.
-    raw_episodes = (
-        data.get("episodeComposition")
-        or data.get("episodeList")
-        or data.get("medias")
-        or []
-    )
+    raw_episodes = data.get("episodeComposition") or data.get("episodeList") or data.get("medias") or []
     total = int(data.get("total", len(raw_episodes)))
     log.info("tool_succeeded", result_count=len(raw_episodes), total=total)
 

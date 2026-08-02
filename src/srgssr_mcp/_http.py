@@ -38,24 +38,24 @@ USER_AGENT = f"srgssr-mcp/{__version__} (github.com/malkreide/srgssr-mcp)"
 ALLOWED_HOSTS: frozenset[str] = frozenset({"api.srgssr.ch"})
 
 _BLOCKED_IP_NETWORKS: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...] = (
-    ipaddress.ip_network("0.0.0.0/8"),       # "this network"
-    ipaddress.ip_network("10.0.0.0/8"),      # RFC1918 private
-    ipaddress.ip_network("100.64.0.0/10"),   # CGNAT
-    ipaddress.ip_network("127.0.0.0/8"),     # loopback
+    ipaddress.ip_network("0.0.0.0/8"),  # "this network"
+    ipaddress.ip_network("10.0.0.0/8"),  # RFC1918 private
+    ipaddress.ip_network("100.64.0.0/10"),  # CGNAT
+    ipaddress.ip_network("127.0.0.0/8"),  # loopback
     ipaddress.ip_network("169.254.0.0/16"),  # link-local (cloud metadata)
-    ipaddress.ip_network("172.16.0.0/12"),   # RFC1918 private
-    ipaddress.ip_network("192.0.0.0/24"),    # IETF protocol assignments
+    ipaddress.ip_network("172.16.0.0/12"),  # RFC1918 private
+    ipaddress.ip_network("192.0.0.0/24"),  # IETF protocol assignments
     ipaddress.ip_network("192.168.0.0/16"),  # RFC1918 private
-    ipaddress.ip_network("198.18.0.0/15"),   # benchmarking
-    ipaddress.ip_network("224.0.0.0/4"),     # multicast
-    ipaddress.ip_network("240.0.0.0/4"),     # reserved (incl. broadcast)
-    ipaddress.ip_network("::1/128"),         # IPv6 loopback
-    ipaddress.ip_network("::/128"),          # IPv6 unspecified
-    ipaddress.ip_network("::ffff:0:0/96"),   # IPv4-mapped IPv6
-    ipaddress.ip_network("64:ff9b::/96"),    # IPv4/IPv6 translation
-    ipaddress.ip_network("fc00::/7"),        # IPv6 unique-local
-    ipaddress.ip_network("fe80::/10"),       # IPv6 link-local
-    ipaddress.ip_network("ff00::/8"),        # IPv6 multicast
+    ipaddress.ip_network("198.18.0.0/15"),  # benchmarking
+    ipaddress.ip_network("224.0.0.0/4"),  # multicast
+    ipaddress.ip_network("240.0.0.0/4"),  # reserved (incl. broadcast)
+    ipaddress.ip_network("::1/128"),  # IPv6 loopback
+    ipaddress.ip_network("::/128"),  # IPv6 unspecified
+    ipaddress.ip_network("::ffff:0:0/96"),  # IPv4-mapped IPv6
+    ipaddress.ip_network("64:ff9b::/96"),  # IPv4/IPv6 translation
+    ipaddress.ip_network("fc00::/7"),  # IPv6 unique-local
+    ipaddress.ip_network("fe80::/10"),  # IPv6 link-local
+    ipaddress.ip_network("ff00::/8"),  # IPv6 multicast
 )
 
 _token_cache: dict = {"access_token": None, "expires_at": 0.0}
@@ -117,9 +117,7 @@ def _resolve_and_validate_addrinfo(hostname: str) -> str:
     try:
         addr_infos = socket.getaddrinfo(hostname, None, type=socket.SOCK_STREAM)
     except socket.gaierror as e:
-        raise ValueError(
-            f"SSRF blocked: cannot resolve host '{hostname}' ({e})"
-        ) from e
+        raise ValueError(f"SSRF blocked: cannot resolve host '{hostname}' ({e})") from e
     if not addr_infos:
         raise ValueError(f"SSRF blocked: no addresses returned for '{hostname}'")
 
@@ -130,8 +128,7 @@ def _resolve_and_validate_addrinfo(hostname: str) -> str:
         for blocked in _BLOCKED_IP_NETWORKS:
             if ip.version == blocked.version and ip in blocked:
                 raise ValueError(
-                    f"SSRF blocked: host '{hostname}' resolves to {ip} "
-                    f"which is in blocked range {blocked}"
+                    f"SSRF blocked: host '{hostname}' resolves to {ip} which is in blocked range {blocked}"
                 )
         if first_ip is None:
             first_ip = ip_str
@@ -162,9 +159,7 @@ async def _resolve_pinned(hostname: str) -> str:
 
         ip = _resolve_and_validate_addrinfo(hostname)
         _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": now}
-        logger.debug(
-            "dns_pinned", host=hostname, ip=ip, ttl_sec=DNS_PIN_TTL_SECONDS
-        )
+        logger.debug("dns_pinned", host=hostname, ip=ip, ttl_sec=DNS_PIN_TTL_SECONDS)
         return ip
 
 
@@ -220,18 +215,12 @@ def _validate_url_safe(url: str) -> None:
     """
     parsed = urlparse(url)
     if parsed.scheme != "https":
-        raise ValueError(
-            f"SSRF blocked: only HTTPS is permitted for outbound requests "
-            f"(got scheme '{parsed.scheme}')"
-        )
+        raise ValueError(f"SSRF blocked: only HTTPS is permitted for outbound requests (got scheme '{parsed.scheme}')")
     hostname = parsed.hostname
     if not hostname:
         raise ValueError("SSRF blocked: URL has no hostname")
     if hostname not in ALLOWED_HOSTS:
-        raise ValueError(
-            f"SSRF blocked: host '{hostname}' is not in the egress allowlist "
-            f"({sorted(ALLOWED_HOSTS)})"
-        )
+        raise ValueError(f"SSRF blocked: host '{hostname}' is not in the egress allowlist ({sorted(ALLOWED_HOSTS)})")
     # SEC-005: hit the TTL'd cache first. A cached entry has already passed
     # the IP-allowlist check, so we re-trust it for the rest of the TTL
     # window — eliminating the per-request getaddrinfo call that the audit
@@ -348,9 +337,7 @@ async def _api_get(url: str, params: dict | None = None) -> dict:
     return resp.json()
 
 
-async def _safe_api_get(
-    url: str, params: dict | None = None, not_found_hint: str | None = None
-) -> dict | str:
+async def _safe_api_get(url: str, params: dict | None = None, not_found_hint: str | None = None) -> dict | str:
     """Like :func:`_api_get` but returns a localized error string on failure.
 
     Used by aggregation tools that fan out via :func:`asyncio.gather` and want
@@ -371,8 +358,7 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
             return "Fehler 401: Ungültige API-Credentials. Bitte SRGSSR_CONSUMER_KEY und SRGSSR_CONSUMER_SECRET prüfen."
         if sc == 403:
             return (
-                "Fehler 403: Zugriff verweigert. Möglicherweise fehlt der Zugriff"
-                " auf diese API im gewählten Produkt."
+                "Fehler 403: Zugriff verweigert. Möglicherweise fehlt der Zugriff auf diese API im gewählten Produkt."
             )
         if sc == 404:
             base = "Fehler 404: Ressource nicht gefunden. Bitte ID oder Parameter prüfen."
@@ -398,9 +384,7 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
     return f"Unerwarteter Fehler. Details siehe Server-Log (Typ: {type(e).__name__})."
 
 
-def _build_error_response(
-    e: Exception, not_found_hint: str | None = None
-) -> "ToolErrorResponse":  # noqa: F821 — lazy import to keep _models -> _http acyclic
+def _build_error_response(e: Exception, not_found_hint: str | None = None) -> "ToolErrorResponse":  # noqa: F821 — lazy import to keep _models -> _http acyclic
     """Wrap :func:`_handle_error`'s localised message in the typed
     :class:`ToolErrorResponse` model (SDK-002 Option A).
 
@@ -424,9 +408,7 @@ def _query_variants(query: str) -> list[str]:
     """
     seen: set[str] = set()
     variants: list[str] = []
-    folded = "".join(
-        c for c in unicodedata.normalize("NFKD", query) if not unicodedata.combining(c)
-    )
+    folded = "".join(c for c in unicodedata.normalize("NFKD", query) if not unicodedata.combining(c))
     for v in (query, folded, query.lower(), folded.lower(), query.title(), folded.title()):
         v = v.strip()
         if v and v not in seen:

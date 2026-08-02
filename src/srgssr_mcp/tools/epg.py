@@ -62,10 +62,7 @@ def _station_hint(bu: str, broadcast_type: str, channel_id: str) -> str:
 
 def _station_overview() -> str:
     """One line per (bu, broadcast_type) for the tool description."""
-    return "\n".join(
-        f"{bu} {bt}: {', '.join(stations)}"
-        for (bu, bt), stations in EPG_STATIONS.items()
-    )
+    return "\n".join(f"{bu} {bt}: {', '.join(stations)}" for (bu, bt), stations in EPG_STATIONS.items())
 
 
 class EpgProgramsInput(BaseModel):
@@ -79,9 +76,7 @@ class EpgProgramsInput(BaseModel):
         pattern=r"^(tv|radio)$",
         description="Sendertyp: 'tv' oder 'radio'",
     )
-    channel_id: str = Field(
-        ..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$"
-    )
+    channel_id: str = Field(..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$")
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
 
 
@@ -115,9 +110,7 @@ def _epg_program_from_dict(d: dict) -> EpgProgram:
     )
 
 
-def _build_epg_response(
-    raw_programs: list, channel_id: str, bu: str, date: str
-) -> EpgProgramsResponse:
+def _build_epg_response(raw_programs: list, channel_id: str, bu: str, date: str) -> EpgProgramsResponse:
     programs = [_epg_program_from_dict(p) for p in (raw_programs or [])]
     return EpgProgramsResponse(
         business_unit=bu,
@@ -180,9 +173,7 @@ async def srgssr_epg_get_programs(
         log.error("tool_failed", error_type=type(e).__name__, error=str(e))
         return _build_error_response(
             e,
-            not_found_hint=_station_hint(
-                bu, params.broadcast_type, params.channel_id
-            ),
+            not_found_hint=_station_hint(bu, params.broadcast_type, params.channel_id),
         )
 
     raw_programs = _extract_raw_programs(data)
