@@ -3,9 +3,12 @@
 import asyncio
 import base64
 import ipaddress
+import random
 import socket
 import time
 import unicodedata
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from urllib.parse import urlparse
 
 import httpx
@@ -28,6 +31,63 @@ TIMEOUT = 30.0
 # Derived from the package version, not hand-maintained: this literal read
 # "srgssr-mcp/1.0.0" while the package was at 1.0.3.
 USER_AGENT = f"srgssr-mcp/{__version__} (github.com/malkreide/srgssr-mcp)"
+
+# --- Retry policy toward the SRG SSR API gateway (ARCH-014) ------------------
+# Three questions a retry has to answer: *what* is retried, *how fast*, and
+# *how long*. The first is settled in _request_with_retry (4xx except 429 fails
+# fast); these constants settle the other two.
+
+RETRY_ATTEMPTS = 4
+
+# Ceiling on the *whole* call — the token refresh, the request it authorises,
+# and every wait between them.
+#
+# An attempt count is not a bound: four attempts at a 30s timeout plus backoff
+# run past two minutes, and the number never says so. Worse, the relevant limit
+# is not ours. The caller has its own timeout, and past it nobody is listening
+# any more — the work continues, the load lands on the gateway, and the result
+# goes nowhere.
+#
+# The anchor is measured, not guessed: the Python MCP SDK ships
+# MCP_DEFAULT_TIMEOUT = 30.0 (mcp/shared/_httpx_utils.py). 25s leaves headroom
+# for MCP framing and the tool layer above the fetch.
+#
+# One budget spans the token refresh *and* the request, which is why the
+# deadline is threaded through instead of being started twice: giving each its
+# own would let a cold cache spend 25s on the token and 25s on the call — 50s
+# against a 30s client default, with each half looking innocent on its own.
+RETRY_TOTAL_BUDGET = 25.0
+
+# Ceiling for a single wait. Guards two things at once: an exponential ladder
+# that would otherwise grow without bound, and a Retry-After the gateway is
+# entitled to send but we are not obliged to sit through.
+RETRY_MAX_DELAY = 20.0
+
+RETRY_BACKOFF_BASE = 2.0
+
+# Jitter spread. Without it every client that hit the same outage retries in
+# lockstep and the load returns as a wave exactly when the gateway recovers —
+# the retry storm extends the outage it was meant to bridge. This server does
+# not even need several clients to produce that lockstep: the aggregation tools
+# fan out via asyncio.gather, so one process manages it alone.
+RETRY_JITTER_SPREAD = 0.5  # exponential delays land in [0.5x, 1.5x]
+
+# Applied on top of a Retry-After value, deliberately one-sided: the gateway
+# told us when to come back, so later is polite and earlier would be ignoring
+# the very header we just read.
+RETRY_AFTER_JITTER = 0.25  # lands in [1.0x, 1.25x]
+
+# Statuses that carry a meaningful Retry-After (RFC 9110 §10.2.3). A 429 or 503
+# is the gateway answering the exact question the backoff curve is guessing at.
+RETRY_AFTER_STATUSES = frozenset({429, 503})
+
+# Backoff sleeps go through this alias so a test can skip them by patching this
+# module attribute. Patching ``asyncio.sleep`` itself would reach every module
+# in the process: ``test_daily_briefing_runs_upstreams_in_parallel`` uses
+# ``asyncio.sleep(0)`` to yield to the event loop, and a no-op'd sleep silently
+# serialises the fan-out it is checking for — the test still runs, it just
+# stops testing anything.
+_sleep = asyncio.sleep
 
 # SSRF defense (SEC-004 + SEC-021): every outbound HTTP request is restricted
 # to the SRG SSR API host, must use HTTPS, and the resolved IPs must not fall
@@ -239,12 +299,136 @@ def _validate_url_safe(url: str) -> None:
     _dns_pin_cache[hostname] = {"ip": ip, "resolved_at": now}
 
 
+def parse_retry_after(resp: httpx.Response | None) -> float | None:
+    """Seconds to wait per the response's ``Retry-After``, or None.
+
+    RFC 9110 §10.2.3 allows two forms: delta-seconds (``120``) and an HTTP-date
+    (``Wed, 21 Oct 2026 07:28:00 GMT``). Both appear in the wild, so both are
+    read. Anything unparseable yields None and the caller falls back to its own
+    curve — a malformed header must not become a crash on the error path.
+    """
+    if resp is None or resp.status_code not in RETRY_AFTER_STATUSES:
+        return None
+    raw = (resp.headers.get("Retry-After") or "").strip()
+    if not raw:
+        return None
+    if raw.isdigit():
+        return float(raw)
+    try:
+        when = parsedate_to_datetime(raw)
+    except (TypeError, ValueError):
+        return None
+    if when is None:
+        return None
+    if when.tzinfo is None:  # RFC 9110 dates are GMT; a naive one means UTC
+        when = when.replace(tzinfo=UTC)
+    # Never negative: a date in the past means "now".
+    return max(0.0, (when - datetime.now(UTC)).total_seconds())
+
+
+def retry_delay(attempt: int, last_error: Exception | None) -> float:
+    """Seconds to wait before ``attempt`` (ARCH-014).
+
+    The gateway's own answer beats our guess: if it sent ``Retry-After`` on a
+    429 or 503, that value wins over the exponential curve. Everything is
+    capped and spread — see the constants above for why each matters.
+    """
+    hinted = parse_retry_after(getattr(last_error, "response", None))
+    if hinted is not None:
+        jittered = hinted * (1.0 + random.random() * RETRY_AFTER_JITTER)
+    else:
+        jittered = RETRY_BACKOFF_BASE**attempt * (1.0 - RETRY_JITTER_SPREAD + random.random() * 2 * RETRY_JITTER_SPREAD)
+    # Cap *after* jitter. The other order made RETRY_MAX_DELAY not a bound at
+    # all: a value capped at 20s was then multiplied by up to 1.5 and landed at
+    # 30s. The constant claimed a ceiling it did not hold.
+    return min(jittered, RETRY_MAX_DELAY)
+
+
+async def _request_with_retry(
+    method: str,
+    url: str,
+    *,
+    params: dict | None = None,
+    headers: dict | None = None,
+    deadline: float | None = None,
+) -> httpx.Response:
+    """Issue a request, retrying what is worth retrying (ARCH-014).
+
+    Retried: network errors, timeouts, 5xx and 429. Not retried: any other 4xx
+    — that is a statement about the request, not about the moment — and
+    :class:`ValueError` from the SSRF guard or :func:`_raise_for_redirect`,
+    which are configuration faults that repeat identically.
+
+    ``deadline`` is a :func:`time.monotonic` timestamp shared with the caller,
+    so a token refresh and the request it authorises spend one budget between
+    them rather than one each.
+    """
+    if deadline is None:
+        deadline = time.monotonic() + RETRY_TOTAL_BUDGET
+    client = await _get_http_client()
+    last_exc: Exception | None = None
+
+    for attempt in range(RETRY_ATTEMPTS):
+        if attempt > 0:
+            delay = retry_delay(attempt, last_exc)
+            # A wait that outlasts the budget is a wait for nobody: the caller
+            # has given up by the time it ends.
+            if delay >= deadline - time.monotonic():
+                break
+            logger.info(
+                "http_retry",
+                attempt=attempt + 1,
+                of=RETRY_ATTEMPTS,
+                delay_sec=round(delay, 2),
+                exc_type=type(last_exc).__name__,
+            )
+            await _sleep(delay)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        try:
+            # httpx applies its timeout per operation (connect/read/write/pool)
+            # and the read timeout restarts with every chunk — that bounds each
+            # step, not the call, so a slowly trickling response could outlast
+            # the budget without any single read timing out. asyncio.timeout is
+            # the wall-clock deadline the budget actually promises; the httpx
+            # timeout stays alongside as the finer per-operation bound.
+            async with asyncio.timeout(remaining):
+                resp = await client.request(
+                    method,
+                    url,
+                    params=params,
+                    headers=headers,
+                    timeout=min(TIMEOUT, remaining),
+                )
+                _raise_for_redirect(resp)
+                resp.raise_for_status()
+                return resp
+        except TimeoutError as e:  # budget gone, not just this attempt
+            last_exc = e
+            break
+        except httpx.HTTPStatusError as e:
+            last_exc = e
+            if e.response.status_code != 429 and 400 <= e.response.status_code < 500:
+                raise
+        except httpx.RequestError as e:
+            last_exc = e
+
+    if last_exc is None:  # budget gone before a single request went out
+        raise httpx.ConnectTimeout(f"No attempt possible: {RETRY_TOTAL_BUDGET:g}s budget already spent")
+    raise last_exc
+
+
 def _get_credentials() -> tuple[str, str]:
     return get_settings().require_credentials()
 
 
-async def _get_access_token() -> str:
-    """Returns a valid OAuth2 access token, refreshing if necessary."""
+async def _get_access_token(deadline: float | None = None) -> str:
+    """Returns a valid OAuth2 access token, refreshing if necessary.
+
+    ``deadline`` is passed through to the refresh so the token round-trip and
+    the request that needs it share one budget instead of one each.
+    """
     now = time.time()
     if _token_cache["access_token"] and _token_cache["expires_at"] > now + 60:
         logger.debug("oauth_token_cache_hit")
@@ -266,8 +450,12 @@ async def _get_access_token() -> str:
 
         _validate_url_safe(TOKEN_URL)
         logger.info("oauth_token_refresh")
-        client = await _get_http_client()
-        resp = await client.post(
+        # A token endpoint that is briefly unreachable used to fail every tool
+        # call outright, and a 401 from an expired-and-unrefreshable token
+        # reads to the user as "wrong credentials" — a diagnosis that sends
+        # them to check a key that was never the problem.
+        resp = await _request_with_retry(
+            "POST",
             TOKEN_URL,
             params={"grant_type": "client_credentials"},
             headers={
@@ -275,9 +463,8 @@ async def _get_access_token() -> str:
                 "Content-Type": "application/x-www-form-urlencoded",
                 "User-Agent": USER_AGENT,
             },
+            deadline=deadline,
         )
-        _raise_for_redirect(resp)
-        resp.raise_for_status()
         data = resp.json()
 
         _token_cache["access_token"] = data["access_token"]
@@ -322,18 +509,20 @@ def _raise_for_redirect(resp: httpx.Response) -> None:
 
 
 async def _api_get(url: str, params: dict | None = None) -> dict:
-    """Authenticated GET helper returning parsed JSON."""
+    """Authenticated GET helper returning parsed JSON.
+
+    The deadline is opened here and handed to both the token refresh and the
+    request, so the whole call — not each half — is what the budget bounds.
+    """
     _validate_url_safe(url)
-    token = await _get_access_token()
+    deadline = time.monotonic() + RETRY_TOTAL_BUDGET
+    token = await _get_access_token(deadline=deadline)
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json",
         "User-Agent": USER_AGENT,
     }
-    client = await _get_http_client()
-    resp = await client.get(url, params=params, headers=headers)
-    _raise_for_redirect(resp)
-    resp.raise_for_status()
+    resp = await _request_with_retry("GET", url, params=params, headers=headers, deadline=deadline)
     return resp.json()
 
 
@@ -374,7 +563,12 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
         if sc == 400 and not_found_hint:
             return f"{base}\n\n**Tipp:** {not_found_hint}"
         return base
-    if isinstance(e, httpx.TimeoutException):
+    # ``TimeoutError`` (builtin) comes from the retry loop's total budget,
+    # ``httpx.TimeoutException`` from a single operation. To the caller both
+    # mean the same thing: it took too long. Without the builtin case an
+    # exhausted budget would fall through to "unerwarteter Fehler" — a message
+    # that names no cause and suggests nothing.
+    if isinstance(e, httpx.TimeoutException | TimeoutError):
         return "Fehler: Anfrage hat das Timeout überschritten. Bitte erneut versuchen."
     # Defense-in-Depth (OBS-002): never include str(e) in the user-facing
     # message — internals like resolved hostnames or socket details (gaierror)

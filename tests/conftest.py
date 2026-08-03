@@ -1,9 +1,12 @@
 """Shared pytest fixtures for srgssr-mcp tests."""
+
+import asyncio
 import os
 import time
 
 import pytest
 
+from srgssr_mcp import _http as _http_mod
 from srgssr_mcp import server
 from srgssr_mcp._http import close_http_client
 
@@ -76,3 +79,39 @@ def live_credentials():
     server._token_cache["expires_at"] = 0.0
     # Settings are memoized; drop any cached value so the live env is re-read.
     server.get_settings.cache_clear()
+
+
+# Retry-Wartezeiten in Unit-Tests überspringen (ARCH-014).
+#
+# Die Schleife in ``_http`` wartet zwischen Versuchen. Eine Testsuite, die
+# diese Wartezeiten absitzt, wird langsam genug, dass sie niemand mehr laufen
+# lässt — ein Test, der ein 503 mockt, kostet sonst rund 14 Sekunden.
+#
+# Gepatcht wird das Modul-Attribut ``_http._sleep``, nicht ``asyncio.sleep``.
+# Letzteres würde jedes Modul im Prozess treffen:
+# ``test_daily_briefing_runs_upstreams_in_parallel`` nutzt ``asyncio.sleep(0)``,
+# um dem Event-Loop das Wort zu geben, und ein wegpatchtes sleep serialisiert
+# still die Parallelität, die der Test prüfen soll — er läuft weiter, prüft
+# aber nichts mehr.
+#
+# Die echte ``asyncio.sleep`` wird beim Import festgehalten, vor jeder Fixture.
+# Wer sie erst *innerhalb* eines Tests greift, greift die bereits gepatchte.
+_REAL_SLEEP = asyncio.sleep
+
+
+@pytest.fixture(autouse=True)
+def _no_sleep(request, monkeypatch):
+    """Skip retry backoff — except in live tests, where the wait is the point."""
+    if "live" in request.keywords:
+        return
+
+    async def _instant(_seconds):
+        return None
+
+    monkeypatch.setattr(_http_mod, "_sleep", _instant)
+
+
+@pytest.fixture
+def real_sleep():
+    """The unpatched ``asyncio.sleep``, for tests that reason about real time."""
+    return _REAL_SLEEP
