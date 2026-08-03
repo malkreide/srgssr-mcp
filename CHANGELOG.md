@@ -5,7 +5,51 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Retry-Politik gegenüber dem SRG-SSR-Gateway** (ARCH-014). Bisher gab es
+  keine: Ein einzelner Netzwerkfehler, ein Timeout oder ein 503 beendete den
+  Tool-Aufruf, obwohl der nächste Versuch Sekunden später geklappt hätte.
+
+  Wiederholt werden Netzwerkfehler, Timeouts, 5xx und 429 — vier Versuche. Ein
+  4xx ausser 429 scheitert weiterhin sofort; ebenso der `ValueError` aus dem
+  SSRF-Guard und aus `_raise_for_redirect`, denn ein nicht registrierter
+  Basispfad antwortet auch beim vierten Mal mit 302.
+
+- **Der Token-Endpunkt wird mitgeschützt.** Er war der stillste Ausfallpunkt
+  des Servers: Ist er kurz nicht erreichbar, scheiterte *jeder* Tool-Aufruf,
+  und ein 401 aus einem nicht erneuerbaren Token liest sich für Nutzende als
+  «falsche Credentials» — eine Diagnose, die sie einen Schlüssel prüfen lässt,
+  der nie das Problem war.
+
+- **`Retry-After` wird gelesen und schlägt die eigene Backoff-Kurve**, in
+  beiden Formen nach RFC 9110 §10.2.3 (Sekundenzahl und HTTP-Datum). Ein
+  unbrauchbarer Header führt zurück auf die Kurve statt zum Absturz.
+
+- **Backoff ist gestreut (Jitter).** `2**attempt` ist deterministisch, und
+  dieser Server erzeugt den Gleichtakt ohne fremde Hilfe: Die
+  Aggregations-Tools fächern über `asyncio.gather` auf, also retryen mehrere
+  Requests **eines** Prozesses synchron und die Last kommt als Welle zurück.
+  Exponentiell `[0.5x, 1.5x]`, auf einem `Retry-After` einseitig
+  `[1.0x, 1.25x]`. Deckel von 20 s je Einzelwartezeit, angewandt **nach** dem
+  Jittern — die andere Reihenfolge macht den Deckel zu gar keiner Schranke.
+
+- **Ein Gesamtbudget von 25 s für Token-Abruf und Request zusammen.** Zwei
+  getrennte Budgets hätten einen kalten Cache 25 s für den Token und 25 s für
+  den Aufruf ausgeben lassen — 50 s gegen einen 30-s-Client-Default, wobei
+  jede Hälfte für sich harmlos aussieht. Die Deadline wird deshalb in
+  `_api_get` eröffnet und durchgereicht.
+
+  Sie hängt an `asyncio.timeout`, nicht am httpx-Timeout: httpx begrenzt pro
+  Operation, und sein Read-Timeout beginnt mit jedem Chunk von vorn — eine
+  langsam tröpfelnde Antwort würde das Budget sonst überdauern, ohne dass ein
+  einzelner Read abläuft.
+
 ### Fixed
+- **Ein aufgebrauchtes Gesamtbudget las sich als «Unerwarteter Fehler».** Es
+  wirft den builtin `TimeoutError`, `_handle_error` kannte aber nur
+  `httpx.TimeoutException`. Für den Aufrufer ist beides dasselbe: Es hat zu
+  lange gedauert.
+
 - **Das Nightly wäre ohne Secrets grün geblieben.** `live-test.yml` liest
   `LIVE_TEST_CONSUMER_KEY`/`_SECRET`; fehlen sie, überspringt die
   `live_credentials`-Fixture jeden Test, pytest endet mit 0 und der Lauf meldet

@@ -17,3 +17,4 @@ secrets/
 credentials/
 *.pem
 *.key
+.venv-tmp/
