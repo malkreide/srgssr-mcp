@@ -45,11 +45,11 @@ Ein Codex-Review auf einem PR wird beantwortet oder behoben, nie ignoriert.
 
 ## Teil 2 — dieses Repo
 
-**ruff:** CI pinnt `ruff==0.16.1` (`.github/workflows/ci.yml`). Es gibt keine
-`.pre-commit-config.yaml`; die einzige andere Quelle ist `ruff>=0.4.0` im
-`[dev]`-Extra von `pyproject.toml` — eine offene Untergrenze, die lokal
-irgendeine Version installiert. Lokal darum explizit
-`pip install ruff==0.16.1` nach `pip install -e ".[dev]"`.
+**ruff:** genau eine Quelle — `ruff==0.16.1` im `[dev]`-Extra von
+`pyproject.toml`. `pip install -e ".[dev]"` reicht also, lokal wie in der CI.
+Keine zweite Version in die Workflows schreiben: ein solcher Schritt läuft
+nach dem `[dev]`-Install und überstimmt den Pin still (`test_dependencies.py`
+hält beides fest). Eine `.pre-commit-config.yaml` gibt es nicht.
 
 **Gates, wörtlich aus der CI:**
 

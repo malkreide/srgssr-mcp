@@ -36,6 +36,47 @@ def _declared_dependencies() -> list[str]:
     return names
 
 
+def _dev_dependencies() -> list[str]:
+    """Raw specifiers from `[project.optional-dependencies].dev`."""
+    import tomllib
+
+    data = tomllib.loads((_ROOT / "pyproject.toml").read_text())
+    return data["project"]["optional-dependencies"]["dev"]
+
+
+def test_ruff_is_pinned_exactly():
+    """ruff must be pinned to one version, not a range.
+
+    It was `ruff>=0.4.0`, so `pip install -e ".[dev]"` resolved to whatever was
+    newest and a local gate run disagreed with CI about which findings exist.
+    A range here reintroduces exactly that.
+    """
+    specs = [s for s in _dev_dependencies() if re.match(r"^ruff\b", s)]
+    assert len(specs) == 1, f"expected exactly one ruff specifier, found {specs}"
+    assert re.fullmatch(r"ruff==\d+\.\d+\.\d+", specs[0]), (
+        f"ruff must be pinned as ruff==X.Y.Z, found {specs[0]!r}. A range lets a "
+        "local install and CI run different ruff versions."
+    )
+
+
+def test_the_ruff_pin_is_the_only_version_source():
+    """No second ruff version anywhere in the CI workflows.
+
+    A `pip install ruff==<version>` step used to run after the `[dev]` install
+    and silently won over pyproject, so editing the pin there changed nothing
+    in CI. If that pattern comes back, this fails.
+    """
+    for workflow in (_ROOT / ".github" / "workflows").glob("*.yml"):
+        # Comments are skipped on purpose: the one in ci.yml explains why this
+        # step must not come back and quotes the command it forbids.
+        steps = [ln for ln in workflow.read_text().splitlines() if not ln.lstrip().startswith("#")]
+        offending = [ln.strip() for ln in steps if "pip install ruff" in ln]
+        assert not offending, (
+            f"{workflow.name} installs ruff directly ({offending}). That step runs "
+            'after pip install -e ".[dev]" and overrides the pin in pyproject.'
+        )
+
+
 def _top_level_imports() -> set[str]:
     """Top-level module names imported anywhere in src/ or tests/."""
     found: set[str] = set()
