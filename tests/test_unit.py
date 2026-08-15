@@ -8,14 +8,15 @@ Each tool covers three scenarios:
 Tools are called directly (the @mcp.tool decorator does not wrap them);
 input is constructed via the Pydantic models from server.py.
 """
-import asyncio
-import re
 
+import asyncio
 import json  # noqa: F401  (still used by some assertions)
+import re
 
 import httpx
 import pytest
 import respx
+from pydantic import ValidationError
 
 from srgssr_mcp._models import (
     AudioEpisodesResponse,
@@ -93,16 +94,15 @@ def _epg_station(bu: str = "srf", broadcast_type: str = "tv", channel: str = "sr
 # Weather: search_location
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_weather_search_location_happy_path():
     respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         return_value=httpx.Response(
             200,
             json=[
-                {"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001,
-                 "geolocation": {"id": "100001"}},
-                {"id": 2, "name": "Zürich Flughafen", "province": "ZH", "plz": 8058,
-                 "geolocation": {"id": "100002"}},
+                {"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001, "geolocation": {"id": "100001"}},
+                {"id": 2, "name": "Zürich Flughafen", "province": "ZH", "plz": 8058, "geolocation": {"id": "100002"}},
             ],
         )
     )
@@ -118,9 +118,7 @@ async def test_weather_search_location_happy_path():
 async def test_weather_search_by_postal_code_uses_the_zip_parameter():
     """v2 has no combined search term — a postal code goes to `zip`, a name to `name`."""
     route = respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
-        return_value=httpx.Response(
-            200, json=[{"id": 1, "name": "Zürich", "geolocation": {"id": "100001"}}]
-        )
+        return_value=httpx.Response(200, json=[{"id": 1, "name": "Zürich", "geolocation": {"id": "100001"}}])
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="8001"))
     assert isinstance(result, WeatherLocationsResponse)
@@ -132,9 +130,7 @@ async def test_weather_search_by_postal_code_uses_the_zip_parameter():
 async def test_weather_search_accepts_a_single_object_response():
     """The endpoint answers with a bare object for some queries and an array for others."""
     respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
-        return_value=httpx.Response(
-            200, json={"id": 7, "name": "Chur", "geolocation": {"id": "100007"}}
-        )
+        return_value=httpx.Response(200, json={"id": 7, "name": "Chur", "geolocation": {"id": "100007"}})
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Chur"))
     assert isinstance(result, WeatherLocationsResponse)
@@ -157,21 +153,15 @@ async def test_weather_forecast_point_id_comes_from_the_geolocation_lookup():
     route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [], "days": []})
     )
-    await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.376887, longitude=8.541694)
-    )
+    await srgssr_weather_current(WeatherForecastInput(latitude=47.376887, longitude=8.541694))
     assert route.calls.last.request.url.path.endswith("/forecastpoint/100001")
 
 
 @respx.mock
 async def test_weather_no_station_for_coordinates_is_an_error():
     """An empty geolocation lookup must not become an empty forecast."""
-    respx.get(f"{WEATHER_BASE}/geolocations").mock(
-        return_value=httpx.Response(200, json=[])
-    )
-    result = await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.3769, longitude=8.5417)
-    )
+    respx.get(f"{WEATHER_BASE}/geolocations").mock(return_value=httpx.Response(200, json=[]))
+    result = await srgssr_weather_current(WeatherForecastInput(latitude=47.3769, longitude=8.5417))
     assert isinstance(result, ToolErrorResponse)
     assert "keinen Standort" in result.message
 
@@ -179,17 +169,11 @@ async def test_weather_no_station_for_coordinates_is_an_error():
 @respx.mock
 async def test_weather_explicit_geolocation_id_skips_the_lookup():
     """A known id means one request instead of two."""
-    lookup = respx.get(f"{WEATHER_BASE}/geolocations").mock(
-        return_value=httpx.Response(200, json=[{"id": 1}])
-    )
+    lookup = respx.get(f"{WEATHER_BASE}/geolocations").mock(return_value=httpx.Response(200, json=[{"id": 1}]))
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [], "days": []})
     )
-    await srgssr_weather_current(
-        WeatherForecastInput(
-            latitude=47.3769, longitude=8.5417, geolocation_id="100001"
-        )
-    )
+    await srgssr_weather_current(WeatherForecastInput(latitude=47.3769, longitude=8.5417, geolocation_id="100001"))
     assert not lookup.called
 
 
@@ -201,11 +185,7 @@ async def test_weather_explicit_geolocation_id_wins_over_coordinates():
     route = respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": [], "days": []})
     )
-    await srgssr_weather_current(
-        WeatherForecastInput(
-            latitude=47.3769, longitude=8.5417, geolocation_id="100001"
-        )
-    )
+    await srgssr_weather_current(WeatherForecastInput(latitude=47.3769, longitude=8.5417, geolocation_id="100001"))
     assert route.calls.last.request.url.path.endswith("/forecastpoint/100001")
 
 
@@ -235,9 +215,7 @@ async def test_weather_all_three_tools_share_one_endpoint():
 
 @respx.mock
 async def test_weather_search_location_handles_500():
-    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
-        return_value=httpx.Response(500, text="Internal Server Error")
-    )
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(return_value=httpx.Response(500, text="Internal Server Error"))
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Bern"))
     assert isinstance(result, ToolErrorResponse)
     assert "500" in result.message or "Fehler" in result.message
@@ -245,9 +223,7 @@ async def test_weather_search_location_handles_500():
 
 @respx.mock
 async def test_weather_search_location_empty_results():
-    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
-        return_value=httpx.Response(200, json=[])
-    )
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(return_value=httpx.Response(200, json=[]))
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Atlantis"))
     assert isinstance(result, WeatherLocationsResponse)
     assert result.count == 0
@@ -257,6 +233,7 @@ async def test_weather_search_location_empty_results():
 # ---------------------------------------------------------------------------
 # Weather: current
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_weather_current_happy_path():
@@ -281,9 +258,7 @@ async def test_weather_current_happy_path():
             },
         )
     )
-    result = await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.3769, longitude=8.5417)
-    )
+    result = await srgssr_weather_current(WeatherForecastInput(latitude=47.3769, longitude=8.5417))
     assert isinstance(result, WeatherCurrentResponse)
     assert result.current.temperature_c == 18.5
     assert result.current.weather_code == 1
@@ -298,9 +273,7 @@ async def test_weather_current_handles_429():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(429, text="Too Many Requests")
     )
-    result = await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.3769, longitude=8.5417)
-    )
+    result = await srgssr_weather_current(WeatherForecastInput(latitude=47.3769, longitude=8.5417))
     assert isinstance(result, ToolErrorResponse)
     assert "429" in result.message or "Rate-Limit" in result.message
 
@@ -314,9 +287,7 @@ async def test_weather_current_returns_typed_response():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json=payload)
     )
-    result = await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_current(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherCurrentResponse)
     assert result.current.temperature_c == 5.0
     assert result.latitude == 47.0
@@ -326,6 +297,7 @@ async def test_weather_current_returns_typed_response():
 # ---------------------------------------------------------------------------
 # Weather: forecast_24h
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_weather_forecast_24h_happy_path():
@@ -344,9 +316,7 @@ async def test_weather_forecast_24h_happy_path():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": hours})
     )
-    result = await srgssr_weather_forecast_24h(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_24h(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherForecast24hResponse)
     assert result.count == 24
     assert result.hours[0].timestamp == "2026-04-30T00:00"
@@ -361,9 +331,7 @@ async def test_weather_forecast_24h_handles_404():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(404, text="Not Found")
     )
-    result = await srgssr_weather_forecast_24h(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_24h(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message or "nicht gefunden" in result.message
 
@@ -376,9 +344,7 @@ async def test_weather_forecast_24h_empty_returns_empty_hours():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"unexpected": "shape"})
     )
-    result = await srgssr_weather_forecast_24h(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_24h(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherForecast24hResponse)
     assert result.count == 0
     assert result.hours == []
@@ -387,6 +353,7 @@ async def test_weather_forecast_24h_empty_returns_empty_hours():
 # ---------------------------------------------------------------------------
 # Weather: forecast_7day
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_weather_forecast_7day_happy_path():
@@ -406,9 +373,7 @@ async def test_weather_forecast_7day_happy_path():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"days": days})
     )
-    result = await srgssr_weather_forecast_7day(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_7day(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherForecast7dayResponse)
     assert result.count == 7
     assert result.days[0].date == "2026-05-01"
@@ -423,9 +388,7 @@ async def test_weather_forecast_7day_handles_401():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(401, text="Unauthorized")
     )
-    result = await srgssr_weather_forecast_7day(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_7day(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, ToolErrorResponse)
     assert "401" in result.message or "Credentials" in result.message
 
@@ -439,9 +402,7 @@ async def test_weather_forecast_7day_typed_payload():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"days": days})
     )
-    result = await srgssr_weather_forecast_7day(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_forecast_7day(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherForecast7dayResponse)
     assert result.count == 1
     assert result.days[0].date == "2026-05-01"
@@ -452,6 +413,7 @@ async def test_weather_forecast_7day_typed_payload():
 # ---------------------------------------------------------------------------
 # Video: get_shows
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_video_get_shows_happy_path():
@@ -478,9 +440,7 @@ async def test_video_get_shows_happy_path():
 
 @respx.mock
 async def test_video_get_shows_handles_403():
-    respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(403, text="Forbidden")
-    )
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(403, text="Forbidden"))
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.RTS, character_filter="a"))
     assert isinstance(result, ToolErrorResponse)
     assert "403" in result.message or "verweigert" in result.message
@@ -521,9 +481,7 @@ async def test_video_get_shows_fans_out_over_every_letter():
     def _handler(request):
         seen_filters.append(request.url.params["characterFilter"])
         letter = request.url.params["characterFilter"]
-        return httpx.Response(
-            200, json={"showList": [{"id": f"show-{letter}", "title": f"Show {letter}"}]}
-        )
+        return httpx.Response(200, json={"showList": [{"id": f"show-{letter}", "title": f"Show {letter}"}]})
 
     respx.get(VIDEO_SHOWS).mock(side_effect=_handler)
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
@@ -535,9 +493,7 @@ async def test_video_get_shows_fans_out_over_every_letter():
 @respx.mock
 async def test_video_get_shows_fan_out_deduplicates():
     respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(
-            200, json={"showList": [{"id": "same", "title": "Immer dieselbe"}]}
-        )
+        return_value=httpx.Response(200, json={"showList": [{"id": "same", "title": "Immer dieselbe"}]})
     )
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF))
     assert isinstance(result, VideoShowsResponse)
@@ -580,32 +536,26 @@ async def test_audio_get_shows_requires_a_channel_and_fans_out():
         return httpx.Response(200, json={"showList": []})
 
     respx.get(AUDIO_SHOWS).mock(side_effect=_handler)
-    result = await srgssr_audio_get_shows(
-        AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL)
-    )
+    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL))
     assert isinstance(result, AudioShowsResponse)
     assert len(seen) == 27
 
 
 def test_audio_shows_input_requires_channel_id():
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         AudioShowsInput(business_unit=BusinessUnit.SRF)  # type: ignore[call-arg]
 
 
 def test_character_filter_rejects_multi_character_values():
     for bad in ("ab", "A", "1", ""):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter=bad)
 
 
 @respx.mock
 async def test_video_get_shows_has_more_false_without_cursor():
-    respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(200, json={"showList": [{"id": "s1", "title": "T"}]})
-    )
-    result = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
-    )
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(200, json={"showList": [{"id": "s1", "title": "T"}]}))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     assert isinstance(result, VideoShowsResponse)
     assert result.has_more is False
 
@@ -613,6 +563,7 @@ async def test_video_get_shows_has_more_false_without_cursor():
 # ---------------------------------------------------------------------------
 # Video: get_episodes
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_video_get_episodes_happy_path():
@@ -659,9 +610,7 @@ async def test_video_get_episodes_empty_list():
     respx.get(f"{VIDEO_BASE}/latest_episodes/shows/empty-show").mock(
         return_value=httpx.Response(200, json={"total": 0, "episodeList": []})
     )
-    result = await srgssr_video_get_episodes(
-        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="empty-show")
-    )
+    result = await srgssr_video_get_episodes(VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="empty-show"))
     assert isinstance(result, VideoEpisodesResponse)
     assert result.show_id == "empty-show"
     assert result.count == 0
@@ -672,6 +621,7 @@ async def test_video_get_episodes_empty_list():
 # Video: get_livestreams
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_video_get_livestreams_happy_path():
     respx.get(f"{VIDEO_BASE}/tv_channels").mock(
@@ -680,9 +630,7 @@ async def test_video_get_livestreams_happy_path():
             json={"channelList": [{"id": "srf1", "title": "SRF 1"}, {"id": "srf2", "title": "SRF zwei"}]},
         )
     )
-    result = await srgssr_video_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.SRF)
-    )
+    result = await srgssr_video_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.SRF))
     assert isinstance(result, VideoLivestreamsResponse)
     names = [c.name for c in result.channels]
     ids = [c.id for c in result.channels]
@@ -692,12 +640,8 @@ async def test_video_get_livestreams_happy_path():
 
 @respx.mock
 async def test_video_get_livestreams_handles_500():
-    respx.get(f"{VIDEO_BASE}/tv_channels").mock(
-        return_value=httpx.Response(500, text="Server Error")
-    )
-    result = await srgssr_video_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.RSI)
-    )
+    respx.get(f"{VIDEO_BASE}/tv_channels").mock(return_value=httpx.Response(500, text="Server Error"))
+    result = await srgssr_video_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.RSI))
     assert isinstance(result, ToolErrorResponse)
     assert "500" in result.message or "Fehler" in result.message
 
@@ -707,9 +651,7 @@ async def test_video_get_livestreams_typed_payload():
     respx.get(f"{VIDEO_BASE}/tv_channels").mock(
         return_value=httpx.Response(200, json={"channelList": [{"id": "rtr", "title": "RTR"}]})
     )
-    result = await srgssr_video_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.RTR)
-    )
+    result = await srgssr_video_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.RTR))
     assert isinstance(result, VideoLivestreamsResponse)
     assert result.count == 1
     assert result.channels[0].id == "rtr"
@@ -719,6 +661,7 @@ async def test_video_get_livestreams_typed_payload():
 # ---------------------------------------------------------------------------
 # Audio: get_shows
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_audio_get_shows_happy_path():
@@ -731,7 +674,9 @@ async def test_audio_get_shows_happy_path():
             },
         )
     )
-    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
+    result = await srgssr_audio_get_shows(
+        AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a")
+    )
     assert isinstance(result, AudioShowsResponse)
     assert result.shows[0].title == "Echo der Zeit"
     assert result.shows[0].id == "echo"
@@ -739,10 +684,10 @@ async def test_audio_get_shows_happy_path():
 
 @respx.mock
 async def test_audio_get_shows_handles_401():
-    respx.get(AUDIO_SHOWS).mock(
-        return_value=httpx.Response(401, text="Unauthorized")
+    respx.get(AUDIO_SHOWS).mock(return_value=httpx.Response(401, text="Unauthorized"))
+    result = await srgssr_audio_get_shows(
+        AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a")
     )
-    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
     assert isinstance(result, ToolErrorResponse)
     assert "401" in result.message or "Credentials" in result.message
 
@@ -755,7 +700,9 @@ async def test_audio_get_shows_alternative_keys():
             json={"shows": [{"id": "x", "name": "Alt-Format-Show", "lead": "lead-text"}]},
         )
     )
-    result = await srgssr_audio_get_shows(AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a"))
+    result = await srgssr_audio_get_shows(
+        AudioShowsInput(business_unit=BusinessUnit.SRF, channel_id=AUDIO_CHANNEL, character_filter="a")
+    )
     assert isinstance(result, AudioShowsResponse)
     titles = [s.title for s in result.shows]
     assert "Alt-Format-Show" in titles
@@ -765,21 +712,16 @@ async def test_audio_get_shows_alternative_keys():
 # Audio: get_episodes
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_audio_get_episodes_happy_path():
     respx.get(f"{AUDIO_BASE}/episodeComposition/shows/echo").mock(
         return_value=httpx.Response(
             200,
-            json={
-                "episodeList": [
-                    {"id": "e1", "title": "Folge 1", "date": "2026-04-30", "duration": 1800}
-                ]
-            },
+            json={"episodeList": [{"id": "e1", "title": "Folge 1", "date": "2026-04-30", "duration": 1800}]},
         )
     )
-    result = await srgssr_audio_get_episodes(
-        AudioEpisodesInput(business_unit=BusinessUnit.SRF, show_id="echo")
-    )
+    result = await srgssr_audio_get_episodes(AudioEpisodesInput(business_unit=BusinessUnit.SRF, show_id="echo"))
     assert isinstance(result, AudioEpisodesResponse)
     assert result.episodes[0].title == "Folge 1"
     assert result.episodes[0].id == "e1"
@@ -788,12 +730,8 @@ async def test_audio_get_episodes_happy_path():
 
 @respx.mock
 async def test_audio_get_episodes_handles_429():
-    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/foo").mock(
-        return_value=httpx.Response(429, text="Slow down")
-    )
-    result = await srgssr_audio_get_episodes(
-        AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="foo")
-    )
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/foo").mock(return_value=httpx.Response(429, text="Slow down"))
+    result = await srgssr_audio_get_episodes(AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="foo"))
     assert isinstance(result, ToolErrorResponse)
     assert "429" in result.message or "Rate-Limit" in result.message
 
@@ -806,9 +744,7 @@ async def test_audio_get_episodes_typed_payload():
             json={"episodeList": [{"id": "x", "title": "T", "duration": 60}]},
         )
     )
-    result = await srgssr_audio_get_episodes(
-        AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="foo")
-    )
+    result = await srgssr_audio_get_episodes(AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="foo"))
     assert isinstance(result, AudioEpisodesResponse)
     assert result.count == 1
     assert result.episodes[0].id == "x"
@@ -819,6 +755,7 @@ async def test_audio_get_episodes_typed_payload():
 # Audio: get_livestreams
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_audio_get_livestreams_happy_path():
     respx.get(f"{AUDIO_BASE}/radio/channels").mock(
@@ -827,9 +764,7 @@ async def test_audio_get_livestreams_happy_path():
             json={"channelList": [{"id": "srf3", "title": "Radio SRF 3"}]},
         )
     )
-    result = await srgssr_audio_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.SRF)
-    )
+    result = await srgssr_audio_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.SRF))
     assert isinstance(result, AudioLivestreamsResponse)
     assert result.channels[0].name == "Radio SRF 3"
     assert result.channels[0].id == "srf3"
@@ -837,24 +772,16 @@ async def test_audio_get_livestreams_happy_path():
 
 @respx.mock
 async def test_audio_get_livestreams_handles_500():
-    respx.get(f"{AUDIO_BASE}/radio/channels").mock(
-        return_value=httpx.Response(500, text="Boom")
-    )
-    result = await srgssr_audio_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.SWI)
-    )
+    respx.get(f"{AUDIO_BASE}/radio/channels").mock(return_value=httpx.Response(500, text="Boom"))
+    result = await srgssr_audio_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.SWI))
     assert isinstance(result, ToolErrorResponse)
     assert "500" in result.message or "Fehler" in result.message
 
 
 @respx.mock
 async def test_audio_get_livestreams_empty():
-    respx.get(f"{AUDIO_BASE}/radio/channels").mock(
-        return_value=httpx.Response(200, json={"channelList": []})
-    )
-    result = await srgssr_audio_get_livestreams(
-        VideoLivestreamsInput(business_unit=BusinessUnit.SWI)
-    )
+    respx.get(f"{AUDIO_BASE}/radio/channels").mock(return_value=httpx.Response(200, json={"channelList": []}))
+    result = await srgssr_audio_get_livestreams(VideoLivestreamsInput(business_unit=BusinessUnit.SWI))
     assert isinstance(result, AudioLivestreamsResponse)
     assert result.business_unit == "swi"
     assert result.count == 0
@@ -864,6 +791,7 @@ async def test_audio_get_livestreams_empty():
 # ---------------------------------------------------------------------------
 # EPG: get_programs
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_epg_get_programs_happy_path():
@@ -951,9 +879,7 @@ async def test_epg_get_programs_radio_uses_radio_path_segment():
 @respx.mock
 async def test_epg_resource_uses_the_station_endpoint():
     """Regression guard for the resource drifting off the tool's endpoint."""
-    route = respx.get(_epg_station()).mock(
-        return_value=httpx.Response(200, json={"programs": []})
-    )
+    route = respx.get(_epg_station()).mock(return_value=httpx.Response(200, json={"programs": []}))
     list(await mcp.read_resource("epg://srf/srf-1/2026-04-30"))
     assert route.called
     assert route.calls.last.request.url.params["date"] == "2026-04-30"
@@ -1034,14 +960,8 @@ async def test_dead_basepath_is_diagnosed_instead_of_swallowed():
     and produced "API-Fehler 302:" plus the redirect's empty body — a status
     code and nothing else.
     """
-    respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(
-            302, headers={"location": "https://developer.srgssr.ch/"}
-        )
-    )
-    result = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
-    )
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(302, headers={"location": "https://developer.srgssr.ch/"}))
+    result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     assert isinstance(result, ToolErrorResponse)
     assert "Konfigurationsfehler" in result.message
     assert "302" in result.message
@@ -1051,18 +971,12 @@ async def test_dead_basepath_is_diagnosed_instead_of_swallowed():
 
 @respx.mock
 async def test_redirect_guard_leaves_success_and_client_errors_alone():
-    respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(200, json={"showList": [{"id": "s", "title": "T"}]})
-    )
-    ok = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
-    )
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(200, json={"showList": [{"id": "s", "title": "T"}]}))
+    ok = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     assert isinstance(ok, VideoShowsResponse)
 
     respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(404, text="nope"))
-    missing = await srgssr_video_get_shows(
-        VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a")
-    )
+    missing = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     assert isinstance(missing, ToolErrorResponse)
     # Still the plain 404 path, not the redirect diagnosis.
     assert "404" in missing.message
@@ -1075,9 +989,7 @@ def test_raise_for_redirect_covers_the_whole_3xx_range():
     request = httpx.Request("GET", "https://api.srgssr.ch/gone/v1/x")
     for status in (301, 302, 303, 307, 308):
         with _pytest.raises(ValueError, match=str(status)):
-            _raise_for_redirect(
-                httpx.Response(status, request=request, headers={"location": "/elsewhere"})
-            )
+            _raise_for_redirect(httpx.Response(status, request=request, headers={"location": "/elsewhere"}))
     # 2xx and 4xx pass through untouched; raise_for_status handles the latter.
     for status in (200, 204, 404, 500):
         _raise_for_redirect(httpx.Response(status, request=request))
@@ -1086,27 +998,21 @@ def test_raise_for_redirect_covers_the_whole_3xx_range():
 def test_handle_error_attaches_hint_on_400_as_well_as_404():
     req = httpx.Request("GET", "https://api.srgssr.ch/epg/v3/srf/tv/stations/x")
     for status in (400, 404):
-        err = httpx.HTTPStatusError(
-            "boom", request=req, response=httpx.Response(status, text="nope", request=req)
-        )
+        err = httpx.HTTPStatusError("boom", request=req, response=httpx.Response(status, text="nope", request=req))
         msg = _server._handle_error(err, not_found_hint="nimm srf-1")
         assert "nimm srf-1" in msg, f"hint missing on {status}"
 
 
 def test_handle_error_leaves_other_statuses_alone():
     req = httpx.Request("GET", "https://api.srgssr.ch/epg/v3/x")
-    err = httpx.HTTPStatusError(
-        "boom", request=req, response=httpx.Response(500, text="nope", request=req)
-    )
+    err = httpx.HTTPStatusError("boom", request=req, response=httpx.Response(500, text="nope", request=req))
     msg = _server._handle_error(err, not_found_hint="nimm srf-1")
     assert "nimm srf-1" not in msg
 
 
 @respx.mock
 async def test_epg_get_programs_handles_404():
-    respx.get(_epg_station()).mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
+    respx.get(_epg_station()).mock(return_value=httpx.Response(404, text="Not Found"))
     result = await srgssr_epg_get_programs(
         EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="2026-04-30")
     )
@@ -1115,13 +1021,14 @@ async def test_epg_get_programs_handles_404():
 
 
 def test_epg_invalid_date_format_rejected_by_pydantic():
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="srf-1", date="30-04-2026")
 
 
 # ---------------------------------------------------------------------------
 # Polis: get_votations
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_polis_get_votations_happy_path():
@@ -1147,9 +1054,7 @@ async def test_polis_get_votations_happy_path():
 
 @respx.mock
 async def test_polis_get_votations_handles_500():
-    respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(500, text="Server down")
-    )
+    respx.get(f"{POLIS_BASE}/votations").mock(return_value=httpx.Response(500, text="Server down"))
     result = await srgssr_polis_get_votations(PolisListInput())
     assert isinstance(result, ToolErrorResponse)
     assert "500" in result.message or "Fehler" in result.message
@@ -1169,15 +1074,15 @@ async def test_polis_canton_is_resolved_to_a_location_id():
     locations = respx.get(POLIS_LOCATIONS).mock(
         return_value=httpx.Response(
             200,
-            json={"Location": [
-                {"id": 1, "LocationName": "Bern"},
-                {"id": 26, "LocationName": "Zürich"},
-            ]},
+            json={
+                "Location": [
+                    {"id": 1, "LocationName": "Bern"},
+                    {"id": 26, "LocationName": "Zürich"},
+                ]
+            },
         )
     )
-    route = respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(200, json={"Items": []})
-    )
+    route = respx.get(f"{POLIS_BASE}/votations").mock(return_value=httpx.Response(200, json={"Items": []}))
     await srgssr_polis_get_votations(PolisListInput(canton="zh"))
     assert locations.called
     assert route.calls.last.request.url.params["locationid"] == "26"
@@ -1227,13 +1132,9 @@ async def test_polis_implausible_year_counts_as_unparseable():
 
     _clear_reference_cache()
     respx.get(POLIS_CASES).mock(
-        return_value=httpx.Response(
-            200, json={"Case": [{"id": 1, "EventDate": "0001-01-01T00:00:00"}]}
-        )
+        return_value=httpx.Response(200, json={"Case": [{"id": 1, "EventDate": "0001-01-01T00:00:00"}]})
     )
-    result = await srgssr_polis_get_votations(
-        PolisListInput(year_from=2020, year_to=2024)
-    )
+    result = await srgssr_polis_get_votations(PolisListInput(year_from=2020, year_to=2024))
     assert isinstance(result, ToolErrorResponse)
     assert "nicht auswerten" in result.message
     _clear_reference_cache()
@@ -1250,13 +1151,9 @@ async def test_polis_unparseable_case_dates_are_an_error():
 
     _clear_reference_cache()
     respx.get(POLIS_CASES).mock(
-        return_value=httpx.Response(
-            200, json={"Case": [{"id": 1, "EventDate": None}, {"id": 2}]}
-        )
+        return_value=httpx.Response(200, json={"Case": [{"id": 1, "EventDate": None}, {"id": 2}]})
     )
-    result = await srgssr_polis_get_votations(
-        PolisListInput(year_from=2020, year_to=2024)
-    )
+    result = await srgssr_polis_get_votations(PolisListInput(year_from=2020, year_to=2024))
     assert isinstance(result, ToolErrorResponse)
     assert "nicht auswerten" in result.message
     _clear_reference_cache()
@@ -1268,14 +1165,8 @@ async def test_polis_empty_period_is_not_an_error():
     from srgssr_mcp.tools.polis import _clear_reference_cache
 
     _clear_reference_cache()
-    respx.get(POLIS_CASES).mock(
-        return_value=httpx.Response(
-            200, json={"Case": [{"id": 1, "EventDate": "1999-03-07"}]}
-        )
-    )
-    result = await srgssr_polis_get_votations(
-        PolisListInput(year_from=2020, year_to=2024)
-    )
+    respx.get(POLIS_CASES).mock(return_value=httpx.Response(200, json={"Case": [{"id": 1, "EventDate": "1999-03-07"}]}))
+    result = await srgssr_polis_get_votations(PolisListInput(year_from=2020, year_to=2024))
     assert isinstance(result, VotationsResponse)
     assert result.count == 0
     _clear_reference_cache()
@@ -1290,20 +1181,18 @@ async def test_polis_year_range_is_resolved_via_cases():
     respx.get(POLIS_CASES).mock(
         return_value=httpx.Response(
             200,
-            json={"Case": [
-                {"id": 100, "EventDate": "2024-09-22", "Title": "September"},
-                {"id": 101, "EventDate": "2019-05-19", "Title": "Mai"},
-            ]},
+            json={
+                "Case": [
+                    {"id": 100, "EventDate": "2024-09-22", "Title": "September"},
+                    {"id": 101, "EventDate": "2019-05-19", "Title": "Mai"},
+                ]
+            },
         )
     )
     route = respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(
-            200, json={"Items": [{"id": "v1", "Title": "T", "EventDate": "2024-09-22"}]}
-        )
+        return_value=httpx.Response(200, json={"Items": [{"id": "v1", "Title": "T", "EventDate": "2024-09-22"}]})
     )
-    result = await srgssr_polis_get_votations(
-        PolisListInput(year_from=2024, year_to=2024)
-    )
+    result = await srgssr_polis_get_votations(PolisListInput(year_from=2024, year_to=2024))
     assert isinstance(result, VotationsResponse)
     # Only the 2024 voting day is fetched; 2019 is outside the range.
     assert route.call_count == 1
@@ -1314,6 +1203,7 @@ async def test_polis_year_range_is_resolved_via_cases():
 # ---------------------------------------------------------------------------
 # Polis: get_votation_results
 # ---------------------------------------------------------------------------
+
 
 @respx.mock
 async def test_polis_get_votation_results_happy_path():
@@ -1350,9 +1240,7 @@ async def test_polis_get_votation_results_happy_path():
 
 @respx.mock
 async def test_polis_get_votation_results_handles_404():
-    respx.get(f"{POLIS_BASE}/votations/missing").mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
+    respx.get(f"{POLIS_BASE}/votations/missing").mock(return_value=httpx.Response(404, text="Not Found"))
     result = await srgssr_polis_get_votation_results(PolisResultInput(votation_id="missing"))
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message or "nicht gefunden" in result.message
@@ -1377,14 +1265,14 @@ async def test_polis_get_votation_results_pending_outcome():
 # Polis: get_elections
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_polis_get_elections_happy_path():
     respx.get(f"{POLIS_BASE}/elections").mock(
         return_value=httpx.Response(
             200,
             json={
-                "Case": {"id": "c1", "Title": "Nationalratswahlen 2023",
-                         "EventDate": "2023-10-22"},
+                "Case": {"id": "c1", "Title": "Nationalratswahlen 2023", "EventDate": "2023-10-22"},
                 "Elections": {"Election": [{"id": "e1", "Official": {}}]},
                 "language": "de",
             },
@@ -1398,9 +1286,7 @@ async def test_polis_get_elections_happy_path():
 
 @respx.mock
 async def test_polis_get_elections_handles_403():
-    respx.get(f"{POLIS_BASE}/elections").mock(
-        return_value=httpx.Response(403, text="Forbidden")
-    )
+    respx.get(f"{POLIS_BASE}/elections").mock(return_value=httpx.Response(403, text="Forbidden"))
     result = await srgssr_polis_get_elections(PolisListInput())
     assert isinstance(result, ToolErrorResponse)
     assert "403" in result.message or "verweigert" in result.message
@@ -1425,6 +1311,7 @@ async def test_polis_get_elections_empty_typed_payload():
 # ARCH-002: Tool description quality (length + structured tags)
 # ---------------------------------------------------------------------------
 
+
 async def test_tool_descriptions_meet_length_requirement():
     """Median tool-description length must be ≥100 chars (ARCH-002)."""
     tools = await mcp.list_tools()
@@ -1438,10 +1325,7 @@ async def test_tool_descriptions_have_use_case_tag_coverage():
     tools = await mcp.list_tools()
     with_use_case = sum(1 for t in tools if "<use_case>" in (t.description or ""))
     coverage = with_use_case / len(tools)
-    assert coverage >= 0.8, (
-        f"<use_case> coverage {coverage:.0%} < 80% "
-        f"({with_use_case}/{len(tools)} tools)"
-    )
+    assert coverage >= 0.8, f"<use_case> coverage {coverage:.0%} < 80% ({with_use_case}/{len(tools)} tools)"
 
 
 async def test_tool_descriptions_carry_structured_tags():
@@ -1460,6 +1344,7 @@ async def test_tool_descriptions_carry_structured_tags():
 # ARCH-003: Fuzzy search and suggestion engines for empty results
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
     """Ascii-folded variant ('Zurich') hits when original ('Zürich') misses.
@@ -1472,8 +1357,7 @@ async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
             httpx.Response(200, json=[]),
             httpx.Response(
                 200,
-                json=[{"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001,
-                       "geolocation": {"id": "100001"}}],
+                json=[{"id": 1, "name": "Zürich", "province": "ZH", "plz": 8001, "geolocation": {"id": "100001"}}],
             ),
         ]
     )
@@ -1491,9 +1375,7 @@ async def test_weather_search_location_fuzzy_retry_with_ascii_fold():
 @respx.mock
 async def test_weather_search_location_empty_includes_tried_variants():
     """All variants empty → response carries empty list and full tried trace."""
-    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
-        return_value=httpx.Response(200, json=[])
-    )
+    respx.get(f"{WEATHER_BASE}/geolocationNames").mock(return_value=httpx.Response(200, json=[]))
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Atlantis"))
     assert isinstance(result, WeatherLocationsResponse)
     assert result.count == 0
@@ -1511,12 +1393,8 @@ async def test_video_get_episodes_404_returns_typed_error():
     _build_error_response — only EPG and Polis-results do. The recovery hint
     therefore lives on those tools' error messages, not here.
     """
-    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/typo-id").mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
-    result = await srgssr_video_get_episodes(
-        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="typo-id")
-    )
+    respx.get(f"{VIDEO_BASE}/latest_episodes/shows/typo-id").mock(return_value=httpx.Response(404, text="Not Found"))
+    result = await srgssr_video_get_episodes(VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="typo-id"))
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message
     assert "nicht gefunden" in result.message
@@ -1529,9 +1407,7 @@ async def test_video_get_episodes_empty_list_returns_typed_response():
     respx.get(f"{VIDEO_BASE}/latest_episodes/shows/empty-show").mock(
         return_value=httpx.Response(200, json={"total": 0, "episodeList": []})
     )
-    result = await srgssr_video_get_episodes(
-        VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="empty-show")
-    )
+    result = await srgssr_video_get_episodes(VideoEpisodesInput(business_unit=BusinessUnit.SRF, show_id="empty-show"))
     assert isinstance(result, VideoEpisodesResponse)
     assert result.count == 0
     assert result.show_id == "empty-show"
@@ -1539,12 +1415,8 @@ async def test_video_get_episodes_empty_list_returns_typed_response():
 
 @respx.mock
 async def test_audio_get_episodes_404_includes_recovery_hint():
-    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/missing").mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
-    result = await srgssr_audio_get_episodes(
-        AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="missing")
-    )
+    respx.get(f"{AUDIO_BASE}/episodeComposition/shows/missing").mock(return_value=httpx.Response(404, text="Not Found"))
+    result = await srgssr_audio_get_episodes(AudioEpisodesInput(business_unit=BusinessUnit.RTS, show_id="missing"))
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message
     # audio episodes tool currently does not append a tool-name hint to its
@@ -1555,9 +1427,7 @@ async def test_audio_get_episodes_404_includes_recovery_hint():
 @respx.mock
 async def test_polis_get_votation_results_404_includes_recovery_hint():
     """404 on votation_id should suggest srgssr_polis_get_votations."""
-    respx.get(f"{POLIS_BASE}/votations/missing").mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
+    respx.get(f"{POLIS_BASE}/votations/missing").mock(return_value=httpx.Response(404, text="Not Found"))
     result = await srgssr_polis_get_votation_results(PolisResultInput(votation_id="missing"))
     assert isinstance(result, ToolErrorResponse)
     assert "404" in result.message
@@ -1573,23 +1443,19 @@ async def test_polis_get_votations_empty_returns_typed_response():
     respx.get(POLIS_LOCATIONS).mock(
         return_value=httpx.Response(
             200,
-            json={"Location": [
-                {"id": 18, "LocationName": "Graubünden"},
-                {"id": 9, "LocationName": "Zug"},
-            ]},
+            json={
+                "Location": [
+                    {"id": 18, "LocationName": "Graubünden"},
+                    {"id": 9, "LocationName": "Zug"},
+                ]
+            },
         )
     )
     respx.get(POLIS_CASES).mock(
-        return_value=httpx.Response(
-            200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]}
-        )
+        return_value=httpx.Response(200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]})
     )
-    respx.get(f"{POLIS_BASE}/votations").mock(
-        return_value=httpx.Response(200, json={"Items": []})
-    )
-    result = await srgssr_polis_get_votations(
-        PolisListInput(canton="GR", year_from=2020, year_to=2021)
-    )
+    respx.get(f"{POLIS_BASE}/votations").mock(return_value=httpx.Response(200, json={"Items": []}))
+    result = await srgssr_polis_get_votations(PolisListInput(canton="GR", year_from=2020, year_to=2021))
     assert isinstance(result, VotationsResponse)
     assert result.count == 0
     assert result.canton == "GR"
@@ -1606,23 +1472,19 @@ async def test_polis_get_elections_empty_returns_typed_response():
     respx.get(POLIS_LOCATIONS).mock(
         return_value=httpx.Response(
             200,
-            json={"Location": [
-                {"id": 18, "LocationName": "Graubünden"},
-                {"id": 9, "LocationName": "Zug"},
-            ]},
+            json={
+                "Location": [
+                    {"id": 18, "LocationName": "Graubünden"},
+                    {"id": 9, "LocationName": "Zug"},
+                ]
+            },
         )
     )
     respx.get(POLIS_CASES).mock(
-        return_value=httpx.Response(
-            200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]}
-        )
+        return_value=httpx.Response(200, json={"Case": [{"id": 100, "EventDate": "2020-09-27"}]})
     )
-    respx.get(f"{POLIS_BASE}/elections").mock(
-        return_value=httpx.Response(200, json={"Elections": {"Election": []}})
-    )
-    result = await srgssr_polis_get_elections(
-        PolisListInput(canton="ZG", year_from=2024)
-    )
+    respx.get(f"{POLIS_BASE}/elections").mock(return_value=httpx.Response(200, json={"Elections": {"Election": []}}))
+    result = await srgssr_polis_get_elections(PolisListInput(canton="ZG", year_from=2024))
     assert isinstance(result, ElectionsResponse)
     assert result.count == 0
     assert result.canton == "ZG"
@@ -1631,9 +1493,7 @@ async def test_polis_get_elections_empty_returns_typed_response():
 
 @respx.mock
 async def test_epg_get_programs_404_includes_recovery_hint():
-    respx.get(_epg_station(channel="bogus")).mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
+    respx.get(_epg_station(channel="bogus")).mock(return_value=httpx.Response(404, text="Not Found"))
     result = await srgssr_epg_get_programs(
         EpgProgramsInput(business_unit=BusinessUnit.SRF, channel_id="bogus", date="2026-04-30")
     )
@@ -1646,9 +1506,7 @@ async def test_epg_get_programs_404_includes_recovery_hint():
 
 @respx.mock
 async def test_video_get_shows_empty_returns_typed_response():
-    respx.get(VIDEO_SHOWS).mock(
-        return_value=httpx.Response(200, json={"total": 0, "showList": []})
-    )
+    respx.get(VIDEO_SHOWS).mock(return_value=httpx.Response(200, json={"total": 0, "showList": []}))
     result = await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SWI, character_filter="a"))
     assert isinstance(result, VideoShowsResponse)
     assert result.count == 0
@@ -1658,6 +1516,7 @@ async def test_video_get_shows_empty_returns_typed_response():
 # ---------------------------------------------------------------------------
 # ARCH-007: Capability aggregation (parallel weather + EPG fan-out)
 # ---------------------------------------------------------------------------
+
 
 def _briefing_input(**overrides) -> DailyBriefingInput:
     defaults = dict(
@@ -1731,9 +1590,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
     respx.get(url__regex=rf"^{re.escape(WEATHER_BASE)}/forecastpoint/.*").mock(
         return_value=httpx.Response(200, json={"hours": []})
     )
-    respx.get(_epg_station()).mock(
-        return_value=httpx.Response(200, json={"programList": []})
-    )
+    respx.get(_epg_station()).mock(return_value=httpx.Response(200, json={"programList": []}))
 
     info_events: list[tuple[str, dict]] = []
     progress_events: list[tuple[float, float | None, str | None]] = []
@@ -1742,9 +1599,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
         async def info(self, message: str, **extra):
             info_events.append((message, extra))
 
-        async def report_progress(
-            self, progress: float, total: float | None = None, message: str | None = None
-        ):
+        async def report_progress(self, progress: float, total: float | None = None, message: str | None = None):
             progress_events.append((progress, total, message))
 
     await srgssr_daily_briefing(
@@ -1779,9 +1634,7 @@ async def test_tools_accept_no_ctx_unchanged():
             json={"hours": [{"date_time": "2026-04-30T12:00", "TTT_C": 10.0}]},
         )
     )
-    result = await srgssr_weather_current(
-        WeatherForecastInput(latitude=47.0, longitude=8.0)
-    )
+    result = await srgssr_weather_current(WeatherForecastInput(latitude=47.0, longitude=8.0))
     assert isinstance(result, WeatherCurrentResponse)
     assert result.current.temperature_c == 10.0
 
@@ -1794,6 +1647,7 @@ async def test_tools_accept_no_ctx_unchanged():
 # guards against a regression where ProvenanceFields is silently dropped.)
 # ---------------------------------------------------------------------------
 
+
 @respx.mock
 async def test_typed_response_carries_provenance_fields():
     """Every typed Response inherits ProvenanceFields → source / license /
@@ -1801,11 +1655,7 @@ async def test_typed_response_carries_provenance_fields():
     respx.get(f"{WEATHER_BASE}/geolocationNames").mock(
         return_value=httpx.Response(
             200,
-            json={
-                "geolocationList": [
-                    {"id": "1", "name": "Zürich", "canton": "ZH", "postalCode": "8001"}
-                ]
-            },
+            json={"geolocationList": [{"id": "1", "name": "Zürich", "canton": "ZH", "postalCode": "8001"}]},
         )
     )
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
@@ -1867,9 +1717,7 @@ async def test_daily_briefing_partial_failure_renders_remaining_section():
             },
         )
     )
-    respx.get(_epg_station(channel="bogus")).mock(
-        return_value=httpx.Response(404, text="Not Found")
-    )
+    respx.get(_epg_station(channel="bogus")).mock(return_value=httpx.Response(404, text="Not Found"))
 
     result = await srgssr_daily_briefing(_briefing_input(channel_id="bogus"))
 
@@ -1892,9 +1740,7 @@ async def test_daily_briefing_returns_typed_sub_responses():
         return_value=httpx.Response(200, json={"hours": [{"date_time": "2026-04-30T00:00"}]})
     )
     respx.get(_epg_station()).mock(
-        return_value=httpx.Response(
-            200, json={"programList": [{"startTime": "08:00", "title": "Echo der Zeit"}]}
-        )
+        return_value=httpx.Response(200, json={"programList": [{"startTime": "08:00", "title": "Echo der Zeit"}]})
     )
 
     result = await srgssr_daily_briefing(_briefing_input())
@@ -1942,7 +1788,7 @@ def test_settings_transport_override(monkeypatch):
 
 def test_settings_rejects_invalid_transport(monkeypatch):
     monkeypatch.setenv("SRGSSR_MCP_TRANSPORT", "carrier-pigeon")
-    with _pytest.raises(Exception):
+    with _pytest.raises(ValidationError):
         Settings()
 
 
@@ -1997,16 +1843,12 @@ def test_settings_cache_refreshes_after_ttl(monkeypatch):
     # Rotate creds in the env, but stay within the TTL window — cache holds.
     monkeypatch.setenv("SRGSSR_CONSUMER_KEY", "key-v2")
     s2 = _config.get_settings()
-    assert (
-        s2.consumer_key.get_secret_value() == "key-v1"
-    ), "cache should still be warm before TTL elapses"
+    assert s2.consumer_key.get_secret_value() == "key-v1", "cache should still be warm before TTL elapses"
 
     # Simulate TTL elapse: directly age the cache entry.
     _config._settings_cache["loaded_at"] -= _config.SETTINGS_TTL_SECONDS + 1.0
     s3 = _config.get_settings()
-    assert (
-        s3.consumer_key.get_secret_value() == "key-v2"
-    ), "cache must refresh after TTL elapses"
+    assert s3.consumer_key.get_secret_value() == "key-v2", "cache must refresh after TTL elapses"
 
     _config.get_settings.cache_clear()
 
@@ -2178,9 +2020,7 @@ async def test_epg_resource_rejects_unsupported_business_unit():
 
 @respx.mock
 async def test_epg_resource_handles_404():
-    respx.get(_epg_station(channel="unknown")).mock(
-        return_value=httpx.Response(404, text="not found")
-    )
+    respx.get(_epg_station(channel="unknown")).mock(return_value=httpx.Response(404, text="not found"))
     contents = list(await mcp.read_resource("epg://srf/unknown/2026-04-30"))
     body = contents[0].content
     payload = json.loads(body)
@@ -2222,9 +2062,7 @@ async def test_votation_resource_returns_json_envelope():
 
 @respx.mock
 async def test_votation_resource_handles_404():
-    respx.get(f"{POLIS_BASE}/votations/missing").mock(
-        return_value=httpx.Response(404, text="not found")
-    )
+    respx.get(f"{POLIS_BASE}/votations/missing").mock(return_value=httpx.Response(404, text="not found"))
     contents = list(await mcp.read_resource("votation://missing"))
     body = contents[0].content
     payload = json.loads(body)
@@ -2234,9 +2072,7 @@ async def test_votation_resource_handles_404():
 
 
 async def test_analyse_abstimmungsverhalten_prompt_default_focus():
-    result = await mcp.get_prompt(
-        "analyse_abstimmungsverhalten", {"votation_id": "v123"}
-    )
+    result = await mcp.get_prompt("analyse_abstimmungsverhalten", {"votation_id": "v123"})
     text = result.messages[0].content.text
     assert "v123" in text
     assert "Stadt-Land" in text
@@ -2254,9 +2090,7 @@ async def test_analyse_abstimmungsverhalten_prompt_focus_kantone():
 
 
 async def test_tagesbriefing_kanton_prompt_default():
-    result = await mcp.get_prompt(
-        "tagesbriefing_kanton", {"location": "Zürich"}
-    )
+    result = await mcp.get_prompt("tagesbriefing_kanton", {"location": "Zürich"})
     text = result.messages[0].content.text
     assert "Zürich" in text
     assert "srgssr_daily_briefing" in text
@@ -2307,9 +2141,7 @@ async def test_oauth_token_refresh_posts_to_token_url(monkeypatch):
     _server._token_cache["expires_at"] = 0.0
 
     token_route = respx.post(_server.TOKEN_URL).mock(
-        return_value=httpx.Response(
-            200, json={"access_token": "fresh-token", "expires_in": 1800}
-        )
+        return_value=httpx.Response(200, json={"access_token": "fresh-token", "expires_in": 1800})
     )
     try:
         token = await _server._get_access_token()
@@ -2424,17 +2256,13 @@ def test_validate_url_safe_rejects_attacker_controlled_subdomain():
 
 
 def test_validate_url_safe_rejects_private_rfc1918_ip(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("192.168.1.1")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("192.168.1.1"))
     with _pytest.raises(ValueError, match="192.168.1.1"):
         _server._validate_url_safe("https://api.srgssr.ch/foo")
 
 
 def test_validate_url_safe_rejects_loopback_ip(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("127.0.0.1")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("127.0.0.1"))
     with _pytest.raises(ValueError, match="127.0.0.1"):
         _server._validate_url_safe("https://api.srgssr.ch/foo")
 
@@ -2451,17 +2279,13 @@ def test_validate_url_safe_rejects_aws_metadata_link_local(monkeypatch):
 
 
 def test_validate_url_safe_rejects_ipv6_loopback(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("::1")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("::1"))
     with _pytest.raises(ValueError, match="blocked range"):
         _server._validate_url_safe("https://api.srgssr.ch/foo")
 
 
 def test_validate_url_safe_rejects_ipv6_unique_local(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("fc00::1")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("fc00::1"))
     with _pytest.raises(ValueError, match="blocked range"):
         _server._validate_url_safe("https://api.srgssr.ch/foo")
 
@@ -2488,9 +2312,7 @@ def test_validate_url_safe_rejects_when_any_resolved_ip_is_blocked(monkeypatch):
 
 
 def test_validate_url_safe_accepts_public_srgssr_host(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("63.178.6.210")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("63.178.6.210"))
     # No exception means the URL passed all three controls.
     _server._validate_url_safe("https://api.srgssr.ch/forecasts/v2.0/weather/current")
 
@@ -2542,9 +2364,7 @@ def test_allowed_hosts_is_pinned():
 
 
 def test_validate_url_safe_accepts_token_host(monkeypatch):
-    monkeypatch.setattr(
-        _http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("34.120.10.20")
-    )
+    monkeypatch.setattr(_http_mod.socket, "getaddrinfo", lambda *a, **kw: _fake_addrinfo("34.120.10.20"))
     # No exception means TOKEN_URL's host passed all three controls.
     _server._validate_url_safe(_server.TOKEN_URL)
 
@@ -2561,9 +2381,7 @@ def test_all_base_urls_are_https_and_in_allowlist():
     ):
         parsed = urlparse(base)
         assert parsed.scheme == "https", f"{base} must use HTTPS"
-        assert parsed.hostname in _server.ALLOWED_HOSTS, (
-            f"{base} hostname must be in ALLOWED_HOSTS"
-        )
+        assert parsed.hostname in _server.ALLOWED_HOSTS, f"{base} hostname must be in ALLOWED_HOSTS"
 
 
 # ---------------------------------------------------------------------------
@@ -2590,18 +2408,14 @@ def test_all_tool_inputs_enforce_strict_mode():
     """Every tool input model must run Pydantic in strict mode (SEC-018)."""
     for model in _TOOL_INPUT_MODELS:
         cfg = model.model_config
-        assert cfg.get("strict") is True, (
-            f"{model.__name__} model_config must set strict=True"
-        )
+        assert cfg.get("strict") is True, f"{model.__name__} model_config must set strict=True"
 
 
 def test_all_tool_inputs_forbid_extra_fields():
     """Every tool input model must reject unknown fields (SEC-018)."""
     for model in _TOOL_INPUT_MODELS:
         cfg = model.model_config
-        assert cfg.get("extra") == "forbid", (
-            f"{model.__name__} model_config must set extra='forbid'"
-        )
+        assert cfg.get("extra") == "forbid", f"{model.__name__} model_config must set extra='forbid'"
 
 
 def test_strict_mode_rejects_string_for_int_field():
@@ -2694,9 +2508,7 @@ def test_weather_query_accepts_unicode_city_name():
 
 def test_weather_geolocation_id_rejects_special_chars():
     with pytest.raises(_ValidationError):
-        WeatherForecastInput(
-            latitude=47.0, longitude=8.0, geolocation_id="100123;rm -rf"
-        )
+        WeatherForecastInput(latitude=47.0, longitude=8.0, geolocation_id="100123;rm -rf")
 
 
 def test_weather_latitude_out_of_range_rejected():
@@ -2745,6 +2557,7 @@ def test_daily_briefing_extra_field_rejected():
 # ---------------------------------------------------------------------------
 # SDK-001: shared httpx.AsyncClient
 # ---------------------------------------------------------------------------
+
 
 async def test_validate_url_safe_populates_dns_pin_cache(monkeypatch):
     """SEC-005: validate writes the resolved IP into _dns_pin_cache so

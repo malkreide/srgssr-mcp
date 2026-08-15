@@ -10,6 +10,7 @@ Focus: schema sanity. We assert that real responses still contain the
 fields our markdown rendering depends on, so we'd catch upstream
 schema drift before users do.
 """
+
 import pytest
 
 from srgssr_mcp.server import (
@@ -58,6 +59,7 @@ def _is_error(result) -> bool:
 # Weather
 # ---------------------------------------------------------------------------
 
+
 async def test_live_weather_search_location(live_credentials):
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
     assert not _is_error(result), result
@@ -94,6 +96,7 @@ async def test_live_weather_forecast_7day(live_credentials):
 # ---------------------------------------------------------------------------
 # Video
 # ---------------------------------------------------------------------------
+
 
 async def test_live_video_get_shows(live_credentials):
     result = await srgssr_video_get_shows(
@@ -135,6 +138,7 @@ async def test_live_video_get_episodes(live_credentials):
 # ---------------------------------------------------------------------------
 # Audio
 # ---------------------------------------------------------------------------
+
 
 async def test_live_audio_get_shows(live_credentials):
     """Discover a real channel id first — the v2 listing is per channel."""
@@ -196,8 +200,10 @@ async def test_live_audio_get_episodes(live_credentials):
 # EPG
 # ---------------------------------------------------------------------------
 
+
 async def test_live_epg_get_programs(live_credentials):
     from datetime import date, timedelta
+
     yesterday = (date.today() - timedelta(days=1)).isoformat()
     result = await srgssr_epg_get_programs(
         EpgProgramsInput(
@@ -213,6 +219,7 @@ async def test_live_epg_get_programs(live_credentials):
 # ---------------------------------------------------------------------------
 # Polis
 # ---------------------------------------------------------------------------
+
 
 async def test_live_polis_get_votations(live_credentials):
     result = await srgssr_polis_get_votations(

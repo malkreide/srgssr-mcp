@@ -110,11 +110,7 @@ async def test_tool_emits_invoked_and_succeeded(caplog):
         )
     )
     await srgssr_weather_search_location(WeatherSearchInput(query="Bern"))
-    by_event = {
-        r["event"]: r
-        for r in _records_for(caplog)
-        if r.get("tool") == "srgssr_weather_search_location"
-    }
+    by_event = {r["event"]: r for r in _records_for(caplog) if r.get("tool") == "srgssr_weather_search_location"}
     assert "tool_invoked" in by_event
     assert "tool_succeeded" in by_event
     assert by_event["tool_succeeded"]["result_count"] == 1
@@ -128,8 +124,7 @@ async def test_tool_emits_failure_with_error_context(caplog):
     )
     await srgssr_video_get_shows(VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="a"))
     failed = [
-        r for r in _records_for(caplog)
-        if r.get("event") == "tool_failed" and r.get("tool") == "srgssr_video_get_shows"
+        r for r in _records_for(caplog) if r.get("event") == "tool_failed" and r.get("tool") == "srgssr_video_get_shows"
     ]
     assert failed, "expected a tool_failed log entry"
     entry = failed[0]

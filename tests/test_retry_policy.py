@@ -79,9 +79,7 @@ async def test_a_gateway_redirect_is_not_retried():
     ``_raise_for_redirect`` turns it into a ``ValueError`` ("Konfigurationsfehler"),
     which the loop must let through rather than treat as a transient fault.
     """
-    route = respx.get(URL).mock(
-        return_value=httpx.Response(302, headers={"location": "https://developer.srgssr.ch"})
-    )
+    route = respx.get(URL).mock(return_value=httpx.Response(302, headers={"location": "https://developer.srgssr.ch"}))
     with pytest.raises(ValueError, match="nicht registriert"):
         await h._api_get(URL)
     assert route.call_count == 1
