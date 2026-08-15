@@ -43,13 +43,23 @@ jobs:
           SRGSSR_CONSUMER_KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
           SRGSSR_CONSUMER_SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
 
+      # Deliberately not gated on `github.event_name == 'schedule'`. It was, and
+      # that made the manual trigger a trap: someone suspecting a schema drift
+      # runs the suite by hand, it goes red, and nothing is filed — the result
+      # exists only for whoever thinks to open the Actions tab. A hand-started
+      # run is the one most likely to be checking a real suspicion, so it is the
+      # last one that should stay silent.
       - name: Notify on failure
-        if: failure() && github.event_name == 'schedule'
+        if: failure()
         uses: actions/github-script@v9
         with:
           script: |
-            const title = "Nightly live tests failed (possible API schema drift)";
+            // One stable title across both triggers, because it is the dedupe
+            // key below: a run-specific title would file a fresh issue every
+            // time. Which trigger produced the run is recorded in the body.
+            const title = "Live tests failed (possible API schema drift)";
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const trigger = context.eventName === "schedule" ? "Nightly run" : "Manual run";
 
             // A drifted API stays drifted, so an unconditional issues.create()
             // would file one report per night for the same break. Reuse the
@@ -68,7 +78,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body: `Still failing — run: ${runUrl}`,
+                body: `Still failing — ${trigger.toLowerCase()}: ${runUrl}`,
               });
               return;
             }
@@ -78,7 +88,7 @@ jobs:
               repo: context.repo.repo,
               title,
               body: [
-                "Nightly live tests against the SRG SSR APIs failed.",
+                `${trigger}: live tests against the SRG SSR APIs failed.`,
                 "",
                 `Workflow run: ${runUrl}`,
                 "",

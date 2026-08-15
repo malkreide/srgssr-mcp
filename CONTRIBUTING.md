@@ -166,7 +166,7 @@ Questions? Open a [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/di
 **Cadence:** daily at 04:00 UTC, plus on demand via *Actions → Live Tests (Nightly) → Run
 workflow*. See [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
 
-**Who sees it:** A red run opens an issue labelled `live-tests` and the stable title “Nightly live tests failed (possible API schema drift)”. A second red run recognises the open issue by its title prefix and appends to that same thread rather than opening a second one. A green run does **not** close the issue by itself — once the failure is fixed it needs closing by hand, otherwise the next reader mistakes the old failure for the new one.
+**Who sees it:** A red run opens an issue labelled `live-tests` with the stable title “Live tests failed (possible API schema drift)” — the nightly run and the hand-started one alike. A second red run recognises the open issue by its **exact title** and appends to that same thread rather than opening a second one; editing the title breaks that dedupe. Which trigger started the run is recorded in the issue body, not the title — otherwise the title would stop working as the dedupe key. A green run does **not** close the issue by itself — once the failure is fixed it needs closing by hand, otherwise the next reader mistakes the old failure for the new one.
 
 **A red live run does not necessarily mean *our* bug.** It means the contract
 with the source has changed, or the source is down. Both belong seen; only the
