@@ -166,7 +166,7 @@ Fragen? Ein [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/discussi
 **Kadenz:** täglich um 04:00 UTC, dazu jederzeit von Hand über *Actions → Live Tests (Nightly) → Run
 workflow*. Siehe [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
 
-**Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `live-tests` und dem stabilen Titel «Nightly live tests failed (possible API schema drift)». Ein zweiter roter Lauf erkennt das offene Issue am Titelanfang und hängt sich an denselben Thread, statt ein zweites aufzumachen. Ein grüner Lauf schliesst das Issue **nicht** von selbst — nach einem behobenen Ausfall gehört es von Hand zugemacht, sonst hält der nächste Blick den alten Ausfall für den neuen.
+**Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `live-tests` und dem stabilen Titel «Live tests failed (possible API schema drift)» — der nächtliche wie der von Hand gestartete. Ein zweiter roter Lauf erkennt das offene Issue am **exakt gleichen Titel** und hängt sich an denselben Thread, statt ein zweites aufzumachen; wer den Titel bearbeitet, bricht damit die Deduplizierung. Welcher Auslöser den Lauf gestartet hat, steht im Text des Issues, nicht im Titel — sonst wäre der Titel kein Dedupe-Schlüssel mehr. Ein grüner Lauf schliesst das Issue **nicht** von selbst — nach einem behobenen Ausfall gehört es von Hand zugemacht, sonst hält der nächste Blick den alten Ausfall für den neuen.
 
 **Ein roter Live-Lauf heisst nicht zwingend «unser Fehler».** Er heisst: Der
 Vertrag mit der Quelle hat sich geändert, oder die Quelle ist gerade aus. Beides
