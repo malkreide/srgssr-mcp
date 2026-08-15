@@ -6,6 +6,37 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **`srgssr_daily_briefing` hatte keinerlei Drift-Deckung.** Von 15 Werkzeugen
+  fehlte genau eines in der nächtlichen Live-Suite — ausgerechnet der
+  Aggregator, der Wetter und EPG über zwei Produkte hinweg zusammenführt und
+  damit an den meisten Stellen brechen kann. Er hat jetzt einen Live-Test.
+
+  Dass die Lücke unbemerkt bestand, liegt an der Zählweise: 14 abgedeckte
+  Werkzeuge sehen nach Vollständigkeit aus, solange niemand gegen die
+  Werkzeugliste zählt. `tests/test_live_coverage.py` tut genau das — es liest
+  die Namen aus dem Quellcode statt aus einer gepflegten Liste, die beim
+  nächsten Werkzeug vergessen würde, und prüft zusätzlich, dass das Suchmuster
+  überhaupt Werkzeuge findet (ein Muster, das nichts findet, macht jede Aussage
+  darüber wahr).
+
+  Der Live-Test selbst prüft beide Hälften des Briefings **einzeln**: der
+  Aggregator hält den Graceful-Degradation-Vertrag und wirft nie, ein
+  Upstream-Bruch erscheint deshalb als Feld und nicht als Ausnahme. Eine
+  Zusicherung, die nur den Rückgabewert prüft, liesse einen Totalausfall
+  durch.
+
+### Documented
+- **Warum dieser Server keine aufgezeichneten Fixtures hat** (`CLAUDE.md`,
+  Teil 2). Die Portfolio-Konvention verlangt eine aufgezeichnete Antwort je
+  externem Endpunkt; hier ist das ohne Consumer Key nicht möglich. Gemessen am
+  15.08.2026: der Token-Endpunkt antwortet mit 401 — auch auf erfundene
+  Zugangsdaten —, und alle fünf Produkt-Basen (`srf-meteo`, `videometadata`,
+  `audiometadata`, `epg`, `polis-api`) ebenso. Einen 401 als Fixture abzulegen
+  hiesse, ihn als das auszugeben, was die Quelle normalerweise sagt; deshalb
+  liegt nichts im Repo. Die Tabelle steht in `CLAUDE.md`, damit die Lücke als
+  Befund lesbar ist und nicht als Versäumnis — und damit die nächste Sitzung
+  nicht erneut probt.
+
 - **Retry-Politik gegenüber dem SRG-SSR-Gateway** (ARCH-014). Bisher gab es
   keine: Ein einzelner Netzwerkfehler, ein Timeout oder ein 503 beendete den
   Tool-Aufruf, obwohl der nächste Versuch Sekunden später geklappt hätte.
