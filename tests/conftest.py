@@ -71,9 +71,7 @@ def live_credentials():
     pasted into issues and chats. No test needs the values; the tools read
     them from the environment themselves.
     """
-    if not os.environ.get("SRGSSR_CONSUMER_KEY") or not os.environ.get(
-        "SRGSSR_CONSUMER_SECRET"
-    ):
+    if not os.environ.get("SRGSSR_CONSUMER_KEY") or not os.environ.get("SRGSSR_CONSUMER_SECRET"):
         pytest.skip("SRGSSR_CONSUMER_KEY/SECRET not set; live tests require real credentials")
     server._token_cache["access_token"] = None
     server._token_cache["expires_at"] = 0.0

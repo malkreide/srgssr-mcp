@@ -65,7 +65,11 @@ packages = ["src/srgssr_mcp"]
 
 [tool.ruff]
 line-length = 120
-include = ["src/**/*.py"]
+# No `include` here. It used to read `["src/**/*.py"]`, which silently undid the
+# `tests/ scripts/` half of the CI's own `ruff check src/ tests/ scripts/`:
+# `include` filters the files ruff collects, so paths named on the command line
+# were dropped again. Both ruff gates passed while linting src/ alone, and a
+# file under tests/ with unused imports and broken formatting exited 0.
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
