@@ -21,6 +21,15 @@ from srgssr_mcp._http import (
 
 URL = f"{WEATHER_BASE}/geolocations"
 
+# Wall-clock numbers for the deadline test below, spread far enough apart that
+# scheduler jitter cannot move the outcome. The budget is ~1000x the measured
+# steady-state overhead of a warmed-up call; the assertion tolerates 5x the
+# budget in jitter; the response is another ~3x beyond that, so a deadline
+# that fails to cut misses by seconds rather than by milliseconds.
+_BUDGET = 0.5
+_CUT_BY = 2.5
+_SLOW_RESPONSE = 8.0
+
 
 def _resp(status: int, retry_after: str | None = None) -> httpx.Response:
     headers = {"Retry-After": retry_after} if retry_after is not None else {}
@@ -173,19 +182,40 @@ async def test_a_slow_response_is_cut_by_the_wall_clock_deadline(monkeypatch, re
     Deliberately using the *real* sleep: a clock that only advances when
     something sleeps cannot refute a guarantee about real time — that blind
     spot is exactly what let this defect through in the sibling servers.
+
+    The budget used to be 0.05s, which was smaller than the one-off cost of
+    the first call through the client. Measured over 20 calls: 0.4ms typical,
+    but up to 99.5ms on the first. When that spike landed, the budget was gone
+    before any request went out, the loop took its "no attempt possible"
+    branch and raised ``httpx.ConnectTimeout`` instead of the builtin
+    ``TimeoutError`` — a failure that says nothing about the deadline. The
+    warm-up call pays that cost outside the measured window, so the budget
+    only has to cover steady-state overhead, and the margins below are wide
+    rather than tight.
     """
-    monkeypatch.setattr(h, "RETRY_TOTAL_BUDGET", 0.05)
+    # Warm-up, still on the full default budget: builds the client and pays
+    # whatever else the first call through it costs.
+    route = respx.get(URL).mock(return_value=httpx.Response(200, json={}))
+    await h._api_get(URL)
+
+    monkeypatch.setattr(h, "RETRY_TOTAL_BUDGET", _BUDGET)
 
     async def _slow(request):
-        await real_sleep(1.0)
+        await real_sleep(_SLOW_RESPONSE)
         return httpx.Response(200, json={})
 
-    respx.get(URL).mock(side_effect=_slow)
+    route.mock(side_effect=_slow)
     started = time.monotonic()
     with pytest.raises(TimeoutError):
         await h._api_get(URL)
     elapsed = time.monotonic() - started
-    assert elapsed < 0.5, f"deadline did not cut: {elapsed:.2f}s"
+
+    # Two-sided on purpose. The upper bound is the guarantee: a response that
+    # would have taken _SLOW_RESPONSE was cut. The lower bound says the cut
+    # came from the budget rather than from something failing straight away —
+    # a deadline computed wrong sails through an upper bound alone.
+    assert elapsed >= _BUDGET / 2, f"cut too early to be the budget: {elapsed:.3f}s"
+    assert elapsed < _CUT_BY, f"deadline did not cut: {elapsed:.2f}s"
 
 
 def test_an_exhausted_budget_reads_as_a_timeout_not_an_unexpected_error():
