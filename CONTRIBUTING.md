@@ -160,3 +160,17 @@ This server is part of a coherent portfolio of Swiss open-data MCP servers. When
 ---
 
 Questions? Open a [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/discussions) or file an issue.
+
+## The live suite: when it runs, and who sees a red result
+
+**Cadence:** daily at 04:00 UTC, plus on demand via *Actions → Live Tests (Nightly) → Run
+workflow*. See [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
+
+**Who sees it:** A red run opens an issue labelled `live-tests` and the stable title “Nightly live tests failed (possible API schema drift)”. A second red run recognises the open issue by its title prefix and appends to that same thread rather than opening a second one. A green run does **not** close the issue by itself — once the failure is fixed it needs closing by hand, otherwise the next reader mistakes the old failure for the new one.
+
+**A red live run does not necessarily mean *our* bug.** It means the contract
+with the source has changed, or the source is down. Both belong seen; only the
+first belongs fixed. Please read the run before disabling the job — that is how
+this check dies, and it is the only one in the repository that can contradict a
+wrong assumption about api.srgssr.ch. Every other test asserts against a fixture, and
+the fixture was written from the same assumption as the code.
