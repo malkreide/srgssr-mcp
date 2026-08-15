@@ -13,8 +13,12 @@ docs and cannot contradict them.
 
 from __future__ import annotations
 
+import json
 import pathlib
 import re
+import shutil
+import subprocess
+import textwrap
 
 import pytest
 
@@ -79,7 +83,105 @@ def test_a_hand_started_red_run_reports_too():
     """
     step = _notify_step()
     assert "if: failure()" in step, "the notify step no longer runs on failure"
-    assert "event_name == 'schedule'" not in step, (
+    lines = [ln for ln in step.splitlines() if not ln.lstrip().startswith(("#", "//"))]
+    assert "event_name == 'schedule'" not in "\n".join(lines), (
         "the notify step is gated on the schedule again — a hand-started red run "
         "would file nothing, while both CONTRIBUTING files promise it reports."
     )
+
+
+# --- The dedupe, run rather than read ---------------------------------------
+
+
+def _notify_script() -> str:
+    """The JavaScript body of the notify step, dedented."""
+    step = _notify_step()
+    marker = "script: |"
+    body = step[step.index(marker) + len(marker) :].lstrip("\n")
+    kept = []
+    for line in body.splitlines():
+        if line.strip() and not line.startswith(" " * 12):
+            break
+        kept.append(line)
+    return textwrap.dedent("\n".join(kept))
+
+
+def _run_notify(event_name: str, open_issues: list[dict]) -> list[dict]:
+    """Execute the real notify script against a stubbed GitHub API.
+
+    Asserting that the source contains ``startsWith`` would also pass for
+    ``startsWith(runUrl)``. Running it is the only way to find out what it
+    actually treats as the same report.
+    """
+    harness = f"""
+    const OPEN = {json.dumps(open_issues)};
+    const calls = [];
+    const context = {{
+      serverUrl: "https://github.com",
+      repo: {{ owner: "o", repo: "r" }},
+      runId: 42,
+      eventName: {json.dumps(event_name)},
+    }};
+    const github = {{
+      paginate: async () => OPEN,
+      rest: {{ issues: {{
+        listForRepo: () => {{}},
+        createComment: async (a) => {{ calls.push({{ op: "comment", ...a }}); }},
+        create: async (a) => {{ calls.push({{ op: "create", ...a }}); }},
+      }} }},
+    }};
+    async function __step() {{
+    {textwrap.indent(_notify_script(), "    ")}
+    }}
+    await __step();
+    console.log(JSON.stringify(calls));
+    """
+    proc = subprocess.run(
+        ["node", "--input-type=module", "-e", textwrap.dedent(harness)],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert proc.returncode == 0, f"notify script failed to run:\n{proc.stderr}"
+    return json.loads(proc.stdout)
+
+
+_TITLE = "Live tests failed (possible API schema drift)"
+_NEEDS_NODE = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+
+
+def test_the_extracted_script_is_the_real_one():
+    """Guards the tests below against silently running on an empty extraction.
+
+    Without this, a broken extractor would make every behavioural assertion
+    below vacuous — and they would all still pass.
+    """
+    script = _notify_script()
+    assert "issues.create" in script and "createComment" in script, f"extraction looks wrong:\n{script[:200]}"
+
+
+@_NEEDS_NODE
+def test_an_appended_title_still_counts_as_the_same_report():
+    """The point of the prefix match: annotation must not fork the thread."""
+    calls = _run_notify("schedule", [{"number": 7, "title": f"{_TITLE} — seit dem 15.8."}])
+    assert [c["op"] for c in calls] == ["comment"], "an annotated title opened a second issue"
+    assert calls[0]["issue_number"] == 7
+
+
+@_NEEDS_NODE
+def test_an_unrelated_open_issue_does_not_swallow_the_report():
+    """The prefix must not be so loose that any labelled issue absorbs it."""
+    calls = _run_notify("schedule", [{"number": 9, "title": "Flaky live test on Sundays"}])
+    assert [c["op"] for c in calls] == ["create"], "an unrelated issue was mistaken for the drift report"
+    assert calls[0]["title"] == _TITLE
+
+
+@_NEEDS_NODE
+@pytest.mark.parametrize(
+    ("event_name", "expected"),
+    [("schedule", "Nightly run"), ("workflow_dispatch", "Manual run")],
+)
+def test_the_body_names_the_trigger(event_name: str, expected: str):
+    calls = _run_notify(event_name, [])
+    assert calls[0]["op"] == "create"
+    assert calls[0]["body"].startswith(f"{expected}: live tests")

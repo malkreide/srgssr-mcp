@@ -71,7 +71,13 @@ jobs:
               labels: "live-tests",
               per_page: 100,
             });
-            const existing = open.find((issue) => issue.title === title);
+            // Prefix, not equality. Equality made the dedupe depend on nobody
+            // ever touching the title: appending context to it — "… — seit dem
+            // 15.8." — silently turned the reuse branch off, and the next red
+            // run opened a second issue beside the one being worked on. The
+            // stable title is the identity; whatever a human adds after it is
+            // annotation, not a different report.
+            const existing = open.find((issue) => issue.title.startsWith(title));
 
             if (existing) {
               await github.rest.issues.createComment({
