@@ -160,3 +160,18 @@ Dieser Server ist Teil eines kohärenten Portfolios von Schweizer Open-Data-MCP-
 ---
 
 Fragen? Ein [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/discussions) eröffnen oder ein Issue erstellen.
+
+## Die Live-Suite: wann sie läuft, und wer ein rotes Ergebnis sieht
+
+**Kadenz:** täglich um 04:00 UTC, dazu jederzeit von Hand über *Actions → Live Tests (Nightly) → Run
+workflow*. Siehe [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
+
+**Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `live-tests` und dem stabilen Titel «Nightly live tests failed (possible API schema drift)». Ein zweiter roter Lauf erkennt das offene Issue am Titelanfang und hängt sich an denselben Thread, statt ein zweites aufzumachen. Ein grüner Lauf schliesst das Issue **nicht** von selbst — nach einem behobenen Ausfall gehört es von Hand zugemacht, sonst hält der nächste Blick den alten Ausfall für den neuen.
+
+**Ein roter Live-Lauf heisst nicht zwingend «unser Fehler».** Er heisst: Der
+Vertrag mit der Quelle hat sich geändert, oder die Quelle ist gerade aus. Beides
+gehört gesehen, nur das Erste gehört gefixt. Bitte den Lauf lesen, bevor der Job
+deaktiviert wird — so stirbt dieser Check, und er ist der einzige im Repo, der
+einer falschen Grundannahme über api.srgssr.ch widersprechen kann. Jeder andere Test
+prüft gegen eine Fixture, und die Fixture ist aus derselben Annahme geschrieben
+wie der Code.
