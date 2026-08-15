@@ -66,6 +66,9 @@ Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
 
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
-(`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf.
-DRIFT-005 ist damit erfüllt — Live-Tests sind nicht bloss per `-m "not live"`
-ausgeschlossen.
+(`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf; ein
+roter Lauf öffnet ein Issue, der von Hand gestartete ebenso. Sie sind hier also
+nicht bloss per `-m "not live"` ausgeschlossen. Der Workflow allein erfüllt
+DRIFT-005 aber nicht — dazu gehört, Kadenz und Empfänger zu dokumentieren, und
+das steht in `CONTRIBUTING.md`, gegen den Workflow gehalten von
+`test_live_workflow_docs.py`.
