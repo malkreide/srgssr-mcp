@@ -61,10 +61,9 @@ python scripts/check_version_sync.py
 pytest -m "not live" --cov=src --cov-report=term-missing --cov-fail-under=80
 ```
 
-⚠️ Beide ruff-Gates prüfen trotz der Pfadangabe **nur `src/`**:
-`[tool.ruff] include = ["src/**/*.py"]` in `pyproject.toml` filtert `tests/`
-und `scripts/` weg. Gemessen: eine Datei in `tests/` mit unbenutzten Imports
-und kaputter Formatierung passiert beide Gates mit Exit 0.
+Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
+`["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
+auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
 
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
 (`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf.
