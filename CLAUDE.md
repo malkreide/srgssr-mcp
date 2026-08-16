@@ -65,6 +65,9 @@ Keine zweite Version in die Workflows schreiben: ein solcher Schritt läuft
 nach dem `[dev]`-Install und überstimmt den Pin still (`test_dependencies.py`
 hält beides fest). Eine `.pre-commit-config.yaml` gibt es nicht.
 
+Vor dem Lauf `ruff --version` prüfen: ein älteres ruff früher im `PATH`
+schlägt den Pin, ohne dass der Install etwas meldet.
+
 **Gates, wörtlich aus der CI:**
 
 ```bash
