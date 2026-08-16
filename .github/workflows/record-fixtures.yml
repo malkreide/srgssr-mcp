@@ -12,9 +12,12 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "Branch, auf den der Aufnahme-Commit gepusht wird"
+        # Kein Default. Jeder eingetragene Name veraltet: hier stand
+        # `claude/fixtures-aufzeichnen`, laengst geloescht — der Workflow
+        # checkte sie aus, fand nichts und lief ins Leere. Ein leeres
+        # Pflichtfeld zwingt zur bewussten Angabe und kann nicht verjaehren.
+        description: "Branch, auf den der Aufnahme-Commit gepusht wird (nicht der Default-Branch)"
         required: true
-        default: "claude/fixtures-aufzeichnen"
 
 permissions:
   contents: write
@@ -33,6 +36,17 @@ jobs:
 
       - name: Install dependencies
         run: pip install -e ".[dev]"
+
+      # Der Aufnahme-Commit schreibt zwei Dutzend Dateien neu. Auf dem
+      # Default-Branch laege er ohne Review, und ein Fixture-Ordner will
+      # angesehen werden, bevor er gilt.
+      - name: Nicht auf den Default-Branch schreiben
+        run: |
+          if [ "${{ inputs.branch }}" = "${{ github.event.repository.default_branch }}" ]; then
+            echo "::error::Der Aufnahme-Commit gehoert nicht ungeprueft auf den Default-Branch."
+            echo "::error::Einen Branch davon abzweigen und ihn hier angeben."
+            exit 1
+          fi
 
       # Ohne das sind fehlende Secrets von einer gesunden API nicht zu
       # unterscheiden: der Recorder braeche mit Code 2 ab, der Job faerbte sich
