@@ -65,15 +65,6 @@ Erfindung in Ordnung.
 - **Groesse:** 7363 Bytes
 - **SHA-256:** `ac1cb6a538829749146dd042fe86554826c5667c2a775b2edc70e9ce4837c1ef`
 
-## `daily_briefing_1.json`
-
-- **Werkzeuge:** `srgssr_daily_briefing`
-- **Schluessel:** `https://api.srgssr.ch/srf-meteo/v2/geolocations?latitude=47.3700&longitude=8.5400`
-- **Notiz:** Spannt EPG und Wetter nebenlaeufig — zwei Produkte in einem Aufruf.
-- **Auswahl:** ungekuerzt
-- **Groesse:** 771 Bytes
-- **SHA-256:** `3000d35e31be7976bba4381445a19b0e113363ab33754fa12f813faec105d952`
-
 ## `epg_programs_1.json`
 
 - **Werkzeuge:** `srgssr_daily_briefing`, `srgssr_epg_get_programs`

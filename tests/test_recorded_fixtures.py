@@ -171,8 +171,8 @@ WERKZEUGE: dict[str, tuple[str, str, dict[str, Any]]] = {
             "business_unit": BusinessUnit.SRF,
             "channel_id": "srf-1",
             "date": WERTE["datum"],
-            "latitude": 47.37,
-            "longitude": 8.54,
+            "latitude": 47.3769,
+            "longitude": 8.5417,
         },
     ),
 }
