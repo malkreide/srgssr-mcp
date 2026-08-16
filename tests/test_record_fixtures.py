@@ -24,6 +24,7 @@ funktionierendes Token in ein oeffentliches Repository.
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
 import sys
@@ -34,6 +35,7 @@ import pytest
 import respx
 
 from srgssr_mcp import _http, server
+from srgssr_mcp._app import BusinessUnit
 
 WURZEL = Path(__file__).resolve().parent.parent
 RECORDER_PFAD = WURZEL / "scripts" / "record_fixtures.py"
@@ -494,3 +496,61 @@ def test_der_schlaf_haengt_am_modul_alias():
     quelle = inspect.getsource(m._fahre)
     assert "await _sleep(" in quelle
     assert "asyncio.sleep" not in quelle
+
+
+@respx.mock
+async def test_ein_halb_ausgefallenes_ergebnis_gilt_nicht_als_aufgezeichnet(geschlossener_client):
+    """`srgssr_daily_briefing` faellt nicht um — es legt den Ausfall als Feld ab.
+
+    Der erste echte Lauf ging genau daran vorbei: die Wetter-Haelfte des
+    Briefings fiel aus, das Werkzeug gab ein gueltiges Modell zurueck, und die
+    fehlende `forecastpoint`-Antwort landete nie im Ordner. Gemeldet hat das
+    nichts; aufgefallen ist es erst beim Abspielen, wo eine Anfrage ohne
+    Aufzeichnung ein Fehler ist.
+
+    Eine Pruefung auf der obersten Ebene kann das nicht sehen — deshalb sucht
+    `_entartet` bis in die Felder.
+    """
+    m = recorder()
+    mocke_token()
+    # EPG antwortet, Wetter nicht: genau die halbe Degradation.
+    respx.get(url__startswith=f"{_http.BASE_URL}/epg").mock(
+        return_value=httpx.Response(200, json={"channel": {}, "programs": []})
+    )
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo").mock(
+        return_value=httpx.Response(500, json={"kaputt": True})
+    )
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr(m, "VERSUCHE", 1)
+    monkey.setattr(m, "_sleep", lambda _s: asyncio.sleep(0))
+    try:
+        with pytest.raises(RuntimeError) as fehler:
+            await m._fahre(
+                m.Aufruf(
+                    "briefing",
+                    "srgssr_daily_briefing",
+                    "DailyBriefingInput",
+                    {
+                        "business_unit": BusinessUnit.SRF,
+                        "channel_id": "srf-1",
+                        "date": "2026-08-15",
+                        "latitude": 47.37,
+                        "longitude": 8.54,
+                    },
+                )
+            )
+    finally:
+        monkey.undo()
+    assert "Ausfall in" in str(fehler.value), fehler.value
+    assert "weather" in str(fehler.value), f"das ausgefallene Feld wird nicht benannt: {fehler.value}"
+
+
+def test_entartet_findet_den_fehler_auch_ganz_oben_und_nirgends():
+    """Die beiden Randfaelle, sonst waere die Suche oben blind oder ueberall fuendig."""
+    m = recorder()
+    from srgssr_mcp._models import ToolErrorResponse
+
+    fehler = ToolErrorResponse(error_type="ValueError", message="kaputt")
+    assert m._entartet(fehler) == ["(oben)"]
+    assert m._entartet(None) == []
+    assert m._entartet("ein String") == []

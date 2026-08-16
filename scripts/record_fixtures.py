@@ -370,6 +370,31 @@ def _leere_caches() -> None:
     polis._clear_reference_cache()
 
 
+def _entartet(modell: Any, pfad: str = "") -> list[str]:
+    """Pfade zu Feldern, die einen `ToolErrorResponse` tragen.
+
+    `srgssr_daily_briefing` faellt nicht um, wenn eine Haelfte ausfaellt — es
+    faengt sie und legt den Fehler als *Feld* in die Antwort. Das ist der
+    Degradations-Vertrag und richtig so; fuer den Recorder heisst es aber, dass
+    eine Pruefung auf der obersten Ebene nicht genuegt.
+
+    Genau daran ist der erste Lauf vorbeigegangen: die Wetter-Haelfte des
+    Briefings fiel aus, das Werkzeug gab ein gueltiges Modell zurueck, und die
+    fehlende `forecastpoint`-Antwort landete nie im Ordner. Aufgefallen ist es
+    erst beim Abspielen — dort ist eine Anfrage ohne Aufzeichnung ein Fehler.
+    """
+    if isinstance(modell, ToolErrorResponse):
+        return [pfad or "(oben)"]
+    felder = getattr(modell, "model_fields", None)
+    if not felder:
+        return []
+    treffer: list[str] = []
+    for feld in felder:
+        unten = f"{pfad}.{feld}" if pfad else feld
+        treffer += _entartet(getattr(modell, feld, None), unten)
+    return treffer
+
+
 async def _fahre(a: Aufruf) -> list[Antwort]:
     """Ruft ein Werkzeug und gibt die dabei gesehenen Antworten zurueck."""
     fn = getattr(server, a.werkzeug)
@@ -392,12 +417,12 @@ async def _fahre(a: Aufruf) -> list[Antwort]:
         finally:
             client.event_hooks["response"].remove(hook)
 
-        if isinstance(ergebnis, ToolErrorResponse):
-            # Die Werkzeuge geben seit SDK-002 typisierte Modelle zurueck. Auf
-            # einen Fehlerstring zu pruefen kann gegen ein BaseModel nie
-            # zutreffen — genau dieser Fehler hat die Live-Suite einmal
-            # dekorativ gemacht.
-            letzter = RuntimeError(f"{a.werkzeug} meldet: {ergebnis.error[:200]}")
+        # Die Werkzeuge geben seit SDK-002 typisierte Modelle zurueck. Auf einen
+        # Fehlerstring zu pruefen kann gegen ein BaseModel nie zutreffen — genau
+        # dieser Fehler hat die Live-Suite einmal dekorativ gemacht. Und geprueft
+        # wird bis in die Felder hinein, nicht nur oben.
+        if entartet := _entartet(ergebnis):
+            letzter = RuntimeError(f"{a.werkzeug} meldet einen Ausfall in: {', '.join(entartet)}")
             continue
         if not gesehen:
             letzter = RuntimeError(f"{a.werkzeug} hat keine Anfrage abgeschickt")
