@@ -19,6 +19,20 @@ weder Aufzeichnung noch Vertragspruefung.
 Genau das war der Fall. `srgssr_daily_briefing` fehlte in der Live-Suite —
 ausgerechnet das Werkzeug, das ueber zwei Produkte hinweg zusammenfuehrt und
 damit an den meisten Stellen brechen kann.
+
+Die Probe im Einzelnen, damit die naechste Sitzung sie nicht wiederholt —
+15.08.2026, ohne Zugangsdaten:
+
+    POST /oauth/v1/accesstoken   401 (auch mit erfundenem Basic-Auth)
+    GET  /srf-meteo/v2/...       401 401.01.001 Missing Access Token
+    GET  /videometadata/v2/...   401 oauth.v2.InvalidAccessToken
+    GET  /audiometadata/v2/...   401 oauth.v2.InvalidAccessToken
+    GET  /epg/v3/...             401 Missing or bad access token
+    GET  /polis-api/v2/...       401 oauth.v2.InvalidAccessToken
+
+Alle fuenf Produkt-Basen liegen hinter demselben OAuth-Gateway. Wer
+Zugangsdaten hat (`developer.srgssr.ch`, Produkt «SRG SSR PUBLIC API V2»), kann
+nachziehen; das Muster steht in `swiss-environment-mcp/scripts/record_fixtures.py`.
 """
 
 from __future__ import annotations

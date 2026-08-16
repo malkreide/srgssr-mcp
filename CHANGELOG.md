@@ -33,9 +33,11 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   Zugangsdaten —, und alle fünf Produkt-Basen (`srf-meteo`, `videometadata`,
   `audiometadata`, `epg`, `polis-api`) ebenso. Einen 401 als Fixture abzulegen
   hiesse, ihn als das auszugeben, was die Quelle normalerweise sagt; deshalb
-  liegt nichts im Repo. Die Tabelle steht in `CLAUDE.md`, damit die Lücke als
-  Befund lesbar ist und nicht als Versäumnis — und damit die nächste Sitzung
-  nicht erneut probt.
+  liegt nichts im Repo. Die `CLAUDE.md` nennt Befund und Datum, damit die Lücke
+  als Befund lesbar ist und nicht als Versäumnis; die Probe im Einzelnen steht
+  im Docstring von `tests/test_live_coverage.py`, damit die nächste Sitzung sie
+  nicht wiederholt. Getrennt, weil die `CLAUDE.md` kurz bleiben muss — eine
+  lange wird überlesen und ist dann schlechter als keine.
 
 - **Retry-Politik gegenüber dem SRG-SSR-Gateway** (ARCH-014). Bisher gab es
   keine: Ein einzelner Netzwerkfehler, ein Timeout oder ein 503 beendete den
