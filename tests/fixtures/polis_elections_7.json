@@ -1,0 +1,663 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1701003496509-0000)/",
+      "/Date(1701003494838-0000)/"
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1609",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 26.11.2023",
+    "EventDate": "/Date(1700953200000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1609",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "24750",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67400",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003496509+0100)/",
+                      "DateChanged": "2023-11-26T13:58:16.5099477+01:00",
+                      "id": "216964"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67400",
+                  "CandidateId": "15767",
+                  "ElectionId": "1751",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Neuenburg",
+                    "ShortName": "NE",
+                    "id": "16",
+                    "locationNumber": "24"
+                  }
+                }
+              ],
+              "FirstName": "Frédéric ",
+              "LastName": "Mairy",
+              "YearBirth": "1973",
+              "City": "Couvet",
+              "ImageName": "5fb4d4",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "5fb4d4",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1742375560713-0000)/",
+                "UpdateDateSpecified": true,
+                "ProfileLink": "https://www.smartvote.ch/de/group/550/election/25_ne_exe/db/candidates/69727?lang=de_CH",
+                "SmartspiderLink": "3d1b04",
+                "Canton": "Neuchâtel",
+                "Country": "",
+                "Language": "fr",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "Conseiller d'Etat",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Children": "3",
+                "Website": "",
+                "PoliticalOffices": [
+                  {
+                    "name": "Conseiller d'État",
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  {
+                    "name": "Conseiller communal (exécutif) à Val-de-Travers",
+                    "start": "2013-01-01",
+                    "end": "2024-01-01"
+                  }
+                ]
+              },
+              "CandidateParty": {
+                "Name": "Sozialdemokratische Partei",
+                "ShortName": "SP",
+                "ParentShortName": "SP",
+                "leftRightPosition": "60",
+                "partyLogoUrl": "b7e4f8",
+                "id": "220",
+                "smartVoteID": "10550",
+                "partyNumber": "10550",
+                "partyColor": "#F0554D"
+              },
+              "Images": {
+                "ImageOriginal": "5fb4d4",
+                "ImageEdited": "5fb4d4",
+                "ImageWebSmall": "5fb4d4",
+                "ImageWebBig": "5fb4d4"
+              },
+              "candidateNumber": "1297843",
+              "id": "15767",
+              "smartVoteID": "1297843"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "3258",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67402",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003496509+0100)/",
+                      "DateChanged": "2023-11-26T13:58:16.5099477+01:00",
+                      "id": "216966"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67402",
+                  "CandidateId": "9623",
+                  "ElectionId": "1751",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Neuenburg",
+                    "ShortName": "NE",
+                    "id": "16",
+                    "locationNumber": "24"
+                  }
+                }
+              ],
+              "FirstName": "Thomas",
+              "LastName": "Wroblevski",
+              "YearBirth": "1987",
+              "City": "Neuchatel",
+              "ImageName": "4e517e",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "4e517e",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1530714002606-0000)/",
+                "UpdateDateSpecified": true,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Übrige",
+                "ShortName": "Übrige",
+                "ParentShortName": "Übrige",
+                "leftRightPosition": "300",
+                "id": "38489",
+                "smartVoteID": "11332",
+                "partyNumber": "11332",
+                "partyColor": "#B8B8B8"
+              },
+              "Images": {
+                "ImageOriginal": "4e517e",
+                "ImageEdited": "4e517e",
+                "ImageWebSmall": "4e517e",
+                "ImageWebBig": "4e517e"
+              },
+              "candidateNumber": "0",
+              "id": "9623"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "2083",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67401",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003496509+0100)/",
+                      "DateChanged": "2023-11-26T13:58:16.5099477+01:00",
+                      "id": "216965"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67401",
+                  "CandidateId": "15652",
+                  "ElectionId": "1751",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Neuenburg",
+                    "ShortName": "NE",
+                    "id": "16",
+                    "locationNumber": "24"
+                  }
+                }
+              ],
+              "FirstName": "Jean-Luc",
+              "LastName": "Pieren",
+              "YearBirth": "1955",
+              "City": "La Chaux-de-Fonds",
+              "ImageName": "c1e427",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "c1e427",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1696350378716-0000)/",
+                "UpdateDateSpecified": true,
+                "ProfileLink": "https://www.smartvote.ch/de/group/527/election/23_ch_sr/db/candidates/59444?lang=de_CH",
+                "SmartspiderLink": "90344c",
+                "Canton": "Neuenburg",
+                "Country": "",
+                "Language": "fr",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "Les Hauts-Genevays",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Website": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Parti Fédéraliste Européen",
+                "ShortName": "PFE",
+                "ParentShortName": "Übrige",
+                "leftRightPosition": "300",
+                "partyLogoUrl": "dc8bee",
+                "id": "39111",
+                "smartVoteID": "11447",
+                "partyNumber": "11447",
+                "partyColor": "#B8B8B8"
+              },
+              "Images": {
+                "ImageOriginal": "c1e427",
+                "ImageEdited": "c1e427",
+                "ImageWebSmall": "c1e427",
+                "ImageWebBig": "c1e427"
+              },
+              "candidateNumber": "1292882",
+              "id": "15652",
+              "smartVoteID": "1292882"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "1",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003494838+0100)/",
+                      "DateChanged": "2023-11-26T13:58:14.8380462+01:00",
+                      "id": "16"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "Sozialdemokratische Partei",
+              "ShortName": "SP",
+              "ParentShortName": "SP",
+              "leftRightPosition": "60",
+              "partyLogoUrl": "b7e4f8",
+              "id": "220",
+              "smartVoteID": "10550",
+              "partyNumber": "10550",
+              "partyColor": "#F0554D"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "0",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003494838+0100)/",
+                      "DateChanged": "2023-11-26T13:58:14.8380462+01:00",
+                      "id": "16"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "Parti Fédéraliste Européen",
+              "ShortName": "PFE",
+              "ParentShortName": "Übrige",
+              "leftRightPosition": "300",
+              "partyLogoUrl": "dc8bee",
+              "id": "39111",
+              "smartVoteID": "11447",
+              "partyNumber": "11447",
+              "partyColor": "#B8B8B8"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "0",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Neuenburg",
+                        "ShortName": "NE",
+                        "id": "16",
+                        "locationNumber": "24"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1701003494838+0100)/",
+                      "DateChanged": "2023-11-26T13:58:14.8380462+01:00",
+                      "id": "16"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "parteilos",
+              "ShortName": "partl.",
+              "ParentShortName": "partl.",
+              "leftRightPosition": "300",
+              "id": "321",
+              "smartVoteID": "11117",
+              "partyNumber": "11117",
+              "partyColor": "#666666"
+            }
+          ]
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1701003496509-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(1701003494838-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1701003491463-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Neuenburg",
+                "ShortName": "NE",
+                "id": "16",
+                "locationNumber": "24"
+              }
+            ],
+            "MetaResult": [
+              {
+                "absoluteMajority": "15046",
+                "votingParticipation": "22.7",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1701003496509-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1701003496509-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1701003496509-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Neuenburg",
+                  "ShortName": "NE",
+                  "id": "16",
+                  "locationNumber": "24"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1701003491000+0100)/",
+                "DateChanged": "2023-11-26T13:58:11.0000000+01:00",
+                "id": "216970"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item4",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Ersatzwahl Staatsrat",
+          "OfficialType": {
+            "id": "2",
+            "Value": "Regierung"
+          },
+          "id": "113"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "1",
+          "ElectionPower": 1,
+          "LocationType": {
+            "id": "2",
+            "Value": "Kanton"
+          },
+          "LocationName": "Neuenburg",
+          "ShortName": "NE",
+          "id": "16",
+          "locationNumber": "24"
+        },
+        "id": "1751"
+      }
+    ]
+  },
+  "language": "DE"
+}

@@ -1,0 +1,162 @@
+{
+  "show": {
+    "id": "d6dc9051-df9b-474d-948c-54c68d18e648",
+    "vendor": "SRF",
+    "transmission": "RADIO",
+    "urn": "urn:srf:show:radio:d6dc9051-df9b-474d-948c-54c68d18e648",
+    "title": "A point",
+    "lead": "In der Sendung «À point - Wissen aus der Küche auf den Punkt gebracht» hören Sie viel Wissenswertes rund um die Küche und das Kochen.",
+    "description": "In der Sendung «À point – Wissen aus der Küche auf den Punkt gebracht» tischen wir Ihnen Wissenswertes rund um die Küche und das Kochen auf.",
+    "imageUrl": "https://download-media.srf.ch/world/image/audio/2023/01/ae8c1681f8b04161ab8d0d4a502ba6cc.jpg",
+    "imageTitle": "A point",
+    "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2023/01/ae8c1681f8b04161ab8d0d4a502ba6cc.jpg",
+    "posterImageUrl": "https://il.srgssr.ch/image-service/dynamic/fd38969.jpg",
+    "posterImageIsFallbackUrl": true,
+    "podcastImageUrl": "https://download-media.srf.ch/world/image/audio/2023/02/3f8c8d8a81d64f328e81516cbe4372c7.jpg",
+    "podcastImageIsFallbackUrl": false,
+    "podcastFeedSdUrl": "https://www.srf.ch/feed/podcast/sd/d6dc9051-df9b-474d-948c-54c68d18e648.xml",
+    "podcastDeezerUrl": "http://www.deezer.com/show/53178",
+    "podcastSpotifyUrl": "https://open.spotify.com/show/6hmrz0fhcqchLtXPGhh0lQ",
+    "links": [
+      {
+        "link": "https://www.srf.ch/radio-srf-1/radio-srf-1/kochen",
+        "title": "Kochen auf SRF 1"
+      },
+      {
+        "link": "https://www.srf.ch/radio-srf-1/radio-srf-1-mail-ins-studio",
+        "title": "Kontakt"
+      }
+    ],
+    "primaryChannelId": "69e8ac16-4327-4af4-b873-fd5cd6e895a7",
+    "primaryChannelUrn": "urn:srf:channel:radio:69e8ac16-4327-4af4-b873-fd5cd6e895a7",
+    "numberOfEpisodes": 3177,
+    "topicList": [
+      {
+        "id": "fdf8ac22-db74-4fd7-873a-2808e1b64cc3",
+        "vendor": "SRF",
+        "transmission": "RADIO",
+        "urn": "urn:srf:topic:radio:fdf8ac22-db74-4fd7-873a-2808e1b64cc3",
+        "title": "Ratgeber",
+        "imageTitle": "Ratgeber"
+      }
+    ],
+    "allowIndexing": true
+  },
+  "channel": {
+    "id": "69e8ac16-4327-4af4-b873-fd5cd6e895a7",
+    "vendor": "SRF",
+    "urn": "urn:srf:channel:radio:69e8ac16-4327-4af4-b873-fd5cd6e895a7",
+    "title": "Radio SRF 1",
+    "imageUrl": "https://download-media.srf.ch/world/image/audio/2015/07/f10f17ef7b4c4befbebe7f8f6b5dd943.png",
+    "imageTitle": "Radio SRF 1",
+    "transmission": "RADIO",
+    "timeTableUrl": "https://www.srf.ch/radio-programm/radio-srf-1"
+  },
+  "episodeList": [
+    {
+      "mediaList": [
+        {
+          "id": "113d8ba4-17cf-4579-83cb-ed1c00520245",
+          "mediaType": "AUDIO",
+          "vendor": "SRF",
+          "urn": "urn:srf:audio:113d8ba4-17cf-4579-83cb-ed1c00520245",
+          "title": "Marokkanisches Lamm-Tajine mit Dörrfrüchten",
+          "lead": "Die Tajine ein aus Ton geformtes Gefäss mit Deckel, wird im Norden Afrikas zum Schmoren von delikaten Gerichten gebraucht. Der aromatische Dampf, der während des Kochens entsteht, wird im konischen Deckel aufgefangen und rieselt wieder zurück in Gargut. ",
+          "description": "Das bleibt dann besonders saftig wie zum Beispiel Lamm mit getrockneten Pflaumen und Aprikosen.",
+          "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/11/976e164503d44ad1853e42567b9e7cdf.jpg",
+          "imageTitle": "Marokkanisches Lamm-Tajin mit Dörrfrüchten",
+          "imageCopyright": "Mark",
+          "type": "EPISODE",
+          "date": "2024-11-01T11:40:00+01:00",
+          "duration": 440000,
+          "podcastHdUrl": "https://download-media.srf.ch/world/audio/A_point_radio/2024/10/A-point-radio_53a10de56faa4760801af424f1ff66b1.mp3?d=ap&assetId=113d8ba4-17cf-4579-83cb-ed1c00520245",
+          "playableAbroad": true,
+          "subtitlesAvailable": false,
+          "presentation": "DEFAULT",
+          "displayable": true,
+          "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2024/11/976e164503d44ad1853e42567b9e7cdf.jpg",
+          "bannerImageTitle": "Marokkanisches Lamm-Tajin mit Dörrfrüchten",
+          "bannerImageCopyright": "Mark"
+        }
+      ],
+      "lead": "Die Tajine ein aus Ton geformtes Gefäss mit Deckel, wird im Norden Afrikas zum Schmoren von delikaten Gerichten gebraucht. Der aromatische Dampf, der während des Kochens entsteht, wird im konischen Deckel aufgefangen und rieselt wieder zurück in Gargut. ",
+      "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/11/976e164503d44ad1853e42567b9e7cdf.jpg",
+      "imageTitle": "Marokkanisches Lamm-Tajin mit Dörrfrüchten",
+      "imageCopyright": "Mark",
+      "publishedDate": "2024-11-01T11:40:00+01:00",
+      "fullLengthUrn": "urn:srf:audio:113d8ba4-17cf-4579-83cb-ed1c00520245",
+      "id": "abdc549f-dbfc-47fd-9b7a-0d0cad66c967",
+      "title": "Marokkanisches Lamm-Tajine mit Dörrfrüchten",
+      "description": "Das bleibt dann besonders saftig wie zum Beispiel Lamm mit getrockneten Pflaumen und Aprikosen."
+    },
+    {
+      "mediaList": [
+        {
+          "id": "05a8f9f6-e4a0-4894-9b52-aabf54fc6de7",
+          "mediaType": "AUDIO",
+          "vendor": "SRF",
+          "urn": "urn:srf:audio:05a8f9f6-e4a0-4894-9b52-aabf54fc6de7",
+          "title": "Saftiges Poulet in einer Walnuss- und Granatapfel-Sauce",
+          "lead": "Fein gemahlene Walnüsse und Granatapfelmelasse sind die Hauptzutaten für ein köstliches persisches Fesenjan. Die cremige Sauce ist intensiv nussig, süss-sauer und das austretende Walnussöl gart das Poulet-Fleisch sanft, sodass es saftig bleibt.",
+          "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/8fe147e6c00d4366a6006f558faee599.jpg",
+          "imageTitle": "Belgisches Stoofvlees",
+          "imageCopyright": "Mark Frederik Chapman",
+          "type": "EPISODE",
+          "date": "2024-10-31T11:40:00+01:00",
+          "duration": 424000,
+          "podcastHdUrl": "https://download-media.srf.ch/world/audio/A_point_radio/2024/10/A-point-radio_5424d23d3d324b0c9fdf136557391ace.mp3?d=ap&assetId=05a8f9f6-e4a0-4894-9b52-aabf54fc6de7",
+          "playableAbroad": true,
+          "subtitlesAvailable": false,
+          "presentation": "DEFAULT",
+          "displayable": true,
+          "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/8fe147e6c00d4366a6006f558faee599.jpg",
+          "bannerImageTitle": "Belgisches Stoofvlees",
+          "bannerImageCopyright": "Mark Frederik Chapman"
+        }
+      ],
+      "lead": "Fein gemahlene Walnüsse und Granatapfelmelasse sind die Hauptzutaten für ein köstliches persisches Fesenjan. Die cremige Sauce ist intensiv nussig, süss-sauer und das austretende Walnussöl gart das Poulet-Fleisch sanft, sodass es saftig bleibt.",
+      "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/8fe147e6c00d4366a6006f558faee599.jpg",
+      "imageTitle": "Belgisches Stoofvlees",
+      "imageCopyright": "Mark Frederik Chapman",
+      "publishedDate": "2024-10-31T11:40:00+01:00",
+      "fullLengthUrn": "urn:srf:audio:05a8f9f6-e4a0-4894-9b52-aabf54fc6de7",
+      "id": "51ca5768-ea02-4971-9051-a7fa3184bdfa",
+      "title": "Saftiges Poulet in einer Walnuss- und Granatapfel-Sauce"
+    },
+    {
+      "mediaList": [
+        {
+          "id": "e65895eb-deef-48e0-8367-70067110029a",
+          "mediaType": "AUDIO",
+          "vendor": "SRF",
+          "urn": "urn:srf:audio:e65895eb-deef-48e0-8367-70067110029a",
+          "title": "Matar Paneer – leicht geschmorter indischer Käse",
+          "lead": "Würziges Matar Paneer aus dem Süden Indiens wird mit Frischkäse statt Fleisch und Gartenerbsen zubereitet. Es ist eine der vielen vegetarischen Gerichte die kurz geschmort werden. Wer asiatische Küche mag, wird dieses einfache Gericht lieben.",
+          "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/5a0272a7e2724e1a99ad5c1d4ab7cf16.jpg",
+          "imageTitle": "Matar Paneer – leicht geschmorter indischer Käse",
+          "imageCopyright": "Mark Frederik Chapman",
+          "type": "EPISODE",
+          "date": "2024-10-30T11:40:00+01:00",
+          "duration": 433000,
+          "podcastHdUrl": "https://download-media.srf.ch/world/audio/A_point_radio/2024/10/A-point-radio_4af7181c800240368f85d7975512dc7b.mp3?d=ap&assetId=e65895eb-deef-48e0-8367-70067110029a",
+          "playableAbroad": true,
+          "subtitlesAvailable": false,
+          "presentation": "DEFAULT",
+          "displayable": true,
+          "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/5a0272a7e2724e1a99ad5c1d4ab7cf16.jpg",
+          "bannerImageTitle": "Matar Paneer – leicht geschmorter indischer Käse",
+          "bannerImageCopyright": "Mark Frederik Chapman"
+        }
+      ],
+      "lead": "Würziges Matar Paneer aus dem Süden Indiens wird mit Frischkäse statt Fleisch und Gartenerbsen zubereitet. Es ist eine der vielen vegetarischen Gerichte die kurz geschmort werden. Wer asiatische Küche mag, wird dieses einfache Gericht lieben.",
+      "imageUrl": "https://download-media.srf.ch/world/image/audio/2024/10/5a0272a7e2724e1a99ad5c1d4ab7cf16.jpg",
+      "imageTitle": "Matar Paneer – leicht geschmorter indischer Käse",
+      "imageCopyright": "Mark Frederik Chapman",
+      "publishedDate": "2024-10-30T11:40:00+01:00",
+      "fullLengthUrn": "urn:srf:audio:e65895eb-deef-48e0-8367-70067110029a",
+      "id": "83d58daa-4874-4985-8278-b4283b574764",
+      "title": "Matar Paneer – leicht geschmorter indischer Käse"
+    }
+  ],
+  "next": "https://api.srgssr.ch/integrationlayer/2.0/srf/episodeComposition/latestByShow/radio/d6dc9051-df9b-474d-948c-54c68d18e648?pageSize=3&next=1"
+}

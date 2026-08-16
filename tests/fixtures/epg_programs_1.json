@@ -1,0 +1,254 @@
+{
+  "channel": "srf-1",
+  "businessUnit": "SRF",
+  "programs": [
+    {
+      "title": "Newsflash SRF 1",
+      "shortDescription": "",
+      "longDescription": "",
+      "subTitle": "",
+      "assetId": "",
+      "vodUrn": "",
+      "vodUrl": "",
+      "remark": null,
+      "dateTimes": {
+        "startTime": "2026-08-14T22:15:00.000Z",
+        "endTime": "2026-08-14T22:25:00.000Z",
+        "duration": "00:10:00",
+        "timezone": "UTC"
+      },
+      "adultWarning": false,
+      "ageRating": "",
+      "isLive": false,
+      "replica": false,
+      "repetitionDescription": "",
+      "primeur": false,
+      "hasSubtitle": true,
+      "hasTwoLanguages": false,
+      "mainLanguage": "",
+      "secondLanguage": "",
+      "hasSignLanguage": false,
+      "hasVisualDescription": false,
+      "isDolbyDigital": true,
+      "geoBlocked": null,
+      "longHtmlDesciption": "",
+      "productionYear": 2026,
+      "productionCountry": "Schweiz",
+      "genre": "Nachrichten",
+      "seriesNumber": "",
+      "episodeSeason": "",
+      "lead": "",
+      "episodeNumber": "",
+      "episodeCount": "",
+      "people": [],
+      "image": {
+        "url": "https://www.srf.ch/static/programm/tv/images/original/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+        "description": "SRF News\nFlasch\nKeyvisual\n2020\n\nCopyright: SRF\n\nAb 14.12.2020",
+        "representations": {
+          "small": "https://www.srf.ch/static/programm/tv/images/small/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+          "large": "https://www.srf.ch/static/programm/tv/images/large/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+          "original": "https://www.srf.ch/static/programm/tv/images/original/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+          "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg"
+        }
+      },
+      "printImages": null,
+      "seasonImages": [
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg"
+          },
+          "description": "SRF News\nFlasch\nKeyvisual\n2020\n\nCopyright: SRF\n\nAb 14.12.2020",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/7b75b1946f5df096cafcd6bca9de5b0e41f5cead.jpg"
+        }
+      ],
+      "seriesImages": null,
+      "printImageSources": null
+    },
+    {
+      "title": "Ein Fressen für die Geier",
+      "shortDescription": "",
+      "longDescription": "Mexiko 1865. Der amerikanische Söldner Hogan (Clint Eastwood) ist auf dem Weg nach Chihuahua, um im Auftrag von Benito Juarez und seinen Freiheitskämpfern die französische Garnison in die Luft zu sprengen. Dafür soll er die Hälfte des französischen Goldschatzes erhalten. Unterwegs trifft Hogan auf Schwester Sara (Shirley MacLaine), die, trotz schwarzer Nonnentracht, von drei Banditen bedrängt wird. Hogan macht kurzen Prozess mit den Kerlen und befreit die Nonne aus ungemütlicher Lage. \n\nDafür wird er von Schwester Sara, die Chihuahua und die Garnison bestens kennt, mit einem Tip belohnt. Die Gottesdienerin, die Hogan auf seiner abenteuerlichen Weiterreise hilfreich zur Seite steht, rät ihm, die Garnison am 14. Juli in die Luft zu sprengen, weil dann die ganze Belegschaft betrunken ist. Doch als sich der Tip als Fehlschlag erweist, weil die durch einen vorangegangenen Anschlag vorgewarnten Franzosen an ihrem Nationalfeiertag stocknüchtern sind, ist die Nonne mit neuem Rat zur Hand. Sie weist dem Söldner den Weg durch einen Geheimgang des Bordells direkt in die Garnison.",
+      "subTitle": "",
+      "assetId": "ef43f2ca-2184-4fd7-ba15-31c4ebae15e2",
+      "vodUrn": "urn:srf:video:ef43f2ca-2184-4fd7-ba15-31c4ebae15e2",
+      "vodUrl": "https://www.srf.ch/play/tv/-/video/apigee?id=a725ed03-d5c9-4ae9-881e-724cac791c37",
+      "remark": null,
+      "dateTimes": {
+        "startTime": "2026-08-14T22:25:00.000Z",
+        "endTime": "2026-08-15T00:15:00.000Z",
+        "duration": "01:50:00",
+        "timezone": "UTC"
+      },
+      "adultWarning": true,
+      "ageRating": 12,
+      "isLive": false,
+      "replica": false,
+      "repetitionDescription": "",
+      "primeur": false,
+      "hasSubtitle": true,
+      "hasTwoLanguages": true,
+      "mainLanguage": "deutsch",
+      "secondLanguage": "englisch",
+      "hasSignLanguage": false,
+      "hasVisualDescription": true,
+      "isDolbyDigital": false,
+      "geoBlocked": null,
+      "longHtmlDesciption": "",
+      "productionYear": 1970,
+      "productionCountry": "USA/Mexiko",
+      "genre": "Western",
+      "seriesNumber": "",
+      "episodeSeason": "",
+      "lead": "Im Westernspass spielt Shirley MacLaine eine Nonne, die nicht immer im Dienst Gottes gestanden hat, und Clint Eastwood mimt einen Abenteurer, der sich als Söldner an Mexikos Revolutionäre verdingt. Inszeniert wurde der Klassiker 1970 vom Macher von «Dirty Harry», Don Siegel.  ",
+      "episodeNumber": "",
+      "episodeCount": "",
+      "people": [
+        {
+          "name": "Sara",
+          "realName": "Shirley MacLaine",
+          "role": "Actor"
+        },
+        {
+          "name": "Hogan",
+          "realName": "Clint Eastwood",
+          "role": "Actor"
+        },
+        {
+          "name": "Colonel Beltran",
+          "realName": "Manolo Fabregas",
+          "role": "Actor"
+        }
+      ],
+      "image": {
+        "url": "https://www.srf.ch/static/programm/tv/images/original/73e58500eec810344e6b4f67b5c7d7de1acdbf36.jpg",
+        "description": "Ein Fressen für die Geier\nDer Cowboy und die Nonne:\nClint Eastwood als Hogan, Shirley MacLaine als Sara",
+        "representations": {
+          "small": "https://www.srf.ch/static/programm/tv/images/small/73e58500eec810344e6b4f67b5c7d7de1acdbf36.jpg",
+          "large": "https://www.srf.ch/static/programm/tv/images/large/73e58500eec810344e6b4f67b5c7d7de1acdbf36.jpg",
+          "original": "https://www.srf.ch/static/programm/tv/images/original/73e58500eec810344e6b4f67b5c7d7de1acdbf36.jpg",
+          "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/73e58500eec810344e6b4f67b5c7d7de1acdbf36.jpg"
+        }
+      },
+      "printImages": [
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/269569d5cd745119daf20a59facc1b51f386ed18.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/269569d5cd745119daf20a59facc1b51f386ed18.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/269569d5cd745119daf20a59facc1b51f386ed18.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/269569d5cd745119daf20a59facc1b51f386ed18.jpg"
+          },
+          "description": "Ein Fressen für die Geier\nVersorgung des Verwundeten:\nClint Eastwood als Hogan, Shirley MacLaine als Sara",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/269569d5cd745119daf20a59facc1b51f386ed18.jpg"
+        },
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/ee742c5fe68652271b2fcfe8ae49cf909a0cf146.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/ee742c5fe68652271b2fcfe8ae49cf909a0cf146.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/ee742c5fe68652271b2fcfe8ae49cf909a0cf146.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/ee742c5fe68652271b2fcfe8ae49cf909a0cf146.jpg"
+          },
+          "description": "Ein Fressen für die Geier\nWarten auf das Finale :\nClint Eastwood als Hogan",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/ee742c5fe68652271b2fcfe8ae49cf909a0cf146.jpg"
+        }
+      ],
+      "seasonImages": null,
+      "seriesImages": null,
+      "printImageSources": [
+        "whatson:5039:P112013",
+        "whatson:5039:P112012"
+      ]
+    },
+    {
+      "title": "Einfach retour",
+      "shortDescription": "",
+      "longDescription": "Nach einer Nacht neben Krokodilen macht sich Jan auf in Richtung Brasilien. An der Grenze zwischen Argentinien und Brasilien stürzen die Wasserfälle von Iguazú in die Tiefe. Dieses Weltwunder der Natur will Jan unbedingt sehen. Der Eintrittspreis übersteigt aber sein Budget. Für seine Reise bis nach Rio hat er nur noch knapp 200 Dollar. Extras liegen nicht drin. Aber Jan hat einen «genialen» Plan.\n\nJan Fitze hat auf seiner Reise von Patagonien nach Rio de Janeiro schon viele Abenteuer erlebt. Schweizer hat er aber noch keine angetroffen. Das ändert sich unverhofft bei einer Begegnung mit einer Boa. Wenn der Lebenskünstler Pepo neben seinem King Kong mit Reden loslegt, verstummt sogar Jan. Und dann lernt er nach dem Mate-Trinken auch die argentinische Tradition des Asados kennen. Es gibt Fleisch bis zum Umfallen. Das lässt sich Jan mit seinem knappen Budget nicht entgehen.",
+      "subTitle": "Eine Nacht mit Krokodilen",
+      "assetId": "bcfd3cdc-3e7a-44dc-b632-09af7916e667",
+      "vodUrn": "urn:srf:video:bcfd3cdc-3e7a-44dc-b632-09af7916e667",
+      "vodUrl": "https://www.srf.ch/play/tv/-/video/apigee?id=9c1894e4-50c2-43ce-8d72-16e1ec281a0d",
+      "remark": null,
+      "dateTimes": {
+        "startTime": "2026-08-15T00:15:00.000Z",
+        "endTime": "2026-08-15T01:00:00.000Z",
+        "duration": "00:45:00",
+        "timezone": "UTC"
+      },
+      "adultWarning": false,
+      "ageRating": "",
+      "isLive": false,
+      "replica": true,
+      "repetitionDescription": "Wiederholung vom 14.08.2026",
+      "primeur": false,
+      "hasSubtitle": true,
+      "hasTwoLanguages": false,
+      "mainLanguage": "",
+      "secondLanguage": "",
+      "hasSignLanguage": false,
+      "hasVisualDescription": true,
+      "isDolbyDigital": false,
+      "geoBlocked": null,
+      "longHtmlDesciption": "",
+      "productionYear": 2026,
+      "productionCountry": "Schweiz",
+      "genre": "Unterhaltung",
+      "seriesNumber": "",
+      "episodeSeason": "",
+      "lead": "Iguazú lockt, das Budget bremst. Jan Fitze fehlen die Dollars für den Eintritt zu den weltberühmten Wasserfällen – eine kreative Lösung muss her. Mit einer Nacht mit dem exzentrischen Pepo, Fleischbergen und Schweizer Begleitung wird der Weg dorthin mindestens so spektakulär wie das Ziel.",
+      "episodeNumber": "",
+      "episodeCount": "",
+      "people": [],
+      "image": {
+        "url": "https://www.srf.ch/static/programm/tv/images/original/a2a845e31c8500af38069df3fed4da59d88095d1.jpg",
+        "description": "Einfach retour\nEine Nacht mit Krokodilen\nStaffel 3\nFolge 3\nJan Fitze bei den Iguazú-Wasserfällen\n2026\n\nCopyright: SRF",
+        "representations": {
+          "small": "https://www.srf.ch/static/programm/tv/images/small/a2a845e31c8500af38069df3fed4da59d88095d1.jpg",
+          "large": "https://www.srf.ch/static/programm/tv/images/large/a2a845e31c8500af38069df3fed4da59d88095d1.jpg",
+          "original": "https://www.srf.ch/static/programm/tv/images/original/a2a845e31c8500af38069df3fed4da59d88095d1.jpg",
+          "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/a2a845e31c8500af38069df3fed4da59d88095d1.jpg"
+        }
+      },
+      "printImages": [
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/2aaa11ce8792a464e732d1de07e3c07d53ea23dd.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/2aaa11ce8792a464e732d1de07e3c07d53ea23dd.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/2aaa11ce8792a464e732d1de07e3c07d53ea23dd.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/2aaa11ce8792a464e732d1de07e3c07d53ea23dd.jpg"
+          },
+          "description": "Einfach retour\nEine Nacht mit Krokodilen\nStaffel 3\nFolge 3\nConi und Geni aus der Schweiz nehmen Jan Fitze (r.) mit ihrem Wohnmobil mit. \n2026\n\nCopyright: SRF",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/2aaa11ce8792a464e732d1de07e3c07d53ea23dd.jpg"
+        },
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/705a4224000fae7931ed754a890242ca24532946.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/705a4224000fae7931ed754a890242ca24532946.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/705a4224000fae7931ed754a890242ca24532946.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/705a4224000fae7931ed754a890242ca24532946.jpg"
+          },
+          "description": "Einfach retour\nEine Nacht mit Krokodilen\nStaffel 3\nFolge 3\nJan Fitze trifft in Santo Tomé Pepo mit seinem Gefährt Kingkong.\n2026\n\nCopyright: SRF",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/705a4224000fae7931ed754a890242ca24532946.jpg"
+        },
+        {
+          "representations": {
+            "small": "https://www.srf.ch/static/programm/tv/images/small/97674ef01cb9ca25f047390194320eac417ed7b2.jpg",
+            "large": "https://www.srf.ch/static/programm/tv/images/large/97674ef01cb9ca25f047390194320eac417ed7b2.jpg",
+            "original": "https://www.srf.ch/static/programm/tv/images/original/97674ef01cb9ca25f047390194320eac417ed7b2.jpg",
+            "smart_16x9": "https://www.srf.ch/static/programm/tv/images/smart_16x9/97674ef01cb9ca25f047390194320eac417ed7b2.jpg"
+          },
+          "description": "Einfach retour\nEine Nacht mit Krokodilen\nStaffel 3\nFolge 3\nJan Fitze trifft Nasenbären bei Puerto Iguazú.\n2026\n\nCopyright: SRF",
+          "url": "https://www.srf.ch/static/programm/tv/images/original/97674ef01cb9ca25f047390194320eac417ed7b2.jpg"
+        }
+      ],
+      "seasonImages": null,
+      "seriesImages": null,
+      "printImageSources": [
+        "whatson:5035:6085952",
+        "whatson:5035:6084164",
+        "whatson:5035:6084165"
+      ]
+    }
+  ]
+}

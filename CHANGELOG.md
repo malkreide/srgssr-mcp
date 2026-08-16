@@ -39,6 +39,25 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   String. Ohne diese Zusicherung hätte der erste echte Lauf sie nach dem
   Token-Refresh gemeldet, einzeln.
 
+- **`srf-meteo` drosselt, und der Recorder machte viermal so viele Abrufe wie
+  nötig.** Vier Werkzeuge lösen dieselbe Koordinate auf — `weather_current`,
+  `_forecast_24h`, `_forecast_7day` und das Tagesbriefing. Der Recorder
+  deduplizierte die *Aufzeichnungen* nach Schlüssel, aber nicht die
+  *Anfragen*: acht Abrufe für zwei verschiedene URLs.
+
+  Gemessen am 16.8.2026 gegen die echte API: der erste Abruf kam durch, der
+  zweite auf dieselbe URL bekam `HTTP 429 Too Many Requests` und blieb über
+  vier Retries und rund 50 Sekunden gedrosselt. `_EinmalHolen` beantwortet
+  jetzt aus dem Bestand, was der Lauf schon geholt hat, und zwischen den
+  Plan-Einträgen liegt eine Pause — ein Recorder ist Gast bei der Quelle.
+
+  Derselbe 429 war auch der Grund für die unvollständige Aufzeichnung des
+  Tagesbriefings, nur still: das Werkzeug degradiert, statt umzufallen.
+
+  Umgehängt wird `_transport_for_url` und nicht `_transport` — httpx fragt
+  zuerst `_mounts`, und die sind durch die Proxy-Konfiguration belegt. Der
+  erste Versuch über `_transport` lief ins Leere, und der Test hat es gezeigt.
+
 ### Sicherheit / Security
 - **Das OAuth-Token gelangt in keine Datei.** Diese API ist die einzige im
   Portfolio mit OAuth2: die Antwort von `/oauth/v1/accesstoken` trägt ein

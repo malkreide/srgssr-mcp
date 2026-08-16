@@ -76,6 +76,12 @@ FIXTURES = WURZEL / "tests" / "fixtures"
 
 VERSUCHE = 3
 
+# Pause zwischen zwei Plan-Eintraegen. Der Recorder ist Gast bei der Quelle, und
+# `srf-meteo` drosselt spuerbar: im Lauf vom 16.8.2026 kam der erste Abruf
+# durch, der zweite auf dieselbe Koordinate mit HTTP 429 zurueck — und blieb
+# gedrosselt, ueber vier Retries und rund 50 Sekunden hinweg.
+PAUSE_SEKUNDEN = 1.0
+
 # Der Backoff-Schlaf unter eigenem Namen. Ein Test, der `asyncio.sleep` selbst
 # patcht, greift ins fremde Modul und entschaerft die Mechanik im ganzen
 # Prozess; ueber den Alias trifft er genau diese Schleife.
@@ -104,11 +110,112 @@ class Aufruf:
     werkzeug: str
     klasse: str
     eingabe: dict[str, Any]
-    # Kuerzen ist nur dort harmlos, wo der Server die Liste ganz liest. Sucht
-    # er *in* ihr — oder holt er zu jedem Eintrag eine weitere Antwort —, dann
-    # schneidet ein Schnitt womoeglich genau die Zeile weg, die er braucht.
-    kuerzen: bool = True
     notiz: str = ""
+
+
+@dataclass(frozen=True)
+class Schutz:
+    """Eine Liste, deren **Laenge** der Server ausliest.
+
+    Sie behaelt alle Eintraege; gekuerzt wird nur, was *unter* ihnen haengt.
+    """
+
+    muster: str  # Teilstring der URL, an dem die Antwort erkannt wird
+    schluessel: str  # Name der Liste im Antwortbaum
+    grund: str
+
+
+# Ob gekuerzt werden darf, ist eine Eigenschaft der **Antwort** und nicht des
+# Aufrufs. Ein Werkzeug fasst beides an: `srgssr_polis_get_votations` liest die
+# Fall-Liste, um *in* ihr nach Jahr zu filtern, und die Treffer je Fall, um
+# ueber mehrere Faelle hinweg bis `page * page_size` zu zaehlen — beide Laengen
+# tragen. Am Aufruf haengte die Entscheidung deshalb zwangslaeufig falsch: als
+# `kuerzen=False` wurden 16.8 MB abgelegt, als `kuerzen=True` kamen andere
+# Treffer heraus als aus der echten Antwort.
+#
+# Gemessen statt geschlossen: alle 15 Werkzeuge einmal gegen die vollen und
+# einmal gegen die gekuerzten Aufzeichnungen gefahren. Mit diesen drei Regeln
+# ist jede Ausgabe identisch, und der Ordner faellt von 16.8 MB auf 1.4 MB.
+#
+# Die Schluessel sind dieselben, mit denen `_fetch_filtered` aufgerufen wird —
+# `test_die_schutzregeln_nennen_die_container_des_servers` haelt sie zusammen,
+# damit sie nicht auseinanderlaufen.
+SCHUTZ: tuple[Schutz, ...] = (
+    Schutz(
+        "/polis-api/v2/cases",
+        "Case",
+        "`_case_ids_in_range` filtert *in* dieser Liste nach Jahr — ein Schnitt "
+        "meldete «keine Abstimmung in diesem Zeitraum», wo es welche gibt",
+    ),
+    Schutz(
+        "/polis-api/v2/votations",
+        "Items",
+        "`_fetch_filtered` zaehlt die Treffer ueber mehrere Faelle hinweg bis "
+        "`page * page_size` — ein Schnitt verschiebt, welche Faelle beitragen",
+    ),
+    Schutz(
+        "/polis-api/v2/elections",
+        "Election",
+        "wie bei den Abstimmungen; die Liste haengt hier eine Ebene tiefer unter `Elections`",
+    ),
+)
+
+
+class _EinmalHolen(httpx.AsyncBaseTransport):
+    """Beantwortet eine Anfrage, die dieser Lauf schon geholt hat, aus dem Bestand.
+
+    Der Recorder deduplizierte bisher die *Aufzeichnungen* nach Schluessel, aber
+    nicht die *Anfragen*. Vier Werkzeuge loesen dieselbe Koordinate auf —
+    `srgssr_weather_current`, `_forecast_24h`, `_forecast_7day` und das
+    Tagesbriefing —, also gingen acht Abrufe fuer zwei verschiedene URLs raus.
+
+    Gegen ein Kontingent, das nach ein bis zwei Abrufen zumacht, ist das der
+    Unterschied zwischen Durchkommen und Abbruch. Gemessen am 16.8.2026:
+    `weather_current` kam durch, `weather_24h` bekam auf dieselbe URL HTTP 429
+    und blieb ueber alle Retries gedrosselt; der Lauf brach ab. Der Lauf davor
+    war aus demselben Grund still unvollstaendig — dem Tagesbriefing fehlte
+    seine `forecastpoint`-Antwort.
+
+    Das Token-Endpunkt geht von selbst immer durch: sein Rumpf wird nie in den
+    Bestand aufgenommen (der Hook laesst ihn fallen), also findet die Umleitung
+    dafuer nie etwas. Ein zusaetzlicher Riegel hier waere ein Schloss, das nie
+    einrasten kann — es laese sich von aussen nicht von einem wirksamen
+    unterscheiden. Die Zusicherung sitzt deshalb dort, wo sie greift:
+    `test_der_bestand_nimmt_die_token_antwort_nie_auf`.
+    """
+
+    def __init__(self, echt: httpx.AsyncBaseTransport, bestand: dict[str, Antwort]) -> None:
+        self._echt = echt
+        self._bestand = bestand
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        schluessel = schluessel_fuer(request)
+        vorhanden = self._bestand.get(schluessel)
+        if vorhanden is not None:
+            return httpx.Response(
+                200,
+                text=vorhanden.text,
+                headers={"content-type": "application/json"},
+                request=request,
+            )
+        return await self._echt.handle_async_request(request)
+
+
+def _umleiten(echt_fuer: Callable[[Any], Any], bestand: dict[str, Antwort]) -> Callable[[Any], Any]:
+    """Bindet `echt_fuer` als Argument statt aus dem umgebenden Namensraum (ruff B023)."""
+
+    def fuer(url: Any) -> Any:
+        return _EinmalHolen(echt_fuer(url), bestand)
+
+    return fuer
+
+
+def schutz_fuer(url: str) -> Schutz | None:
+    """Die Schutzregel fuer eine Antwort, oder `None` wenn frei kuerzbar."""
+    for regel in SCHUTZ:
+        if regel.muster in url:
+            return regel
+    return None
 
 
 # Die Eingaben stammen aus `tests/test_live.py`, nicht aus einer neuen
@@ -201,16 +308,12 @@ PLAN: list[Aufruf] = [
         "srgssr_polis_get_votations",
         "PolisListInput",
         {"year_from": 2020, "year_to": 2024, "page_size": 5},
-        kuerzen=False,
-        notiz="Ungekuerzt: der Server filtert und zaehlt *in* diesen Listen.",
     ),
     Aufruf(
         "polis_elections",
         "srgssr_polis_get_elections",
         "PolisListInput",
         {"year_from": 2020, "year_to": 2024, "page_size": 5},
-        kuerzen=False,
-        notiz="Ungekuerzt: der Server filtert und zaehlt *in* diesen Listen.",
     ),
     Aufruf(
         "polis_results",
@@ -228,11 +331,10 @@ PLAN: list[Aufruf] = [
             "business_unit": BusinessUnit.SRF,
             "channel_id": "srf-1",
             "date": ZUR_LAUFZEIT,
-            "latitude": 47.37,
-            "longitude": 8.54,
+            "latitude": 47.3769,
+            "longitude": 8.5417,
         },
-        kuerzen=False,
-        notiz="Ungekuerzt: spannt EPG und Wetter nebenlaeufig, beide Haelften zaehlen.",
+        notiz="Spannt EPG und Wetter nebenlaeufig — zwei Produkte in einem Aufruf.",
     ),
 ]
 
@@ -273,7 +375,7 @@ class Antwort:
     schluessel: str
     text: str
     werkzeuge: list[str] = field(default_factory=list)
-    darf_kuerzen: bool = True
+    schutz: Schutz | None = None
     notiz: str = ""
     dateiname: str = ""
     original_bytes: int = 0
@@ -305,7 +407,8 @@ def _hook_fuer(gesehen: list[Antwort]) -> Callable[[httpx.Response], Awaitable[N
                 file=sys.stderr,
             )
             return
-        gesehen.append(Antwort(schluessel=schluessel_fuer(response.request), text=response.text))
+        schluessel = schluessel_fuer(response.request)
+        gesehen.append(Antwort(schluessel=schluessel, text=response.text, schutz=schutz_fuer(schluessel)))
 
     return hook
 
@@ -322,8 +425,37 @@ def _leere_caches() -> None:
     polis._clear_reference_cache()
 
 
-async def _fahre(a: Aufruf) -> list[Antwort]:
-    """Ruft ein Werkzeug und gibt die dabei gesehenen Antworten zurueck."""
+def _entartet(modell: Any, pfad: str = "") -> list[str]:
+    """Pfade zu Feldern, die einen `ToolErrorResponse` tragen.
+
+    `srgssr_daily_briefing` faellt nicht um, wenn eine Haelfte ausfaellt — es
+    faengt sie und legt den Fehler als *Feld* in die Antwort. Das ist der
+    Degradations-Vertrag und richtig so; fuer den Recorder heisst es aber, dass
+    eine Pruefung auf der obersten Ebene nicht genuegt.
+
+    Genau daran ist der erste Lauf vorbeigegangen: die Wetter-Haelfte des
+    Briefings fiel aus, das Werkzeug gab ein gueltiges Modell zurueck, und die
+    fehlende `forecastpoint`-Antwort landete nie im Ordner. Aufgefallen ist es
+    erst beim Abspielen — dort ist eine Anfrage ohne Aufzeichnung ein Fehler.
+    """
+    if isinstance(modell, ToolErrorResponse):
+        return [pfad or "(oben)"]
+    felder = getattr(modell, "model_fields", None)
+    if not felder:
+        return []
+    treffer: list[str] = []
+    for feld in felder:
+        unten = f"{pfad}.{feld}" if pfad else feld
+        treffer += _entartet(getattr(modell, feld, None), unten)
+    return treffer
+
+
+async def _fahre(a: Aufruf, bestand: dict[str, Antwort] | None = None) -> list[Antwort]:
+    """Ruft ein Werkzeug und gibt die dabei gesehenen Antworten zurueck.
+
+    `bestand` sind die Antworten, die dieser Lauf schon hat. Was darin steht,
+    wird nicht noch einmal von der Quelle geholt — siehe :class:`_EinmalHolen`.
+    """
     fn = getattr(server, a.werkzeug)
     modell = getattr(server, a.klasse)(**a.eingabe)
     letzter: Exception | None = None
@@ -336,49 +468,65 @@ async def _fahre(a: Aufruf) -> list[Antwort]:
         hook = _hook_fuer(gesehen)
         client = await _http._get_http_client()
         client.event_hooks.setdefault("response", []).append(hook)
+        # Umgehaengt wird `_transport_for_url` und nicht `_transport`: httpx
+        # fragt zuerst `_mounts`, und die sind hier belegt (Proxy-Konfiguration
+        # aus der Umgebung). Ein Tausch von `_transport` allein lief deshalb
+        # ins Leere — gemessen, nicht angenommen: die zweite Abfrage ging
+        # weiterhin an die Quelle.
+        echt_fuer = client._transport_for_url
+        if bestand is not None:
+            client._transport_for_url = _umleiten(echt_fuer, bestand)
         try:
             ergebnis = await fn(modell)
         except Exception as e:  # noqa: BLE001 — jeder Fehler ist hier ein Retry-Grund
             letzter = e
             continue
         finally:
+            client._transport_for_url = echt_fuer
             client.event_hooks["response"].remove(hook)
 
-        if isinstance(ergebnis, ToolErrorResponse):
-            # Die Werkzeuge geben seit SDK-002 typisierte Modelle zurueck. Auf
-            # einen Fehlerstring zu pruefen kann gegen ein BaseModel nie
-            # zutreffen — genau dieser Fehler hat die Live-Suite einmal
-            # dekorativ gemacht.
-            letzter = RuntimeError(f"{a.werkzeug} meldet: {ergebnis.error[:200]}")
+        # Die Werkzeuge geben seit SDK-002 typisierte Modelle zurueck. Auf einen
+        # Fehlerstring zu pruefen kann gegen ein BaseModel nie zutreffen — genau
+        # dieser Fehler hat die Live-Suite einmal dekorativ gemacht. Und geprueft
+        # wird bis in die Felder hinein, nicht nur oben.
+        if entartet := _entartet(ergebnis):
+            letzter = RuntimeError(f"{a.werkzeug} meldet einen Ausfall in: {', '.join(entartet)}")
             continue
         if not gesehen:
             letzter = RuntimeError(f"{a.werkzeug} hat keine Anfrage abgeschickt")
             continue
         for antwort in gesehen:
             antwort.werkzeuge.append(a.werkzeug)
-            antwort.darf_kuerzen = a.kuerzen
             antwort.notiz = a.notiz
         return gesehen
 
     raise RuntimeError(f"{a.name} nach {VERSUCHE} Versuchen nicht aufgezeichnet: {letzter}")
 
 
-def _kuerze(daten: Any) -> tuple[int, int, Any]:
+def _kuerze(daten: Any, schutz: Schutz | None = None) -> tuple[int, int, Any]:
     """Kuerzt jede Liste im Baum auf `ZEILEN`; gibt (vorher, nachher, Daten).
 
     Nur die Zahl der Eintraege, nie ein Feld. Zaehlfelder daneben bleiben
     stehen: die Quelle meint damit die Gesamtzahl und nicht die Zahl der
     gelieferten Zeilen, und genau die liest der Server aus.
+
+    Traegt die Antwort eine Schutzregel, behaelt **die** Liste alle Eintraege —
+    gekuerzt wird dann nur, was unter ihnen haengt. Genau dort sitzt bei Polis
+    auch das Gewicht: die geschuetzte Liste selbst ist schmal, die Ergebnisbaeume
+    darunter sind es nicht.
     """
     vorher = nachher = 0
+    geschuetzt = schutz.schluessel if schutz else None
 
-    def geh(knoten: Any) -> Any:
+    def geh(knoten: Any, unter_schutz: bool = False) -> Any:
         nonlocal vorher, nachher
         if isinstance(knoten, dict):
-            return {k: geh(v) for k, v in knoten.items()}
+            return {k: geh(v, unter_schutz or k == geschuetzt) for k, v in knoten.items()}
         if isinstance(knoten, list):
             vorher += len(knoten)
-            gekuerzt = knoten[:ZEILEN]
+            # Unter der geschuetzten Liste gilt der Schutz nicht weiter: ihre
+            # Eintraege bleiben vollzaehlig, ihr Inhalt wird normal gekuerzt.
+            gekuerzt = knoten if unter_schutz else knoten[:ZEILEN]
             nachher += len(gekuerzt)
             return [geh(v) for v in gekuerzt]
         return knoten
@@ -489,7 +637,7 @@ def _mit_laufzeitwerten(plan: list[Aufruf], werte: dict[str, dict[str, Any]]) ->
     for a in plan:
         zusatz = werte.get(a.name)
         if zusatz:
-            a = Aufruf(a.name, a.werkzeug, a.klasse, {**a.eingabe, **zusatz}, a.kuerzen, a.notiz)
+            a = Aufruf(a.name, a.werkzeug, a.klasse, {**a.eingabe, **zusatz}, a.notiz)
         offen = [k for k, v in a.eingabe.items() if v == ZUR_LAUFZEIT]
         if offen:
             raise RuntimeError(
@@ -519,9 +667,11 @@ async def main() -> int:
 
     try:
         aufrufe = _mit_laufzeitwerten(PLAN, await _laufzeitwerte())
-        for a in aufrufe:
+        for nummer, a in enumerate(aufrufe):
+            if nummer:
+                await _sleep(PAUSE_SEKUNDEN)
             print(f"… {a.werkzeug} ({a.name})", file=sys.stderr)
-            for antwort in await _fahre(a):
+            for antwort in await _fahre(a, nach_schluessel):
                 if antwort.schluessel in nach_schluessel:
                     vorhanden = nach_schluessel[antwort.schluessel]
                     if a.werkzeug not in vorhanden.werkzeuge:
@@ -546,8 +696,7 @@ async def main() -> int:
         except json.JSONDecodeError:
             (FIXTURES / antwort.dateiname).write_text(antwort.text, encoding="utf-8")
         else:
-            if antwort.darf_kuerzen:
-                antwort.gekuerzt_von, antwort.behalten, daten = _kuerze(daten)
+            antwort.gekuerzt_von, antwort.behalten, daten = _kuerze(daten, antwort.schutz)
             # Neu eingerueckt geschrieben: eine Zeile JSON waere kleiner, aber
             # im Diff nicht lesbar, und ein Fixture will gelesen werden.
             (FIXTURES / antwort.dateiname).write_text(
@@ -632,13 +781,10 @@ def _schreibe_provenance(antworten: list[Antwort], heute: str) -> None:
                 f"jede Liste im Baum auf die ersten {ZEILEN} gekuerzt, "
                 f"aus {a.original_bytes} Bytes Rohantwort"
             )
-        elif not a.darf_kuerzen:
-            zeilen.append(
-                "- **Auswahl:** ungekuerzt — der Server filtert oder zaehlt *in* dieser "
-                "Liste, ein Schnitt erfaende einen Negativbefund"
-            )
         else:
             zeilen.append("- **Auswahl:** ungekuerzt")
+        if a.schutz:
+            zeilen.append(f"- **Geschuetzte Liste:** `{a.schutz.schluessel}` behaelt alle Eintraege — {a.schutz.grund}")
         zeilen += [
             f"- **Groesse:** {a.bytes} Bytes",
             f"- **SHA-256:** `{a.sha256}`",

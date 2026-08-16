@@ -1,0 +1,399 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1711279196067-0000)/",
+      null
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1613",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 24.03.2024",
+    "EventDate": "/Date(1711234800000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1613",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "5167",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67450",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Glarus",
+                        "ShortName": "GL",
+                        "id": "12",
+                        "locationNumber": "8"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1711279196067+0100)/",
+                      "DateChanged": "2024-03-24T12:19:56.0674681+01:00",
+                      "id": "221867"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67450",
+                  "CandidateId": "19895",
+                  "ElectionId": "1764",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Glarus",
+                    "ShortName": "GL",
+                    "id": "12",
+                    "locationNumber": "8"
+                  }
+                }
+              ],
+              "FirstName": "Thomas",
+              "LastName": "Tschudi",
+              "YearBirth": "1978",
+              "City": "Näfels",
+              "ImageName": "b8b43c",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "b8b43c",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "280",
+                "smartVoteID": "10625",
+                "partyNumber": "10625",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "b8b43c",
+                "ImageEdited": "b8b43c",
+                "ImageWebSmall": "b8b43c",
+                "ImageWebBig": "b8b43c"
+              },
+              "candidateNumber": "0",
+              "id": "19895"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "5093",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67449",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Glarus",
+                        "ShortName": "GL",
+                        "id": "12",
+                        "locationNumber": "8"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1711279196067+0100)/",
+                      "DateChanged": "2024-03-24T12:19:56.0674681+01:00",
+                      "id": "221866"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67449",
+                  "CandidateId": "19894",
+                  "ElectionId": "1764",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Glarus",
+                    "ShortName": "GL",
+                    "id": "12",
+                    "locationNumber": "8"
+                  }
+                }
+              ],
+              "FirstName": "Daniela",
+              "LastName": "Bösch-Widmer",
+              "YearBirth": "1977",
+              "City": "Niederurnen",
+              "ImageName": "6ae683",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "6ae683",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Die Mitte",
+                "ShortName": "Mitte",
+                "ParentShortName": "Mitte",
+                "leftRightPosition": "150",
+                "partyLogoUrl": "6b801e",
+                "id": "39147",
+                "smartVoteID": "0",
+                "partyNumber": "0",
+                "partyColor": "#D6862B"
+              },
+              "Images": {
+                "ImageOriginal": "6ae683",
+                "ImageEdited": "6ae683",
+                "ImageWebSmall": "6ae683",
+                "ImageWebBig": "6ae683"
+              },
+              "candidateNumber": "0",
+              "id": "19894"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": []
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1711279196067-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1711279231349-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Glarus",
+                "ShortName": "GL",
+                "id": "12",
+                "locationNumber": "8"
+              }
+            ],
+            "MetaResult": [
+              {
+                "votingParticipation": "39.6",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1711279196067-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1711279196067-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1711279196067-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Glarus",
+                  "ShortName": "GL",
+                  "id": "12",
+                  "locationNumber": "8"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1711279241000+0100)/",
+                "DateChanged": "2024-03-24T12:20:41.0000000+01:00",
+                "id": "221868"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item4",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Ersatzwahl Regierungsrat",
+          "OfficialType": {
+            "id": "2",
+            "Value": "Regierung"
+          },
+          "id": "178"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "1",
+          "ElectionPower": 1,
+          "LocationType": {
+            "id": "2",
+            "Value": "Kanton"
+          },
+          "LocationName": "Glarus",
+          "ShortName": "GL",
+          "id": "12",
+          "locationNumber": "8"
+        },
+        "id": "1764"
+      }
+    ]
+  },
+  "language": "DE"
+}

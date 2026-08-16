@@ -1,0 +1,141 @@
+{
+  "next": "https://api.srgssr.ch/integrationlayer/2.0/srf/showList/radio/alphabeticalByChannel/69e8ac16-4327-4af4-b873-fd5cd6e895a7?characterFilter=e&pageSize=5&next=1",
+  "showList": [
+    {
+      "id": "28549e81-c453-4671-92ad-cb28796d06a8",
+      "vendor": "SRF",
+      "transmission": "RADIO",
+      "urn": "urn:srf:show:radio:28549e81-c453-4671-92ad-cb28796d06a8",
+      "title": "Echo der Zeit",
+      "lead": "Täglich die wichtigsten Nachrichten, Berichte, Reportagen, Interviews und Analysen über das aktuelle Zeitgeschehen.",
+      "description": "«Echo der Zeit» ist die älteste politische Hintergrundsendung von Radio SRF: Seit 1945 vermittelt die Sendung täglich die wichtigsten Nachrichten, Berichte, Reportagen, Interviews und Analysen über das aktuelle Zeitgeschehen",
+      "imageUrl": "https://download-media.srf.ch/world/image/default/2025/09/SRFNews-echoderzeit-webvisual-16zu9.jpg",
+      "imageTitle": "Echo der Zeit",
+      "bannerImageUrl": "https://download-media.srf.ch/world/image/default/2025/09/SRFNews-echoderzeit-webvisual-16zu9.jpg",
+      "posterImageUrl": "https://il.srgssr.ch/image-service/dynamic/fd38969.jpg",
+      "posterImageIsFallbackUrl": true,
+      "podcastImageUrl": "https://download-media.srf.ch/world/image/default/2025/09/SRFNews-echoderzeit-webvisual-1zu1.jpg",
+      "podcastImageIsFallbackUrl": false,
+      "podcastFeedSdUrl": "https://www.srf.ch/feed/podcast/sd/28549e81-c453-4671-92ad-cb28796d06a8.xml",
+      "podcastDeezerUrl": "http://www.deezer.com/de/show/53278",
+      "podcastSpotifyUrl": "https://open.spotify.com/show/2ZSmqyt0bE5RXbhJZVBTaD",
+      "links": [
+        {
+          "link": "https://www.srf.ch/radio-srf-4-news/echo-der-zeit",
+          "title": "Serien und Schwerpunkte"
+        },
+        {
+          "link": "https://www.srf.ch/audio/echo-der-zeit-newsletter-abonnieren-sie-den-echo-der-zeit-newsletter",
+          "title": "Newsletter"
+        },
+        {
+          "link": "https://www.srf.ch/radio-srf-4-news/echo-der-zeit/echo-der-zeit-sendungsportraet",
+          "title": "Sendungsporträt"
+        }
+      ],
+      "primaryChannelId": "ee1fb348-2b6a-4958-9aac-ec6c87e190da",
+      "primaryChannelUrn": "urn:srf:channel:radio:ee1fb348-2b6a-4958-9aac-ec6c87e190da",
+      "numberOfEpisodes": 16320,
+      "topicList": [
+        {
+          "id": "4ca1494f-e45d-4ea2-a081-89aadfbd9a31",
+          "vendor": "SRF",
+          "transmission": "RADIO",
+          "urn": "urn:srf:topic:radio:4ca1494f-e45d-4ea2-a081-89aadfbd9a31",
+          "title": "News",
+          "imageTitle": "News"
+        },
+        {
+          "id": "807ccb83-6e8f-43c0-a518-21a8521d0bda",
+          "vendor": "SRF",
+          "transmission": "RADIO",
+          "urn": "urn:srf:topic:radio:807ccb83-6e8f-43c0-a518-21a8521d0bda",
+          "title": "Politik & Wirtschaft",
+          "imageTitle": "Politik & Wirtschaft"
+        }
+      ],
+      "allowIndexing": true
+    },
+    {
+      "id": "9a32345b-3f24-4b8f-8a04-741fcfa46041",
+      "vendor": "SRF",
+      "transmission": "RADIO",
+      "urn": "urn:srf:show:radio:9a32345b-3f24-4b8f-8a04-741fcfa46041",
+      "title": "Edi - Leben am Limit",
+      "lead": "Mit 7 wollte er Profifussballer werden. Geworden ist er ein notorischer Krimineller. Sein Leben - eine einzige Achterbahnfahrt.",
+      "description": "Mit 7 Jahren wollte er Profifussballer werden. Geworden ist er ein notorischer Krimineller, ein Drogensüchtiger auf der Jagd nach dem Kick. Sein Leben - eine einzige Achterbahnfahrt.\r\nÜber Jahrzehnte hinweg bringt Edi Justiz, Therapeuten und Ärzte an ihre Grenzen. Die vielen Chancen packt er nicht. Sein Umfeld täuscht und enttäuscht er. Ein hoffnungsloser Fall? «Edi» ist ein SRF Podcast und die wahre Geschichte eines Verbrechers, der zurückschaut und nach Erklärungen sucht. Eine Geschichte, die man nicht mehr vergisst.",
+      "imageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/193101413ed94946b4758eb3af98f5cb.jpg",
+      "imageTitle": "Edi - Leben am Limit",
+      "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/193101413ed94946b4758eb3af98f5cb.jpg",
+      "posterImageUrl": "https://il.srgssr.ch/image-service/dynamic/fd38969.jpg",
+      "posterImageIsFallbackUrl": true,
+      "podcastImageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/cc5ee298d846400886c4de500ddfd8a6.jpg",
+      "podcastImageIsFallbackUrl": false,
+      "podcastFeedSdUrl": "https://www.srf.ch/feed/podcast/sd/9a32345b-3f24-4b8f-8a04-741fcfa46041.xml",
+      "podcastDeezerUrl": "https://www.deezer.com/en/show/58751",
+      "podcastSpotifyUrl": "https://open.spotify.com/show/3fSma2SEB4kMPcIDCcoEgl",
+      "links": [
+        {
+          "link": "https://www.srf.ch/audio/leben-am-limit/leben-am-limit-sendungsportraet",
+          "title": "Sendungsporträt"
+        },
+        {
+          "link": "https://www.srf.ch/audio/leben-am-limit",
+          "title": "Leben am Limit"
+        }
+      ],
+      "primaryChannelId": "dd0fa1ba-4ff6-4e1a-ab74-d7e49057d96f",
+      "primaryChannelUrn": "urn:srf:channel:radio:dd0fa1ba-4ff6-4e1a-ab74-d7e49057d96f",
+      "numberOfEpisodes": 11,
+      "topicList": [
+        {
+          "id": "dc5c1ccd-eba3-4d05-a924-a07eb720ca49",
+          "vendor": "SRF",
+          "transmission": "RADIO",
+          "urn": "urn:srf:topic:radio:dc5c1ccd-eba3-4d05-a924-a07eb720ca49",
+          "title": "Krimi & True Crime",
+          "imageTitle": "Krimi & True Crime"
+        },
+        {
+          "id": "4c833723-5da6-4611-83db-7f765e5ca4ba",
+          "vendor": "SRF",
+          "transmission": "RADIO",
+          "urn": "urn:srf:topic:radio:4c833723-5da6-4611-83db-7f765e5ca4ba",
+          "title": "Menschen & Gesellschaft",
+          "imageTitle": "Menschen & Gesellschaft"
+        }
+      ],
+      "allowIndexing": true
+    },
+    {
+      "id": "69028522-5372-42a3-96ea-a0366ddc927c",
+      "vendor": "SRF",
+      "transmission": "RADIO",
+      "urn": "urn:srf:show:radio:69028522-5372-42a3-96ea-a0366ddc927c",
+      "title": "Ein Wort aus der Bibel",
+      "lead": "Das vorgelesene Wort aus der Bibel.",
+      "description": "Ausgewählte Textlesungen aus der Bibel, auch aus neuen Bibelübersetzungen, Hörbuchproduktionen.",
+      "imageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/7471c6fef6cc460496530b33c708c23f.jpg",
+      "imageTitle": "Ein Wort aus der Bibel",
+      "bannerImageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/7471c6fef6cc460496530b33c708c23f.jpg",
+      "posterImageUrl": "https://il.srgssr.ch/image-service/dynamic/fd38969.jpg",
+      "posterImageIsFallbackUrl": true,
+      "podcastImageUrl": "https://download-media.srf.ch/world/image/audio/2019/10/2aa4fbdcecc1443da4835bce7e8595e1.jpg",
+      "podcastImageIsFallbackUrl": false,
+      "primaryChannelId": "c8537421-c9c5-4461-9c9c-c15816458b46",
+      "primaryChannelUrn": "urn:srf:channel:radio:c8537421-c9c5-4461-9c9c-c15816458b46",
+      "numberOfEpisodes": 957,
+      "topicList": [
+        {
+          "id": "802ebf51-12a6-46bc-8671-aa8589a9ef6f",
+          "vendor": "SRF",
+          "transmission": "RADIO",
+          "urn": "urn:srf:topic:radio:802ebf51-12a6-46bc-8671-aa8589a9ef6f",
+          "title": "Kultur & Religion",
+          "imageTitle": "Kultur & Religion"
+        }
+      ],
+      "allowIndexing": true
+    }
+  ]
+}

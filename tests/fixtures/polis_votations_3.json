@@ -1,0 +1,5014 @@
+{
+  "Items": [
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Case, tpc.eMedia.PolisV2.Business",
+      "Title": "Urnengang vom 24.11.2024",
+      "EventDate": "/Date(1732402800000-0000)/",
+      "EventDateSpecified": true,
+      "id": "1627",
+      "active": false
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732465116000-0000)/",
+              "Location": {
+                "ParentLocationID": "5789",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Bern",
+                "ShortName": "Bern",
+                "id": "3233",
+                "locationNumber": "351"
+              },
+              "Absolute": {
+                "Yes": "29461",
+                "No": "15496"
+              },
+              "Relative": {
+                "Yes": "65.5",
+                "No": "34.5",
+                "Participation": "57.0"
+              },
+              "id": "247394"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Genehmigung Budget 2025",
+      "IndividualTitle": "Budget 2025",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "5789",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Bern",
+        "ShortName": "Bern",
+        "id": "3233",
+        "locationNumber": "351"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5097"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732462846000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "87305",
+                "No": "26823"
+              },
+              "Relative": {
+                "Yes": "76.5",
+                "No": "23.5",
+                "Participation": "50.6"
+              },
+              "id": "247168"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Ersatzneubau Rathhausbrücke",
+      "IndividualTitle": "Rathausbrücke",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5103"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732449894000-0000)/",
+              "Location": {
+                "ParentLocationID": "5918",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Davos",
+                "ShortName": "Davos",
+                "id": "4484",
+                "locationNumber": "3851"
+              },
+              "Absolute": {
+                "Yes": "1363",
+                "No": "1707"
+              },
+              "Relative": {
+                "Yes": "44.4",
+                "No": "55.6"
+              },
+              "id": "244023"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Ergänzungsbau des Kirchner Museums",
+      "IndividualTitle": "Kirchner Museum",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "5918",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Davos",
+        "ShortName": "Davos",
+        "id": "4484",
+        "locationNumber": "3851"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5104"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732452387000-0000)/",
+              "Location": {
+                "ParentLocationID": "5833",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Thundorf",
+                "ShortName": "Thundorf",
+                "id": "4793",
+                "locationNumber": "4611"
+              },
+              "Absolute": {
+                "Yes": "412",
+                "No": "436"
+              },
+              "Relative": {
+                "Yes": "48.6",
+                "No": "51.4"
+              },
+              "id": "245105"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Revision der Rahmennutzungsplanung",
+      "IndividualTitle": "Baureglement und Zonenplan",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "5833",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Thundorf",
+        "ShortName": "Thundorf",
+        "id": "4793",
+        "locationNumber": "4611"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5105"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732452407000-0000)/",
+              "Location": {
+                "ParentLocationID": "5833",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Thundorf",
+                "ShortName": "Thundorf",
+                "id": "4793",
+                "locationNumber": "4611"
+              },
+              "Absolute": {
+                "Yes": "320",
+                "No": "544"
+              },
+              "Relative": {
+                "Yes": "37.0",
+                "No": "63.0"
+              },
+              "id": "245133"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Teilzonenplanänderung Windenergie",
+      "IndividualTitle": "Errichtung von drei Windenergieanlagen",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "5833",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Thundorf",
+        "ShortName": "Thundorf",
+        "id": "4793",
+        "locationNumber": "4611"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5106"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732459666000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "27376",
+                "No": "6834"
+              },
+              "Relative": {
+                "Yes": "80.0",
+                "No": "20.0"
+              },
+              "id": "246815"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Verpflichtungskredit von 4.75 Millionen Franken jährlich wiederkehrend",
+      "IndividualTitle": "Übernahme Museumspersonal durch den Kunstverein",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5113"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732459683000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "21642",
+                "No": "13229"
+              },
+              "Relative": {
+                "Yes": "62.1",
+                "No": "37.9"
+              },
+              "id": "246816"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Verpflichtungskredit von 2.9 Millionen Franken jährlich wiederkehrend",
+      "IndividualTitle": "Zweites öffentliches Hallenbad: Betriebsbeitrag und Miete ",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5114"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455501000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "21460",
+                "No": "9922"
+              },
+              "Relative": {
+                "Yes": "68.4",
+                "No": "31.6",
+                "Participation": "64.0"
+              },
+              "id": "246316"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455759000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Oberklettgau",
+                "ShortName": "Oberklettgau",
+                "id": "283",
+                "locationNumber": "1401"
+              },
+              "Absolute": {
+                "Yes": "1442",
+                "No": "646"
+              },
+              "Relative": {
+                "Yes": "69.1",
+                "No": "30.9",
+                "Participation": "66.3"
+              },
+              "id": "246509"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455760000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Reiat",
+                "ShortName": "Reiat",
+                "id": "284",
+                "locationNumber": "1402"
+              },
+              "Absolute": {
+                "Yes": "2587",
+                "No": "1207"
+              },
+              "Relative": {
+                "Yes": "68.2",
+                "No": "31.8",
+                "Participation": "69.7"
+              },
+              "id": "246510"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Zusatzkredit neues Polizei- und Sicherheitszentrum",
+      "IndividualTitle": "Zusätzliches Stockwerk für neues Polizei- und Sicherheitszentrum",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259653",
+      "id": "5125"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452819000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "St. Gallen",
+                "ShortName": "SG",
+                "id": "21",
+                "locationNumber": "17"
+              },
+              "Absolute": {
+                "Yes": "115504",
+                "No": "22361"
+              },
+              "Relative": {
+                "Yes": "83.8",
+                "No": "16.2",
+                "Participation": "43.9"
+              },
+              "id": "245742"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451595000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rheintal",
+                "ShortName": "Rheintal",
+                "id": "295",
+                "locationNumber": "1723"
+              },
+              "Absolute": {
+                "Yes": "14363",
+                "No": "3136"
+              },
+              "Relative": {
+                "Yes": "82.1",
+                "No": "17.9",
+                "Participation": "40.1"
+              },
+              "id": "244848"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451595000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rorschach",
+                "ShortName": "Rorschach",
+                "id": "294",
+                "locationNumber": "1722"
+              },
+              "Absolute": {
+                "Yes": "9369",
+                "No": "1680"
+              },
+              "Relative": {
+                "Yes": "84.8",
+                "No": "15.2",
+                "Participation": "42.8"
+              },
+              "id": "244847"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Nachtrag zum Sozialhilfegesetz",
+      "IndividualTitle": "Förderung und Finanzierung von Spezialpflegeangeboten",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "St. Gallen",
+        "ShortName": "SG",
+        "id": "21",
+        "locationNumber": "17"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259550",
+      "id": "5127"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452820000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "St. Gallen",
+                "ShortName": "SG",
+                "id": "21",
+                "locationNumber": "17"
+              },
+              "Absolute": {
+                "Yes": "123057",
+                "No": "16049"
+              },
+              "Relative": {
+                "Yes": "88.5",
+                "No": "11.5",
+                "Participation": "44.0"
+              },
+              "id": "245753"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451596000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rheintal",
+                "ShortName": "Rheintal",
+                "id": "295",
+                "locationNumber": "1723"
+              },
+              "Absolute": {
+                "Yes": "15425",
+                "No": "2248"
+              },
+              "Relative": {
+                "Yes": "87.3",
+                "No": "12.7",
+                "Participation": "40.3"
+              },
+              "id": "244864"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451596000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rorschach",
+                "ShortName": "Rorschach",
+                "id": "294",
+                "locationNumber": "1722"
+              },
+              "Absolute": {
+                "Yes": "9907",
+                "No": "1196"
+              },
+              "Relative": {
+                "Yes": "89.2",
+                "No": "10.8",
+                "Participation": "42.8"
+              },
+              "id": "244863"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Einführungsgesetz zum BG über die Förderung der Pflegeausbildung",
+      "IndividualTitle": "Umsetzung Pflegeinitiative",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "St. Gallen",
+        "ShortName": "SG",
+        "id": "21",
+        "locationNumber": "17"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259551",
+      "id": "5128"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452820000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "St. Gallen",
+                "ShortName": "SG",
+                "id": "21",
+                "locationNumber": "17"
+              },
+              "Absolute": {
+                "Yes": "70692",
+                "No": "68377"
+              },
+              "Relative": {
+                "Yes": "50.8",
+                "No": "49.2",
+                "Participation": "44.1"
+              },
+              "id": "245764"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451596000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rheintal",
+                "ShortName": "Rheintal",
+                "id": "295",
+                "locationNumber": "1723"
+              },
+              "Absolute": {
+                "Yes": "9927",
+                "No": "7742"
+              },
+              "Relative": {
+                "Yes": "56.2",
+                "No": "43.8",
+                "Participation": "40.4"
+              },
+              "id": "244880"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732451596000-0000)/",
+              "Location": {
+                "ParentLocationID": "21",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Rorschach",
+                "ShortName": "Rorschach",
+                "id": "294",
+                "locationNumber": "1722"
+              },
+              "Absolute": {
+                "Yes": "5535",
+                "No": "5588"
+              },
+              "Relative": {
+                "Yes": "49.8",
+                "No": "50.2",
+                "Participation": "43.0"
+              },
+              "id": "244879"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Erhöhung des Fahrkostenabzugs im Steuergesetz",
+      "IndividualTitle": "Erhöhung des Steuerabzugs für Fahrkosten",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "St. Gallen",
+        "ShortName": "SG",
+        "id": "21",
+        "locationNumber": "17"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259552",
+      "id": "5129"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452391000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Neuenburg",
+                "ShortName": "NE",
+                "id": "16",
+                "locationNumber": "24"
+              },
+              "Absolute": {
+                "Yes": "40817",
+                "No": "3789"
+              },
+              "Relative": {
+                "Yes": "91.5",
+                "No": "8.5",
+                "Participation": "32.8"
+              },
+              "id": "245130"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452391000-0000)/",
+              "Location": {
+                "ParentLocationID": "16",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Canton de Neuchâtel",
+                "ShortName": "Cant. de Neuchâtel",
+                "id": "6774",
+                "locationNumber": "2400"
+              },
+              "Absolute": {
+                "Yes": "40817",
+                "No": "3789"
+              },
+              "Relative": {
+                "Yes": "91.5",
+                "No": "8.5",
+                "Participation": "32.8"
+              },
+              "id": "245131"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732451664000-0000)/",
+              "Location": {
+                "ParentLocationID": "6774",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Boudry",
+                "ShortName": "Boudry",
+                "id": "5579",
+                "locationNumber": "6404"
+              },
+              "Absolute": {
+                "Yes": "1300",
+                "No": "117"
+              },
+              "Relative": {
+                "Yes": "91.7",
+                "No": "8.3",
+                "Participation": "30.7"
+              },
+              "id": "244916"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Verfassungsänderung für ein Recht auf digitale Unversehrtheit",
+      "IndividualTitle": "Recht auf digitale Unversehrtheit",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Neuenburg",
+        "ShortName": "NE",
+        "id": "16",
+        "locationNumber": "24"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259732",
+      "id": "5132"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732454595000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Jura",
+                "ShortName": "JU",
+                "id": "14",
+                "locationNumber": "26"
+              },
+              "Absolute": {
+                "Yes": "17074",
+                "No": "3795"
+              },
+              "Relative": {
+                "Yes": "81.8",
+                "No": "18.2",
+                "Participation": "39.0"
+              },
+              "id": "246293"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453517000-0000)/",
+              "Location": {
+                "ParentLocationID": "14",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "District de Delémont",
+                "ShortName": "Delémont",
+                "id": "378",
+                "locationNumber": "2601"
+              },
+              "Absolute": {
+                "Yes": "8614",
+                "No": "1564"
+              },
+              "Relative": {
+                "Yes": "84.6",
+                "No": "15.4",
+                "Participation": "38.1"
+              },
+              "id": "245816"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732454737000-0000)/",
+              "Location": {
+                "ParentLocationID": "14",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "District de Porrentruy",
+                "ShortName": "Porrentruy",
+                "id": "380",
+                "locationNumber": "2603"
+              },
+              "Absolute": {
+                "Yes": "5573",
+                "No": "1733"
+              },
+              "Relative": {
+                "Yes": "76.3",
+                "No": "23.7",
+                "Participation": "39.3"
+              },
+              "id": "246295"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Verfassungsänderung für einen Bezirk Moutier",
+      "IndividualTitle": "Einführung Bezirk Moutier",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Jura",
+        "ShortName": "JU",
+        "id": "14",
+        "locationNumber": "26"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "259729",
+      "id": "5136"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732455896000-0000)/",
+              "Location": {
+                "ParentLocationID": "377",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Genf",
+                "ShortName": "Genf",
+                "id": "5658",
+                "locationNumber": "6621"
+              },
+              "Absolute": {
+                "Yes": "23867",
+                "No": "27924"
+              },
+              "Relative": {
+                "Yes": "46.1",
+                "No": "53.9",
+                "Participation": "41.8"
+              },
+              "id": "246573"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Kredit von 54'602'000 Franken für den Bau der Mont-Blanc-Passerelle",
+      "IndividualTitle": "Bau der Mont-Blanc-Fussgängerbrücke",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "377",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Genf",
+        "ShortName": "Genf",
+        "id": "5658",
+        "locationNumber": "6621"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5138"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732457097000-0000)/",
+              "Location": {
+                "ParentLocationID": "274",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Olten",
+                "ShortName": "Olten",
+                "id": "4071",
+                "locationNumber": "2581"
+              },
+              "Absolute": {
+                "Yes": "3656",
+                "No": "1535"
+              },
+              "Relative": {
+                "Yes": "70.4",
+                "No": "29.6"
+              },
+              "id": "246774"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Sanierung Garderobengebäude und Restaurant Badi Olten",
+      "IndividualTitle": "Sanierung Garderobengebäude und Restaurant Badi Olten",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "274",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Olten",
+        "ShortName": "Olten",
+        "id": "4071",
+        "locationNumber": "2581"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5139"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1764599458000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {
+                "Yes": "1181557",
+                "No": "1316500"
+              },
+              "Relative": {
+                "Yes": "47.3",
+                "No": "52.7",
+                "Participation": "45.1"
+              },
+              "id": "247245"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1764665893000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              "Absolute": {
+                "Yes": "98756",
+                "No": "83243"
+              },
+              "Relative": {
+                "Yes": "54.3",
+                "No": "45.7",
+                "Participation": "41.1"
+              },
+              "id": "244338"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452170000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Appenzell Ausserrhoden",
+                "ShortName": "AR",
+                "id": "4",
+                "locationNumber": "15"
+              },
+              "Absolute": {
+                "Yes": "9851",
+                "No": "8382"
+              },
+              "Relative": {
+                "Yes": "54.0",
+                "No": "46.0",
+                "Participation": "47.1"
+              },
+              "id": "244970"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item4",
+                "Value": "Hochrechnung 1"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732463878000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {
+                "Yes": "47.3",
+                "No": "52.7"
+              },
+              "id": "240829"
+            }
+          ],
+          "dataConditionID": "Item4",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item6",
+                "Value": "Trend"
+              },
+              "LastUpdate": "/Date(1732445773000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {},
+              "Trend": {
+                "id": "1",
+                "Text": [
+                  "Kein Trend"
+                ]
+              },
+              "id": "237102"
+            }
+          ],
+          "dataConditionID": "Item6",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Ausbauschritt 2023 für die Nationalstrassen",
+      "IndividualTitle": "Ausbau Autobahnen",
+      "ShortName": "",
+      "VotationLocation": {
+        "LocationType": {
+          "id": "1",
+          "Value": "Land"
+        },
+        "LocationName": "Schweiz",
+        "ShortName": "CH",
+        "id": "1",
+        "locationNumber": "0"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "6730",
+      "id": "5093"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732730560000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {
+                "Yes": "1196640",
+                "No": "1274814"
+              },
+              "Relative": {
+                "Yes": "48.4",
+                "No": "51.6",
+                "Participation": "44.9"
+              },
+              "id": "247395"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732450536000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              "Absolute": {
+                "Yes": "96552",
+                "No": "82772"
+              },
+              "Relative": {
+                "Yes": "53.8",
+                "No": "46.2",
+                "Participation": "40.8"
+              },
+              "id": "244367"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452173000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Appenzell Ausserrhoden",
+                "ShortName": "AR",
+                "id": "4",
+                "locationNumber": "15"
+              },
+              "Absolute": {
+                "Yes": "10095",
+                "No": "7778"
+              },
+              "Relative": {
+                "Yes": "56.5",
+                "No": "43.5",
+                "Participation": "46.5"
+              },
+              "id": "244994"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item4",
+                "Value": "Hochrechnung 1"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732463892000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {
+                "Yes": "48.4",
+                "No": "51.6"
+              },
+              "id": "240830"
+            }
+          ],
+          "dataConditionID": "Item4",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item6",
+                "Value": "Trend"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732445774000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {},
+              "Trend": {
+                "id": "5",
+                "Text": [
+                  "Ja"
+                ]
+              },
+              "id": "237104"
+            }
+          ],
+          "dataConditionID": "Item6",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Obligationenrechts",
+      "IndividualTitle": "Mietrecht Untermiete",
+      "ShortName": "",
+      "VotationLocation": {
+        "LocationType": {
+          "id": "1",
+          "Value": "Land"
+        },
+        "LocationName": "Schweiz",
+        "ShortName": "CH",
+        "id": "1",
+        "locationNumber": "0"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "6740",
+      "id": "5094"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732730567000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {
+                "Yes": "1141741",
+                "No": "1331128"
+              },
+              "Relative": {
+                "Yes": "46.2",
+                "No": "53.8",
+                "Participation": "44.9"
+              },
+              "id": "247398"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732450576000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              "Absolute": {
+                "Yes": "91911",
+                "No": "87455"
+              },
+              "Relative": {
+                "Yes": "51.2",
+                "No": "48.8",
+                "Participation": "40.8"
+              },
+              "id": "244369"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452176000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Appenzell Ausserrhoden",
+                "ShortName": "AR",
+                "id": "4",
+                "locationNumber": "15"
+              },
+              "Absolute": {
+                "Yes": "9920",
+                "No": "7946"
+              },
+              "Relative": {
+                "Yes": "55.5",
+                "No": "44.5",
+                "Participation": "46.5"
+              },
+              "id": "245018"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item4",
+                "Value": "Hochrechnung 1"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732463902000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {
+                "Yes": "46.2",
+                "No": "53.8"
+              },
+              "id": "240831"
+            }
+          ],
+          "dataConditionID": "Item4",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item6",
+                "Value": "Trend"
+              },
+              "LastUpdate": "/Date(1732445775000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {},
+              "Trend": {
+                "id": "1",
+                "Text": [
+                  "Kein Trend"
+                ]
+              },
+              "id": "237103"
+            }
+          ],
+          "dataConditionID": "Item6",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Obligationenrechts",
+      "IndividualTitle": "Mietrecht Eigenbedarf",
+      "ShortName": "",
+      "VotationLocation": {
+        "LocationType": {
+          "id": "1",
+          "Value": "Land"
+        },
+        "LocationName": "Schweiz",
+        "ShortName": "CH",
+        "id": "1",
+        "locationNumber": "0"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "6750",
+      "id": "5095"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1784109506000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {
+                "Yes": "1302528",
+                "No": "1140791"
+              },
+              "Relative": {
+                "Yes": "53.3",
+                "No": "46.7",
+                "Participation": "44.9"
+              },
+              "id": "247472"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732450594000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              "Absolute": {
+                "Yes": "107475",
+                "No": "70859"
+              },
+              "Relative": {
+                "Yes": "60.3",
+                "No": "39.7",
+                "Participation": "40.8"
+              },
+              "id": "244394"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732452182000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Appenzell Ausserrhoden",
+                "ShortName": "AR",
+                "id": "4",
+                "locationNumber": "15"
+              },
+              "Absolute": {
+                "Yes": "11094",
+                "No": "6699"
+              },
+              "Relative": {
+                "Yes": "62.4",
+                "No": "37.6",
+                "Participation": "46.4"
+              },
+              "id": "245042"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item4",
+                "Value": "Hochrechnung 1"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732463917000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {
+                "Yes": "53.3",
+                "No": "46.7"
+              },
+              "id": "240832"
+            }
+          ],
+          "dataConditionID": "Item4",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item6",
+                "Value": "Trend"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732445776000-0000)/",
+              "Location": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "Absolute": {},
+              "Relative": {},
+              "Trend": {
+                "id": "5",
+                "Text": [
+                  "Ja"
+                ]
+              },
+              "id": "237105"
+            }
+          ],
+          "dataConditionID": "Item6",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Bundesgesetzes über die Krankenversicherung (KVG)",
+      "IndividualTitle": "Einheitliche Finanzierung Gesundheitswesen",
+      "ShortName": "",
+      "VotationLocation": {
+        "LocationType": {
+          "id": "1",
+          "Value": "Land"
+        },
+        "LocationName": "Schweiz",
+        "ShortName": "CH",
+        "id": "1",
+        "locationNumber": "0"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "6760",
+      "id": "5096"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732462753000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "72587",
+                "No": "40205"
+              },
+              "Relative": {
+                "Yes": "64.4",
+                "No": "35.6",
+                "Participation": "50.3"
+              },
+              "id": "247166"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "UBS-Hochhaus in Altstetten",
+      "IndividualTitle": "Privater Gestaltungsplan «Areal VZA1»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "0",
+      "id": "5101"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732462802000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "68993",
+                "No": "41460"
+              },
+              "Relative": {
+                "Yes": "62.5",
+                "No": "37.5",
+                "Participation": "50.1"
+              },
+              "id": "247167"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Personalrechts",
+      "IndividualTitle": "Abgangsleistungen für Behördenmitglieder",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "0",
+      "id": "5102"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732449134000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Luzern",
+                "ShortName": "LU",
+                "id": "15",
+                "locationNumber": "3"
+              },
+              "Absolute": {
+                "Yes": "84043",
+                "No": "38631"
+              },
+              "Relative": {
+                "Yes": "68.5",
+                "No": "31.5",
+                "Participation": "44.5"
+              },
+              "id": "243309"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732447018000-0000)/",
+              "Location": {
+                "ParentLocationID": "15",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Entlebuch",
+                "ShortName": "Entlebuch",
+                "id": "5858",
+                "locationNumber": "316"
+              },
+              "Absolute": {
+                "Yes": "4249",
+                "No": "2931"
+              },
+              "Relative": {
+                "Yes": "59.2",
+                "No": "40.8",
+                "Participation": "42.7"
+              },
+              "id": "241420"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732447907000-0000)/",
+              "Location": {
+                "ParentLocationID": "15",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Wahlkreis Hochdorf",
+                "ShortName": "Hochdorf",
+                "id": "5860",
+                "locationNumber": "313"
+              },
+              "Absolute": {
+                "Yes": "12371",
+                "No": "6967"
+              },
+              "Relative": {
+                "Yes": "64.0",
+                "No": "36.0",
+                "Participation": "42.0"
+              },
+              "id": "242514"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Planungs- und Baugesetzes",
+      "IndividualTitle": "Schnellerer Ausbau erneuerbare Energien",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Luzern",
+        "ShortName": "LU",
+        "id": "15",
+        "locationNumber": "3"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259643",
+      "id": "5116"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453816000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Obwalden",
+                "ShortName": "OW",
+                "id": "18",
+                "locationNumber": "6"
+              },
+              "Absolute": {
+                "Yes": "6256",
+                "No": "4969"
+              },
+              "Relative": {
+                "Yes": "55.7",
+                "No": "44.3",
+                "Participation": "43.0"
+              },
+              "id": "245938"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453737000-0000)/",
+              "Location": {
+                "ParentLocationID": "18",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Obwalden",
+                "ShortName": "Kt. Obwalden",
+                "id": "256",
+                "locationNumber": "600"
+              },
+              "Absolute": {
+                "Yes": "6256",
+                "No": "4969"
+              },
+              "Relative": {
+                "Yes": "55.7",
+                "No": "44.3",
+                "Participation": "43.0"
+              },
+              "id": "245939"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732450849000-0000)/",
+              "Location": {
+                "ParentLocationID": "256",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Alpnach",
+                "ShortName": "Alpnach",
+                "id": "3741",
+                "locationNumber": "1401"
+              },
+              "Absolute": {
+                "Yes": "963",
+                "No": "732"
+              },
+              "Relative": {
+                "Yes": "56.8",
+                "No": "43.2",
+                "Participation": "40.7"
+              },
+              "id": "244535"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Nachtrag zum Schätzungs- und Grundpfandgesetz",
+      "IndividualTitle": "Höhere Besteuerung von Liegenschaften",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 0.5,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Obwalden",
+        "ShortName": "OW",
+        "id": "18",
+        "locationNumber": "6"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259228",
+      "id": "5118"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453382000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Zug",
+                "ShortName": "ZG",
+                "id": "28",
+                "locationNumber": "9"
+              },
+              "Absolute": {
+                "Yes": "28397",
+                "No": "10633"
+              },
+              "Relative": {
+                "Yes": "72.8",
+                "No": "27.2",
+                "Participation": "51.2"
+              },
+              "id": "245779"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453382000-0000)/",
+              "Location": {
+                "ParentLocationID": "28",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Zug",
+                "ShortName": "Kt. Zug",
+                "id": "259",
+                "locationNumber": "900"
+              },
+              "Absolute": {
+                "Yes": "28397",
+                "No": "10633"
+              },
+              "Relative": {
+                "Yes": "72.8",
+                "No": "27.2",
+                "Participation": "51.2"
+              },
+              "id": "245780"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732453382000-0000)/",
+              "Location": {
+                "ParentLocationID": "259",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Baar",
+                "ShortName": "Baar",
+                "id": "3786",
+                "locationNumber": "1701"
+              },
+              "Absolute": {
+                "Yes": "5128",
+                "No": "1828"
+              },
+              "Relative": {
+                "Yes": "73.7",
+                "No": "26.3",
+                "Participation": "48.9"
+              },
+              "id": "245781"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Teilrevision des Waldgesetzes",
+      "IndividualTitle": "Waldgesetz",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Zug",
+        "ShortName": "ZG",
+        "id": "28",
+        "locationNumber": "9"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259802",
+      "id": "5119"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732467817000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "38186",
+                "No": "19172"
+              },
+              "Relative": {
+                "Yes": "66.6",
+                "No": "33.4",
+                "Participation": "57.2"
+              },
+              "id": "247473"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732517951000-0000)/",
+              "Location": {
+                "ParentLocationID": "8",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Basel-Stadt",
+                "ShortName": "Kt. Basel-Stadt",
+                "id": "277",
+                "locationNumber": "1200"
+              },
+              "Absolute": {
+                "Yes": "38186",
+                "No": "19172"
+              },
+              "Relative": {
+                "Yes": "66.6",
+                "No": "33.4",
+                "Participation": "57.1"
+              },
+              "id": "247515"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732517951000-0000)/",
+              "Location": {
+                "ParentLocationID": "277",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Basel",
+                "ShortName": "Basel",
+                "id": "4090",
+                "locationNumber": "2701"
+              },
+              "Absolute": {
+                "Yes": "32977",
+                "No": "15884"
+              },
+              "Relative": {
+                "Yes": "67.5",
+                "No": "32.5",
+                "Participation": "56.3"
+              },
+              "id": "247516"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item7",
+                "Value": "Zwischenresultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455421000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "36489",
+                "No": "18462"
+              },
+              "Relative": {
+                "Yes": "66.4",
+                "No": "33.6"
+              },
+              "id": "246312"
+            }
+          ],
+          "dataConditionID": "Item7",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Ausgabenbewilligung für die Durchführung des Eurovision Song Contest (ESC) 2025",
+      "IndividualTitle": "Eurovision Song Contest",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 0.5,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Basel-Stadt",
+        "ShortName": "BS",
+        "id": "8",
+        "locationNumber": "12"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259697",
+      "id": "5122"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732451623000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Wallis",
+                "ShortName": "VS",
+                "id": "27",
+                "locationNumber": "23"
+              },
+              "Absolute": {
+                "Yes": "41212",
+                "No": "52099"
+              },
+              "Relative": {
+                "Yes": "44.2",
+                "No": "55.8",
+                "Participation": "42.1"
+              },
+              "id": "244895"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732448264000-0000)/",
+              "Location": {
+                "ParentLocationID": "27",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Brig",
+                "ShortName": "Brig",
+                "id": "358",
+                "locationNumber": "2301"
+              },
+              "Absolute": {
+                "Yes": "3023",
+                "No": "5167"
+              },
+              "Relative": {
+                "Yes": "36.9",
+                "No": "63.1",
+                "Participation": "43.2"
+              },
+              "id": "242880"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732446459000-0000)/",
+              "Location": {
+                "ParentLocationID": "27",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Goms",
+                "ShortName": "Goms",
+                "id": "361",
+                "locationNumber": "2304"
+              },
+              "Absolute": {
+                "Yes": "470",
+                "No": "932"
+              },
+              "Relative": {
+                "Yes": "33.5",
+                "No": "66.5",
+                "Participation": "43.8"
+              },
+              "id": "240133"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Kantonales Klimagesetz (KlimG)",
+      "IndividualTitle": "Klimagesetz",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Wallis",
+        "ShortName": "VS",
+        "id": "27",
+        "locationNumber": "23"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259735",
+      "id": "5131"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732458932000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Genf",
+                "ShortName": "GE",
+                "id": "11",
+                "locationNumber": "25"
+              },
+              "Absolute": {
+                "Yes": "45265",
+                "No": "75410"
+              },
+              "Relative": {
+                "Yes": "37.5",
+                "No": "62.5",
+                "Participation": "46.8"
+              },
+              "id": "246782"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732726949000-0000)/",
+              "Location": {
+                "ParentLocationID": "11",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Canton de Genève",
+                "ShortName": "Cant. de Genève",
+                "id": "377",
+                "locationNumber": "2500"
+              },
+              "Absolute": {
+                "Yes": "42653",
+                "No": "70850"
+              },
+              "Relative": {
+                "Yes": "37.6",
+                "No": "62.4",
+                "Participation": "50.2"
+              },
+              "id": "247006"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732459894000-0000)/",
+              "Location": {
+                "ParentLocationID": "377",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Aire-la-Ville",
+                "ShortName": "Aire-la-Ville",
+                "id": "5638",
+                "locationNumber": "6601"
+              },
+              "Absolute": {
+                "Yes": "221",
+                "No": "208"
+              },
+              "Relative": {
+                "Yes": "51.5",
+                "No": "48.5",
+                "Participation": "60.8"
+              },
+              "id": "247008"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Gesetzes über die Entwicklungszonen (LGZD)",
+      "IndividualTitle": "Gesetz über die Entwicklungszonen (LGZD)",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Genf",
+        "ShortName": "GE",
+        "id": "11",
+        "locationNumber": "25"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259724",
+      "id": "5133"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732458988000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Genf",
+                "ShortName": "GE",
+                "id": "11",
+                "locationNumber": "25"
+              },
+              "Absolute": {
+                "Yes": "77471",
+                "No": "49199"
+              },
+              "Relative": {
+                "Yes": "61.2",
+                "No": "38.8",
+                "Participation": "46.8"
+              },
+              "id": "246783"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732726949000-0000)/",
+              "Location": {
+                "ParentLocationID": "11",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Canton de Genève",
+                "ShortName": "Cant. de Genève",
+                "id": "377",
+                "locationNumber": "2500"
+              },
+              "Absolute": {
+                "Yes": "73248",
+                "No": "45977"
+              },
+              "Relative": {
+                "Yes": "61.4",
+                "No": "38.6",
+                "Participation": "50.2"
+              },
+              "id": "247053"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732459897000-0000)/",
+              "Location": {
+                "ParentLocationID": "377",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Aire-la-Ville",
+                "ShortName": "Aire-la-Ville",
+                "id": "5638",
+                "locationNumber": "6601"
+              },
+              "Absolute": {
+                "Yes": "340",
+                "No": "112"
+              },
+              "Relative": {
+                "Yes": "75.2",
+                "No": "24.8",
+                "Participation": "60.8"
+              },
+              "id": "247055"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Gesetzes über die Besteuerung natürlicher Personen",
+      "IndividualTitle": "Senkung der Einkommenssteuer",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Genf",
+        "ShortName": "GE",
+        "id": "11",
+        "locationNumber": "25"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259725",
+      "id": "5134"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459030000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Genf",
+                "ShortName": "GE",
+                "id": "11",
+                "locationNumber": "25"
+              },
+              "Absolute": {
+                "Yes": "38464",
+                "No": "88147"
+              },
+              "Relative": {
+                "Yes": "30.4",
+                "No": "69.6",
+                "Participation": "46.8"
+              },
+              "id": "246784"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732726950000-0000)/",
+              "Location": {
+                "ParentLocationID": "11",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Canton de Genève",
+                "ShortName": "Cant. de Genève",
+                "id": "377",
+                "locationNumber": "2500"
+              },
+              "Absolute": {
+                "Yes": "36011",
+                "No": "83138"
+              },
+              "Relative": {
+                "Yes": "30.2",
+                "No": "69.8",
+                "Participation": "50.2"
+              },
+              "id": "247100"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459900000-0000)/",
+              "Location": {
+                "ParentLocationID": "377",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Aire-la-Ville",
+                "ShortName": "Aire-la-Ville",
+                "id": "5638",
+                "locationNumber": "6601"
+              },
+              "Absolute": {
+                "Yes": "182",
+                "No": "274"
+              },
+              "Relative": {
+                "Yes": "39.9",
+                "No": "60.1",
+                "Participation": "60.8"
+              },
+              "id": "247102"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Mehr Autonomie für die TPG in Bezug auf die Preisgestaltung",
+      "IndividualTitle": "Neue Zuständigkeit ÖV-Tarife",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Genf",
+        "ShortName": "GE",
+        "id": "11",
+        "locationNumber": "25"
+      },
+      "VoteType": {
+        "Name": "Fakultatives Referendum",
+        "ScoreMore": false,
+        "ShortName": "F",
+        "id": "2"
+      },
+      "adminid": "259726",
+      "id": "5135"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732462701000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "50309",
+                "No": "67403"
+              },
+              "Relative": {
+                "Yes": "42.7",
+                "No": "57.3",
+                "Participation": "51.1"
+              },
+              "id": "247163"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Volksinitiative «Tschüss Genderstern!»",
+      "IndividualTitle": "Volksinitiative «Tschüss Genderstern!»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "0",
+      "id": "5100"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459495000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "14390",
+                "No": "20551"
+              },
+              "Relative": {
+                "Yes": "41.2",
+                "No": "58.8"
+              },
+              "id": "246809"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Städtische Volksinitiative «Wohnen für alle» (4A)",
+      "IndividualTitle": "Volksinitiative «Wohnen für alle» (4A)",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "0",
+      "id": "5107"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459700000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "14390",
+                "No": "20551"
+              },
+              "Relative": {
+                "Yes": "41.2",
+                "No": "58.8"
+              },
+              "id": "246817"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Städtische Volksinitiative «Ja zur freien und günstigen Stromwahl»",
+      "IndividualTitle": "Volksinitiative «Ja zur freien und günstigen Stromwahl»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "0",
+      "id": "5115"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732451544000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Uri",
+                "ShortName": "UR",
+                "id": "25",
+                "locationNumber": "4"
+              },
+              "Absolute": {
+                "Yes": "4677",
+                "No": "9253"
+              },
+              "Relative": {
+                "Yes": "33.6",
+                "No": "66.4",
+                "Participation": "50.8"
+              },
+              "id": "244782"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732453668000-0000)/",
+              "Location": {
+                "ParentLocationID": "25",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Uri",
+                "ShortName": "Kt. Uri",
+                "id": "249",
+                "locationNumber": "400"
+              },
+              "Absolute": {
+                "Yes": "4677",
+                "No": "9253"
+              },
+              "Relative": {
+                "Yes": "33.6",
+                "No": "66.4",
+                "Participation": "52.8"
+              },
+              "id": "245906"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732453668000-0000)/",
+              "Location": {
+                "ParentLocationID": "249",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Altdorf (UR)",
+                "ShortName": "Altdorf (UR)",
+                "id": "3691",
+                "locationNumber": "1201"
+              },
+              "Absolute": {
+                "Yes": "1344",
+                "No": "2391"
+              },
+              "Relative": {
+                "Yes": "36.0",
+                "No": "64.0",
+                "Participation": "53.6"
+              },
+              "id": "245907"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Volksinitiative «Isleten für alle»",
+      "IndividualTitle": "Stopp des Hotelprojekts an der Isleten am Urnersee",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Uri",
+        "ShortName": "UR",
+        "id": "25",
+        "locationNumber": "4"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "259756",
+      "id": "5117"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732467934000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "20238",
+                "No": "36546"
+              },
+              "Relative": {
+                "Yes": "35.6",
+                "No": "64.4",
+                "Participation": "57.2"
+              },
+              "id": "247476"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732517950000-0000)/",
+              "Location": {
+                "ParentLocationID": "8",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Basel-Stadt",
+                "ShortName": "Kt. Basel-Stadt",
+                "id": "277",
+                "locationNumber": "1200"
+              },
+              "Absolute": {
+                "Yes": "20238",
+                "No": "36546"
+              },
+              "Relative": {
+                "Yes": "35.6",
+                "No": "64.4",
+                "Participation": "57.1"
+              },
+              "id": "247507"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732517950000-0000)/",
+              "Location": {
+                "ParentLocationID": "277",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Basel",
+                "ShortName": "Basel",
+                "id": "4090",
+                "locationNumber": "2701"
+              },
+              "Absolute": {
+                "Yes": "18326",
+                "No": "30085"
+              },
+              "Relative": {
+                "Yes": "37.9",
+                "No": "62.1",
+                "Participation": "56.3"
+              },
+              "id": "247508"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item7",
+                "Value": "Zwischenresultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732455366000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "19173",
+                "No": "35247"
+              },
+              "Relative": {
+                "Yes": "35.2",
+                "No": "64.8"
+              },
+              "id": "246311"
+            }
+          ],
+          "dataConditionID": "Item7",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Volksinitiative «für mehr Musikvielfalt»",
+      "IndividualTitle": "Volksinitiative «für mehr Musikvielfalt»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 0.5,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Basel-Stadt",
+        "ShortName": "BS",
+        "id": "8",
+        "locationNumber": "12"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "259695",
+      "id": "5120"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732467978000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "25875",
+                "No": "32377"
+              },
+              "Relative": {
+                "Yes": "44.4",
+                "No": "55.6",
+                "Participation": "57.2"
+              },
+              "id": "247477"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732517951000-0000)/",
+              "Location": {
+                "ParentLocationID": "8",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Kanton Basel-Stadt",
+                "ShortName": "Kt. Basel-Stadt",
+                "id": "277",
+                "locationNumber": "1200"
+              },
+              "Absolute": {
+                "Yes": "25875",
+                "No": "32377"
+              },
+              "Relative": {
+                "Yes": "44.4",
+                "No": "55.6",
+                "Participation": "57.1"
+              },
+              "id": "247511"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732517951000-0000)/",
+              "Location": {
+                "ParentLocationID": "277",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Basel",
+                "ShortName": "Basel",
+                "id": "4090",
+                "locationNumber": "2701"
+              },
+              "Absolute": {
+                "Yes": "23337",
+                "No": "26360"
+              },
+              "Relative": {
+                "Yes": "47.0",
+                "No": "53.0",
+                "Participation": "56.3"
+              },
+              "id": "247512"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        },
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item7",
+                "Value": "Zwischenresultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732455469000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 0.5,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Basel-Stadt",
+                "ShortName": "BS",
+                "id": "8",
+                "locationNumber": "12"
+              },
+              "Absolute": {
+                "Yes": "24506",
+                "No": "31275"
+              },
+              "Relative": {
+                "Yes": "43.9",
+                "No": "56.1"
+              },
+              "id": "246315"
+            }
+          ],
+          "dataConditionID": "Item7",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Verfassungsrevision betreffend Stimm- und Wahlrecht für Ausländerinnen und Ausländer",
+      "IndividualTitle": "Stimm- und Wahlrecht für Ausländerinnen und Ausländer",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 0.5,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Basel-Stadt",
+        "ShortName": "BS",
+        "id": "8",
+        "locationNumber": "12"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "259696",
+      "id": "5121"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455372000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "15678",
+                "No": "10968"
+              },
+              "Relative": {
+                "Yes": "58.8",
+                "No": "41.2",
+                "Participation": "64.0"
+              },
+              "id": "246310"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455758000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Oberklettgau",
+                "ShortName": "Oberklettgau",
+                "id": "283",
+                "locationNumber": "1401"
+              },
+              "Absolute": {
+                "Yes": "959",
+                "No": "792"
+              },
+              "Relative": {
+                "Yes": "54.8",
+                "No": "45.2",
+                "Participation": "65.0"
+              },
+              "id": "246445"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455759000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Reiat",
+                "ShortName": "Reiat",
+                "id": "284",
+                "locationNumber": "1402"
+              },
+              "Absolute": {
+                "Yes": "1645",
+                "No": "1475"
+              },
+              "Relative": {
+                "Yes": "52.7",
+                "No": "47.3",
+                "Participation": "68.2"
+              },
+              "id": "246446"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Volksinitiative zur Umsetzung der Transparenzinitiative ",
+      "IndividualTitle": "«Umsetzungsinitiative» Transparenz bei Parteispenden",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "259651",
+      "id": "5123"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732450614000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              "Absolute": {
+                "Yes": "35992",
+                "No": "141669"
+              },
+              "Relative": {
+                "Yes": "20.3",
+                "No": "79.7",
+                "Participation": "41.2"
+              },
+              "id": "244403"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732447908000-0000)/",
+              "Location": {
+                "ParentLocationID": "3",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Aarau",
+                "ShortName": "Aarau",
+                "id": "312",
+                "locationNumber": "1901"
+              },
+              "Absolute": {
+                "Yes": "5776",
+                "No": "16809"
+              },
+              "Relative": {
+                "Yes": "25.6",
+                "No": "74.4",
+                "Participation": "44.7"
+              },
+              "id": "242521"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732450571000-0000)/",
+              "Location": {
+                "ParentLocationID": "3",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Baden",
+                "ShortName": "Baden",
+                "id": "313",
+                "locationNumber": "1902"
+              },
+              "Absolute": {
+                "Yes": "8861",
+                "No": "28459"
+              },
+              "Relative": {
+                "Yes": "23.7",
+                "No": "76.3",
+                "Participation": "43.1"
+              },
+              "id": "244404"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Volksinitiative «Für eine Demokratie mit Zukunft»",
+      "IndividualTitle": "Volksinitiative «Für eine Demokratie mit Zukunft»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Aargau",
+        "ShortName": "AG",
+        "id": "3",
+        "locationNumber": "19"
+      },
+      "VoteType": {
+        "Name": "Volksinitiative",
+        "ScoreMore": true,
+        "ShortName": "I",
+        "id": "3"
+      },
+      "adminid": "259748",
+      "id": "5130"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459607000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "14060",
+                "No": "16098"
+              },
+              "Relative": {
+                "Yes": "46.6",
+                "No": "53.4"
+              },
+              "id": "246812"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Welche Vorlage soll in Kraft treten, wenn Vorlage 4A als auch Vorlage 4B angenommen werden?",
+      "IndividualTitle": "Stichfrage 1 (4D): Vorlage 4A oder Vorlage 4B ",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Stichfrage",
+        "ScoreMore": true,
+        "ShortName": "S",
+        "id": "5"
+      },
+      "adminid": "0",
+      "id": "5110"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459625000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "13213",
+                "No": "16890"
+              },
+              "Relative": {
+                "Yes": "43.9",
+                "No": "56.1"
+              },
+              "id": "246813"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Welche Vorlage soll in Kraft treten, wenn Vorlage 4A als auch Vorlage 4C angenommen werden?",
+      "IndividualTitle": "Stichfrage 2 (4E): Vorlage 4A oder Vorlage 4C",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Stichfrage",
+        "ScoreMore": true,
+        "ShortName": "S",
+        "id": "5"
+      },
+      "adminid": "0",
+      "id": "5111"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459640000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "11768",
+                "No": "17136"
+              },
+              "Relative": {
+                "Yes": "40.7",
+                "No": "59.3"
+              },
+              "id": "246814"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Welche  Vorlage soll in Kraft treten, wenn Vorlage 4B als auch Vorlage 4C angenommen werden?",
+      "IndividualTitle": "Stichfrage 3 (4F): Vorlage 4B oder Vorlage 4C",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Stichfrage",
+        "ScoreMore": true,
+        "ShortName": "S",
+        "id": "5"
+      },
+      "adminid": "0",
+      "id": "5112"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455473000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "14118",
+                "No": "10466"
+              },
+              "Relative": {
+                "Yes": "57.4",
+                "No": "42.6",
+                "Participation": "64.0"
+              },
+              "id": "246314"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455760000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Oberklettgau",
+                "ShortName": "Oberklettgau",
+                "id": "283",
+                "locationNumber": "1401"
+              },
+              "Absolute": {
+                "Yes": "878",
+                "No": "738"
+              },
+              "Relative": {
+                "Yes": "54.3",
+                "No": "45.7",
+                "Participation": "65.0"
+              },
+              "id": "246541"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455760000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Reiat",
+                "ShortName": "Reiat",
+                "id": "284",
+                "locationNumber": "1402"
+              },
+              "Absolute": {
+                "Yes": "1476",
+                "No": "1412"
+              },
+              "Relative": {
+                "Yes": "51.1",
+                "No": "48.9",
+                "Participation": "68.2"
+              },
+              "id": "246542"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Stichfrage: Welche Vorlage soll in Kraft treten, falls sowohl die Volksinitiative als auch der Gegenvorschlag angenommen werden?",
+      "IndividualTitle": "Stichfrage: Welche Vorlage soll in Kraft treten, falls sowohl die Volksinitiative als auch der Gegenvorschlag angenommen werden?",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Stichfrage",
+        "ScoreMore": true,
+        "ShortName": "S",
+        "id": "5"
+      },
+      "adminid": "259746",
+      "id": "5126"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732462592000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "72693",
+                "No": "42319"
+              },
+              "Relative": {
+                "Yes": "63.2",
+                "No": "36.8",
+                "Participation": "50.5"
+              },
+              "id": "247164"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Direkter Gegenvorschlag: Änderung der Gemeindeordnung",
+      "IndividualTitle": "Kauf von Liegenschaften für bezahlbares Wohnen",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Gegenvorschlag(ohneStändemehr)",
+        "ScoreMore": false,
+        "ShortName": "G",
+        "id": "6"
+      },
+      "adminid": "0",
+      "id": "5098"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732462653000-0000)/",
+              "Location": {
+                "ParentLocationID": "217",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Stadt Zürich",
+                "ShortName": "Zürich",
+                "id": "3195",
+                "locationNumber": "261"
+              },
+              "Absolute": {
+                "Yes": "69514",
+                "No": "44725"
+              },
+              "Relative": {
+                "Yes": "60.8",
+                "No": "39.2",
+                "Participation": "50.4"
+              },
+              "id": "247165"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Indirekter Gegenvorschlag: Übertragung Vermögenswerte",
+      "IndividualTitle": "Aufstockung der Stiftungskapitalien",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "217",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Stadt Zürich",
+        "ShortName": "Zürich",
+        "id": "3195",
+        "locationNumber": "261"
+      },
+      "VoteType": {
+        "Name": "Gegenvorschlag(ohneStändemehr)",
+        "ScoreMore": false,
+        "ShortName": "G",
+        "id": "6"
+      },
+      "adminid": "0",
+      "id": "5099"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732459556000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "13229",
+                "No": "19471"
+              },
+              "Relative": {
+                "Yes": "40.5",
+                "No": "59.5"
+              },
+              "id": "246810"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Gegenvorschlag des Stadtparlaments zur Städtischen Volksinitiative «Wohnen für alle» (4B)",
+      "IndividualTitle": "Gegenvorschlag des Stadtparlaments (4B)",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Gegenvorschlag(ohneStändemehr)",
+        "ScoreMore": false,
+        "ShortName": "G",
+        "id": "6"
+      },
+      "adminid": "0",
+      "id": "5108"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732459574000-0000)/",
+              "Location": {
+                "ParentLocationID": "215",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Winterthur",
+                "ShortName": "Winterthur",
+                "id": "3182",
+                "locationNumber": "230"
+              },
+              "Absolute": {
+                "Yes": "16999",
+                "No": "14845"
+              },
+              "Relative": {
+                "Yes": "53.4",
+                "No": "46.6"
+              },
+              "id": "246811"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Gegenvorschlag des Stadtrats zur Städtischen Volksinitiative «Wohnen für alle» (4C)",
+      "IndividualTitle": "Gegenvorschlag des Stadtrats (4C)",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "215",
+        "LocationType": {
+          "id": "4",
+          "Value": "Gemeinde"
+        },
+        "LocationName": "Winterthur",
+        "ShortName": "Winterthur",
+        "id": "3182",
+        "locationNumber": "230"
+      },
+      "VoteType": {
+        "Name": "Gegenvorschlag(ohneStändemehr)",
+        "ScoreMore": false,
+        "ShortName": "G",
+        "id": "6"
+      },
+      "adminid": "0",
+      "id": "5109"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1732455443000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "12324",
+                "No": "13473"
+              },
+              "Relative": {
+                "Yes": "47.8",
+                "No": "52.2",
+                "Participation": "64.0"
+              },
+              "id": "246313"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455759000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Oberklettgau",
+                "ShortName": "Oberklettgau",
+                "id": "283",
+                "locationNumber": "1401"
+              },
+              "Absolute": {
+                "Yes": "893",
+                "No": "812"
+              },
+              "Relative": {
+                "Yes": "52.4",
+                "No": "47.6",
+                "Participation": "65.0"
+              },
+              "id": "246477"
+            },
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item2",
+                "Value": "angenommen"
+              },
+              "LastUpdate": "/Date(1732455759000-0000)/",
+              "Location": {
+                "ParentLocationID": "19",
+                "LocationType": {
+                  "id": "3",
+                  "Value": "Bezirk"
+                },
+                "LocationName": "Bezirk Reiat",
+                "ShortName": "Reiat",
+                "id": "284",
+                "locationNumber": "1402"
+              },
+              "Absolute": {
+                "Yes": "1553",
+                "No": "1411"
+              },
+              "Relative": {
+                "Yes": "52.4",
+                "No": "47.6",
+                "Participation": "68.2"
+              },
+              "id": "246478"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Teilrevision der Kantonsverfassung (Transparenzbestimmung)",
+      "IndividualTitle": "Gegenvorschlag zur «Umsetzungsinitiative»",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Gegenvorschlag(ohneStändemehr)",
+        "ScoreMore": false,
+        "ShortName": "G",
+        "id": "6"
+      },
+      "adminid": "259652",
+      "id": "5124"
+    }
+  ],
+  "language": "DE"
+}

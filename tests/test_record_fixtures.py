@@ -24,6 +24,7 @@ funktionierendes Token in ein oeffentliches Repository.
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
 import sys
@@ -34,6 +35,7 @@ import pytest
 import respx
 
 from srgssr_mcp import _http, server
+from srgssr_mcp._app import BusinessUnit
 
 WURZEL = Path(__file__).resolve().parent.parent
 RECORDER_PFAD = WURZEL / "scripts" / "record_fixtures.py"
@@ -347,18 +349,65 @@ def test_kuerzen_ruehrt_kein_feld_an():
     assert set(gekuerzt["shows"][0]) == {"id", "title", "description"}, "ein Feld fehlt"
 
 
-def test_die_polis_listen_werden_nicht_gekuerzt():
-    """Der Server filtert und zaehlt *in* diesen Listen.
+def test_die_geschuetzte_liste_behaelt_alle_eintraege():
+    """Der Schutz gilt der Laenge, nicht dem Inhalt.
 
-    Ein positionsweiser Schnitt erfaende dort einen Negativbefund, der wie ein
-    Ergebnis aussieht — derselbe Fehler, der in `swiss-holidays-mcp` fuer jedes
-    Kantonspaar null gemeinsame Ferientage meldete.
+    Die geschuetzte Liste behaelt jeden Eintrag — der Server zaehlt sie —, aber
+    was *unter* den Eintraegen haengt, wird normal gekuerzt. Genau dort sitzt
+    bei Polis das Gewicht: die Fall-Liste ist schmal, die Ergebnisbaeume
+    darunter sind es nicht.
     """
     m = recorder()
-    nach_name = {a.name: a for a in m.PLAN}
-    for name in ("polis_votations", "polis_elections", "daily_briefing"):
-        assert not nach_name[name].kuerzen, f"{name} wird gekuerzt"
-        assert nach_name[name].notiz, f"{name} sagt nicht, warum"
+    roh = {
+        "Case": [{"id": i, "Votations": {"Votation": list(range(10))}} for i in range(20)],
+        "Anderes": list(range(20)),
+    }
+    schutz = m.schutz_fuer("https://api.srgssr.ch/polis-api/v2/cases?lang=de")
+    assert schutz is not None and schutz.schluessel == "Case"
+    _, _, gekuerzt = m._kuerze(json.loads(json.dumps(roh)), schutz)
+    assert len(gekuerzt["Case"]) == 20, "die geschuetzte Liste wurde gekuerzt"
+    assert len(gekuerzt["Case"][0]["Votations"]["Votation"]) == m.ZEILEN, (
+        "unter der geschuetzten Liste wurde nicht gekuerzt — dort sitzt das Gewicht"
+    )
+    assert len(gekuerzt["Anderes"]) == m.ZEILEN, "eine ungeschuetzte Liste blieb voll"
+
+
+def test_ohne_schutzregel_wird_alles_gekuerzt():
+    """Die Gegenrichtung: sonst waere der Schutz nicht von «immer voll» zu trennen."""
+    m = recorder()
+    assert m.schutz_fuer("https://api.srgssr.ch/srf-meteo/v2/geolocations?latitude=47") is None
+    _, _, gekuerzt = m._kuerze({"Case": list(range(20))}, None)
+    assert len(gekuerzt["Case"]) == m.ZEILEN
+
+
+def test_die_schutzregeln_nennen_die_container_des_servers():
+    """Sonst schuetzt die Regel eine Liste, die der Server gar nicht liest.
+
+    `_fetch_filtered` bekommt den Containerpfad als Argument — `("Items",)` fuer
+    Abstimmungen, `("Elections", "Election")` fuer Wahlen —, und
+    `_case_ids_in_range` liest `Case`. Der geschuetzte Schluessel muss der
+    letzte Teil dieses Pfades sein; steht er woanders, laeuft der Schutz ins
+    Leere und der Ordner waechst wieder auf 16 MB oder die Treffer verschieben
+    sich.
+    """
+    m = recorder()
+    quelle = (WURZEL / "src" / "srgssr_mcp" / "tools" / "polis.py").read_text(encoding="utf-8")
+    erwartet = {
+        "/polis-api/v2/votations": '_fetch_filtered("votations", ("Items",)',
+        "/polis-api/v2/elections": '_fetch_filtered("elections", ("Elections", "Election")',
+        "/polis-api/v2/cases": '_as_items(data, "Case")',
+    }
+    nach_muster = {s.muster: s for s in m.SCHUTZ}
+    for muster, beleg in erwartet.items():
+        assert muster in nach_muster, f"keine Schutzregel fuer {muster}"
+        assert beleg in quelle, (
+            f"der Server ruft {muster} nicht mehr so ab — die Schutzregel "
+            f"`{nach_muster[muster].schluessel}` ist womoeglich falsch geworden"
+        )
+        assert nach_muster[muster].schluessel in beleg, (
+            f"geschuetzt wird `{nach_muster[muster].schluessel}`, der Server liest {beleg}"
+        )
+    assert all(s.grund for s in m.SCHUTZ), "eine Schutzregel steht ohne Begruendung da"
 
 
 def test_der_nachweis_nennt_schluessel_datum_und_pruefsumme(tmp_path, monkeypatch):
@@ -447,3 +496,157 @@ def test_der_schlaf_haengt_am_modul_alias():
     quelle = inspect.getsource(m._fahre)
     assert "await _sleep(" in quelle
     assert "asyncio.sleep" not in quelle
+
+
+@respx.mock
+async def test_ein_halb_ausgefallenes_ergebnis_gilt_nicht_als_aufgezeichnet(geschlossener_client):
+    """`srgssr_daily_briefing` faellt nicht um — es legt den Ausfall als Feld ab.
+
+    Der erste echte Lauf ging genau daran vorbei: die Wetter-Haelfte des
+    Briefings fiel aus, das Werkzeug gab ein gueltiges Modell zurueck, und die
+    fehlende `forecastpoint`-Antwort landete nie im Ordner. Gemeldet hat das
+    nichts; aufgefallen ist es erst beim Abspielen, wo eine Anfrage ohne
+    Aufzeichnung ein Fehler ist.
+
+    Eine Pruefung auf der obersten Ebene kann das nicht sehen — deshalb sucht
+    `_entartet` bis in die Felder.
+    """
+    m = recorder()
+    mocke_token()
+    # EPG antwortet, Wetter nicht: genau die halbe Degradation.
+    respx.get(url__startswith=f"{_http.BASE_URL}/epg").mock(
+        return_value=httpx.Response(200, json={"channel": {}, "programs": []})
+    )
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo").mock(
+        return_value=httpx.Response(500, json={"kaputt": True})
+    )
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr(m, "VERSUCHE", 1)
+    monkey.setattr(m, "_sleep", lambda _s: asyncio.sleep(0))
+    try:
+        with pytest.raises(RuntimeError) as fehler:
+            await m._fahre(
+                m.Aufruf(
+                    "briefing",
+                    "srgssr_daily_briefing",
+                    "DailyBriefingInput",
+                    {
+                        "business_unit": BusinessUnit.SRF,
+                        "channel_id": "srf-1",
+                        "date": "2026-08-15",
+                        "latitude": 47.37,
+                        "longitude": 8.54,
+                    },
+                )
+            )
+    finally:
+        monkey.undo()
+    assert "Ausfall in" in str(fehler.value), fehler.value
+    assert "weather" in str(fehler.value), f"das ausgefallene Feld wird nicht benannt: {fehler.value}"
+
+
+def test_entartet_findet_den_fehler_auch_ganz_oben_und_nirgends():
+    """Die beiden Randfaelle, sonst waere die Suche oben blind oder ueberall fuendig."""
+    m = recorder()
+    from srgssr_mcp._models import ToolErrorResponse
+
+    fehler = ToolErrorResponse(error_type="ValueError", message="kaputt")
+    assert m._entartet(fehler) == ["(oben)"]
+    assert m._entartet(None) == []
+    assert m._entartet("ein String") == []
+
+
+@respx.mock
+async def test_eine_schon_geholte_antwort_wird_nicht_erneut_angefordert(geschlossener_client):
+    """Vier Werkzeuge loesen dieselbe Koordinate auf — das waren acht Abrufe fuer zwei URLs.
+
+    `srf-meteo` drosselt danach. Gemessen am 16.8.2026: der erste Abruf kam
+    durch, der zweite auf dieselbe URL bekam HTTP 429 und blieb ueber vier
+    Retries gedrosselt; der Lauf brach ab. Der Lauf davor war aus demselben
+    Grund still unvollstaendig.
+
+    Geprueft wird an der Quelle, nicht am Ergebnis: die zweite Abfrage darf sie
+    gar nicht mehr erreichen.
+    """
+    m = recorder()
+    mocke_token()
+    orte = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": "47.0,8.0", "lat": 47.0, "lon": 8.0}])
+    )
+    punkt = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/forecastpoint").mock(
+        return_value=httpx.Response(200, json={"days": [], "hours": [], "three_hours": []})
+    )
+
+    bestand: dict[str, object] = {}
+    for werkzeug in ("srgssr_weather_current", "srgssr_weather_forecast_24h"):
+        for antwort in await m._fahre(
+            m.Aufruf(
+                werkzeug,
+                werkzeug,
+                "WeatherForecastInput",
+                {"latitude": 47.0, "longitude": 8.0},
+            ),
+            bestand,
+        ):
+            bestand.setdefault(antwort.schluessel, antwort)
+
+    assert orte.call_count == 1, f"die Ortsaufloesung ging {orte.call_count}x an die Quelle"
+    assert punkt.call_count == 1, f"der Vorhersagepunkt ging {punkt.call_count}x an die Quelle"
+    assert len(bestand) == 2, f"aufgezeichnet wurden {sorted(bestand)}"
+
+
+@respx.mock
+async def test_ohne_bestand_geht_jede_anfrage_wieder_raus(geschlossener_client):
+    """Die Gegenrichtung: sonst waere die Zusicherung oben von «gar nichts geholt» nicht zu trennen."""
+    m = recorder()
+    mocke_token()
+    orte = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": "47.0,8.0", "lat": 47.0, "lon": 8.0}])
+    )
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/forecastpoint").mock(
+        return_value=httpx.Response(200, json={"days": [], "hours": [], "three_hours": []})
+    )
+    for werkzeug in ("srgssr_weather_current", "srgssr_weather_forecast_24h"):
+        await m._fahre(m.Aufruf(werkzeug, werkzeug, "WeatherForecastInput", {"latitude": 47.0, "longitude": 8.0}))
+    assert orte.call_count == 2, "ohne Bestand muss jede Abfrage wieder rausgehen"
+
+
+def test_der_lauf_pausiert_zwischen_den_plan_eintraegen():
+    """Ein Recorder ist Gast bei der Quelle.
+
+    Am Quelltext gelesen: eine Pause, die niemand faehrt, ist keine. Die
+    Zusicherung faellt, wenn `main()` die Eintraege wieder ohne Abstand
+    hintereinander abarbeitet.
+    """
+    import inspect
+
+    m = recorder()
+    assert m.PAUSE_SEKUNDEN > 0
+    quelle = inspect.getsource(m.main)
+    assert "await _sleep(PAUSE_SEKUNDEN)" in quelle, "der Lauf pausiert nicht mehr"
+    assert "_fahre(a, nach_schluessel)" in quelle, "der Bestand wird nicht mehr durchgereicht"
+
+
+@respx.mock
+async def test_der_bestand_nimmt_die_token_antwort_nie_auf(geschlossener_client):
+    """Die Invariante, auf der die Umleitung steht.
+
+    `_EinmalHolen` beantwortet aus dem Bestand, was schon geholt wurde. Waere
+    die Token-Antwort darin, bekaeme ein spaeterer Refresh ein abgelaufenes
+    Token zurueck — und schlimmer: sie waere abgelegt worden. Ein Riegel *in*
+    der Umleitung koennte das nicht belegen, denn er kann nie einrasten; die
+    Zusicherung gehoert an den Bestand selbst.
+    """
+    m = recorder()
+    mocke_token()
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo").mock(
+        return_value=httpx.Response(200, json={"geolocations": []})
+    )
+    bestand: dict[str, object] = {}
+    for antwort in await m._fahre(
+        m.Aufruf("w", "srgssr_weather_search_location", "WeatherSearchInput", {"query": "Bern"}),
+        bestand,
+    ):
+        bestand.setdefault(antwort.schluessel, antwort)
+    assert bestand, "gar nichts aufgezeichnet — die Zusicherung prueft nichts"
+    assert not any(_http.TOKEN_URL in s for s in bestand), f"die Token-Antwort steht im Bestand: {sorted(bestand)}"
