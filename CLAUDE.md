@@ -65,6 +65,35 @@ Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
 auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
 
+**Fixtures: keine — und das ist gemessen, nicht vergessen.** Die
+Portfolio-Regel aus Teil 1 verlangt mindestens eine aufgezeichnete Antwort je
+externem Endpunkt. Dieser Server kann sie nicht liefern: die SRG-SSR-API lässt
+ohne Consumer Key nichts durch. Probe vom 15.08.2026, ohne Zugangsdaten:
+
+| Aufruf | Antwort |
+|---|---|
+| `POST /oauth/v1/accesstoken` | 401 (auch mit erfundenem Basic-Auth) |
+| `GET /srf-meteo/v2/...` | 401 `401.01.001 Missing Access Token` |
+| `GET /videometadata/v2/...` | 401 `oauth.v2.InvalidAccessToken` |
+| `GET /audiometadata/v2/...` | 401 `oauth.v2.InvalidAccessToken` |
+| `GET /epg/v3/...` | 401 `Missing or bad access token` |
+| `GET /polis-api/v2/...` | 401 `oauth.v2.InvalidAccessToken` |
+
+Alle fünf Produkt-Basen liegen hinter demselben OAuth-Gateway. Ein 401 als
+Fixture abzulegen hiesse, ihn als das auszugeben, was die Quelle normalerweise
+sagt — deshalb liegt hier gar nichts. Wer Zugangsdaten hat
+(`developer.srgssr.ch`, Produkt «SRG SSR PUBLIC API V2»), kann nachziehen; das
+Muster steht in `swiss-environment-mcp/scripts/record_fixtures.py`.
+
+**Was an die Stelle der Fixtures tritt.** Der nächtliche Live-Lauf hält echte
+Antworten gegen die Felder, aus denen dieser Server liest. Das ist das
+stärkere Signal — es prüft die Quelle von heute statt eine Aufzeichnung von
+damals —, aber nur, solange es *jedes* Werkzeug erreicht. Ein Werkzeug ohne
+Live-Test hätte hier gar keine Deckung: weder Aufzeichnung noch
+Vertragsprüfung. `test_live_coverage.py` hält das fest; es fiel beim Anlegen
+sofort über `srgssr_daily_briefing` — ausgerechnet das Werkzeug, das über zwei
+Produkte hinweg zusammenführt.
+
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
 (`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf; ein
 roter Lauf öffnet ein Issue, der von Hand gestartete ebenso. Sie sind hier also

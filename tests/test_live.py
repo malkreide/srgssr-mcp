@@ -17,6 +17,7 @@ from srgssr_mcp.server import (
     AudioEpisodesInput,
     AudioShowsInput,
     BusinessUnit,
+    DailyBriefingInput,
     EpgProgramsInput,
     PolisListInput,
     PolisResultInput,
@@ -28,6 +29,7 @@ from srgssr_mcp.server import (
     srgssr_audio_get_episodes,
     srgssr_audio_get_livestreams,
     srgssr_audio_get_shows,
+    srgssr_daily_briefing,
     srgssr_epg_get_programs,
     srgssr_polis_get_elections,
     srgssr_polis_get_votation_results,
@@ -251,3 +253,37 @@ async def test_live_polis_get_votation_results(live_credentials):
         PolisResultInput(votation_id=str(votation_id)),
     )
     assert not _is_error(result), result
+
+
+# ---------------------------------------------------------------------------
+# Aggregation
+# ---------------------------------------------------------------------------
+
+
+async def test_live_daily_briefing(live_credentials):
+    """The aggregator spans two products, so it can drift on either side.
+
+    It also never raises: both halves catch their own failures and come back as
+    a ToolErrorResponse inside the briefing. That is the graceful-degradation
+    contract — and it means an upstream break here shows up as a *field*, not
+    as an exception. Asserting only that the call returned would pass through
+    a total outage, so each half is checked in place.
+    """
+    from datetime import date, timedelta
+
+    from srgssr_mcp._models import ToolErrorResponse
+
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    result = await srgssr_daily_briefing(
+        DailyBriefingInput(
+            business_unit=BusinessUnit.SRF,
+            channel_id="srf-1",
+            date=yesterday,
+            latitude=47.37,
+            longitude=8.54,
+        ),
+    )
+    assert not isinstance(result, ToolErrorResponse), result
+    assert not isinstance(result.weather, ToolErrorResponse), result.weather
+    assert not isinstance(result.epg, ToolErrorResponse), result.epg
+    assert result.epg.programs, "expected a schedule for srf-1"
