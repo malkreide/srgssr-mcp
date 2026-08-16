@@ -1,0 +1,95 @@
+name: Fixtures aufzeichnen
+
+# Der Recorder braucht Credentials. Diese Umgebung hat welche — dieselben, mit
+# denen die naechtliche Live-Suite laeuft —, die Entwicklungsumgebung in der
+# Regel nicht. Damit ist `scripts/record_fixtures.py` kein Skript, das niemand
+# fahren kann, sondern eines, das hier auf Knopfdruck laeuft.
+#
+# Nur `workflow_dispatch`: eine Aufzeichnung ist eine Aussage ueber einen
+# Zeitpunkt und gehoert bewusst ausgeloest, nicht nach Plan. Ein Cron-Lauf
+# schriebe den Ordner nachts um, ohne dass jemand die Aenderung ansieht.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch, auf den der Aufnahme-Commit gepusht wird"
+        required: true
+        default: "claude/fixtures-aufzeichnen"
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.branch }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      # Ohne das sind fehlende Secrets von einer gesunden API nicht zu
+      # unterscheiden: der Recorder braeche mit Code 2 ab, der Job faerbte sich
+      # rot, und die Ursache stuende in der Mitte eines Logs. Dieselbe
+      # Begruendung wie in `live-test.yml`.
+      - name: Verify credentials are configured
+        env:
+          KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
+          SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+        run: |
+          if [ -z "$KEY" ] || [ -z "$SECRET" ]; then
+            echo "::error::LIVE_TEST_CONSUMER_KEY / LIVE_TEST_CONSUMER_SECRET are not set."
+            echo "::error::Der Recorder kann ohne sie keine einzige Antwort holen."
+            exit 1
+          fi
+
+      - name: Aufzeichnen
+        run: PYTHONPATH=src python scripts/record_fixtures.py
+        env:
+          SRGSSR_CONSUMER_KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
+          SRGSSR_CONSUMER_SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+
+      # Zweiter Riegel, unabhaengig vom Recorder. Der prueft schon vor dem
+      # Schreiben gegen Token, Key und Secret und bricht ab — aber ein Riegel,
+      # der im selben Programm sitzt wie das, was er bewacht, faellt mit ihm.
+      # Hier zaehlt nur eines: ein Bearer-Token in einem oeffentlichen
+      # Repository laesst sich nicht zurueckholen.
+      - name: Kein Geheimnis im Ordner
+        env:
+          KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
+          SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+        run: |
+          set -euo pipefail
+          if grep -rqF -e "$KEY" -e "$SECRET" tests/fixtures/; then
+            echo "::error::Key oder Secret steht in tests/fixtures/ — nichts wird gepusht."
+            exit 1
+          fi
+          if grep -rqE '"access_token"|Bearer [A-Za-z0-9._-]{16,}' tests/fixtures/; then
+            echo "::error::Etwas, das nach einem Token aussieht, steht in tests/fixtures/."
+            exit 1
+          fi
+          echo "Ordner sauber."
+
+      - name: Aufzeichnung committen
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Erst stagen, dann vergleichen. `git diff` allein sieht ungetrackte
+          # Dateien nicht — beim ersten Lauf ist *jede* Aufzeichnung neu, der
+          # Vergleich meldete «keine Aenderung» und der Job endete gruen, ohne
+          # etwas zu committen. Genau die Sorte stiller Nulllauf, die aussieht
+          # wie ein Erfolg.
+          git add -A tests/fixtures/
+          if git diff --cached --quiet -- tests/fixtures/; then
+            echo "Keine Aenderung an tests/fixtures/ — nichts zu committen."
+            exit 0
+          fi
+          git commit -m "test: Fixtures neu aufgezeichnet ($(date -u +%Y-%m-%d))"
+          git push origin HEAD:${{ inputs.branch }}
