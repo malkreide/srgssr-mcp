@@ -61,6 +61,19 @@ python scripts/check_version_sync.py
 pytest -m "not live" --cov=src --cov-report=term-missing --cov-fail-under=80
 ```
 
+**«Die CI» sind hier zwei Workflows.** Die ersten vier Befehle stehen im Job
+`quality` in `ci.yml`, der `pytest` allein im Job `test` in `test.yml` —
+beide mit Matrix 3.11/3.12/3.13, beide auf `push`/`pull_request` gegen `main`.
+Ein roter Check «CI» und ein roter Check «Tests» zeigen also auf verschiedene
+Dateien; wer nach dem falschen sucht, findet nichts. In `test.yml` trägt der
+`pytest` zusätzlich `--cov-report=xml` für den Upload danach — der Upload ist
+auf 3.11 beschränkt und `continue-on-error: true`, also kein Gate. Das
+Coverage-Minimum von 80 % ist eines: es steht im `pytest`-Aufruf selbst.
+
+**`secret-scan.yml` gatet ebenfalls jeden PR** (gitleaks, gegen `main`) und
+steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
+roter PR bei grünen Tests ist meistens er.
+
 Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
 auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
