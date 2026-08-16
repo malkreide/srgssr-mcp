@@ -104,11 +104,63 @@ class Aufruf:
     werkzeug: str
     klasse: str
     eingabe: dict[str, Any]
-    # Kuerzen ist nur dort harmlos, wo der Server die Liste ganz liest. Sucht
-    # er *in* ihr — oder holt er zu jedem Eintrag eine weitere Antwort —, dann
-    # schneidet ein Schnitt womoeglich genau die Zeile weg, die er braucht.
-    kuerzen: bool = True
     notiz: str = ""
+
+
+@dataclass(frozen=True)
+class Schutz:
+    """Eine Liste, deren **Laenge** der Server ausliest.
+
+    Sie behaelt alle Eintraege; gekuerzt wird nur, was *unter* ihnen haengt.
+    """
+
+    muster: str  # Teilstring der URL, an dem die Antwort erkannt wird
+    schluessel: str  # Name der Liste im Antwortbaum
+    grund: str
+
+
+# Ob gekuerzt werden darf, ist eine Eigenschaft der **Antwort** und nicht des
+# Aufrufs. Ein Werkzeug fasst beides an: `srgssr_polis_get_votations` liest die
+# Fall-Liste, um *in* ihr nach Jahr zu filtern, und die Treffer je Fall, um
+# ueber mehrere Faelle hinweg bis `page * page_size` zu zaehlen — beide Laengen
+# tragen. Am Aufruf haengte die Entscheidung deshalb zwangslaeufig falsch: als
+# `kuerzen=False` wurden 16.8 MB abgelegt, als `kuerzen=True` kamen andere
+# Treffer heraus als aus der echten Antwort.
+#
+# Gemessen statt geschlossen: alle 15 Werkzeuge einmal gegen die vollen und
+# einmal gegen die gekuerzten Aufzeichnungen gefahren. Mit diesen drei Regeln
+# ist jede Ausgabe identisch, und der Ordner faellt von 16.8 MB auf 1.4 MB.
+#
+# Die Schluessel sind dieselben, mit denen `_fetch_filtered` aufgerufen wird —
+# `test_die_schutzregeln_nennen_die_container_des_servers` haelt sie zusammen,
+# damit sie nicht auseinanderlaufen.
+SCHUTZ: tuple[Schutz, ...] = (
+    Schutz(
+        "/polis-api/v2/cases",
+        "Case",
+        "`_case_ids_in_range` filtert *in* dieser Liste nach Jahr — ein Schnitt "
+        "meldete «keine Abstimmung in diesem Zeitraum», wo es welche gibt",
+    ),
+    Schutz(
+        "/polis-api/v2/votations",
+        "Items",
+        "`_fetch_filtered` zaehlt die Treffer ueber mehrere Faelle hinweg bis "
+        "`page * page_size` — ein Schnitt verschiebt, welche Faelle beitragen",
+    ),
+    Schutz(
+        "/polis-api/v2/elections",
+        "Election",
+        "wie bei den Abstimmungen; die Liste haengt hier eine Ebene tiefer unter `Elections`",
+    ),
+)
+
+
+def schutz_fuer(url: str) -> Schutz | None:
+    """Die Schutzregel fuer eine Antwort, oder `None` wenn frei kuerzbar."""
+    for regel in SCHUTZ:
+        if regel.muster in url:
+            return regel
+    return None
 
 
 # Die Eingaben stammen aus `tests/test_live.py`, nicht aus einer neuen
@@ -201,16 +253,12 @@ PLAN: list[Aufruf] = [
         "srgssr_polis_get_votations",
         "PolisListInput",
         {"year_from": 2020, "year_to": 2024, "page_size": 5},
-        kuerzen=False,
-        notiz="Ungekuerzt: der Server filtert und zaehlt *in* diesen Listen.",
     ),
     Aufruf(
         "polis_elections",
         "srgssr_polis_get_elections",
         "PolisListInput",
         {"year_from": 2020, "year_to": 2024, "page_size": 5},
-        kuerzen=False,
-        notiz="Ungekuerzt: der Server filtert und zaehlt *in* diesen Listen.",
     ),
     Aufruf(
         "polis_results",
@@ -231,8 +279,7 @@ PLAN: list[Aufruf] = [
             "latitude": 47.37,
             "longitude": 8.54,
         },
-        kuerzen=False,
-        notiz="Ungekuerzt: spannt EPG und Wetter nebenlaeufig, beide Haelften zaehlen.",
+        notiz="Spannt EPG und Wetter nebenlaeufig — zwei Produkte in einem Aufruf.",
     ),
 ]
 
@@ -273,7 +320,7 @@ class Antwort:
     schluessel: str
     text: str
     werkzeuge: list[str] = field(default_factory=list)
-    darf_kuerzen: bool = True
+    schutz: Schutz | None = None
     notiz: str = ""
     dateiname: str = ""
     original_bytes: int = 0
@@ -305,7 +352,8 @@ def _hook_fuer(gesehen: list[Antwort]) -> Callable[[httpx.Response], Awaitable[N
                 file=sys.stderr,
             )
             return
-        gesehen.append(Antwort(schluessel=schluessel_fuer(response.request), text=response.text))
+        schluessel = schluessel_fuer(response.request)
+        gesehen.append(Antwort(schluessel=schluessel, text=response.text, schutz=schutz_fuer(schluessel)))
 
     return hook
 
@@ -356,29 +404,36 @@ async def _fahre(a: Aufruf) -> list[Antwort]:
             continue
         for antwort in gesehen:
             antwort.werkzeuge.append(a.werkzeug)
-            antwort.darf_kuerzen = a.kuerzen
             antwort.notiz = a.notiz
         return gesehen
 
     raise RuntimeError(f"{a.name} nach {VERSUCHE} Versuchen nicht aufgezeichnet: {letzter}")
 
 
-def _kuerze(daten: Any) -> tuple[int, int, Any]:
+def _kuerze(daten: Any, schutz: Schutz | None = None) -> tuple[int, int, Any]:
     """Kuerzt jede Liste im Baum auf `ZEILEN`; gibt (vorher, nachher, Daten).
 
     Nur die Zahl der Eintraege, nie ein Feld. Zaehlfelder daneben bleiben
     stehen: die Quelle meint damit die Gesamtzahl und nicht die Zahl der
     gelieferten Zeilen, und genau die liest der Server aus.
+
+    Traegt die Antwort eine Schutzregel, behaelt **die** Liste alle Eintraege —
+    gekuerzt wird dann nur, was unter ihnen haengt. Genau dort sitzt bei Polis
+    auch das Gewicht: die geschuetzte Liste selbst ist schmal, die Ergebnisbaeume
+    darunter sind es nicht.
     """
     vorher = nachher = 0
+    geschuetzt = schutz.schluessel if schutz else None
 
-    def geh(knoten: Any) -> Any:
+    def geh(knoten: Any, unter_schutz: bool = False) -> Any:
         nonlocal vorher, nachher
         if isinstance(knoten, dict):
-            return {k: geh(v) for k, v in knoten.items()}
+            return {k: geh(v, unter_schutz or k == geschuetzt) for k, v in knoten.items()}
         if isinstance(knoten, list):
             vorher += len(knoten)
-            gekuerzt = knoten[:ZEILEN]
+            # Unter der geschuetzten Liste gilt der Schutz nicht weiter: ihre
+            # Eintraege bleiben vollzaehlig, ihr Inhalt wird normal gekuerzt.
+            gekuerzt = knoten if unter_schutz else knoten[:ZEILEN]
             nachher += len(gekuerzt)
             return [geh(v) for v in gekuerzt]
         return knoten
@@ -489,7 +544,7 @@ def _mit_laufzeitwerten(plan: list[Aufruf], werte: dict[str, dict[str, Any]]) ->
     for a in plan:
         zusatz = werte.get(a.name)
         if zusatz:
-            a = Aufruf(a.name, a.werkzeug, a.klasse, {**a.eingabe, **zusatz}, a.kuerzen, a.notiz)
+            a = Aufruf(a.name, a.werkzeug, a.klasse, {**a.eingabe, **zusatz}, a.notiz)
         offen = [k for k, v in a.eingabe.items() if v == ZUR_LAUFZEIT]
         if offen:
             raise RuntimeError(
@@ -546,8 +601,7 @@ async def main() -> int:
         except json.JSONDecodeError:
             (FIXTURES / antwort.dateiname).write_text(antwort.text, encoding="utf-8")
         else:
-            if antwort.darf_kuerzen:
-                antwort.gekuerzt_von, antwort.behalten, daten = _kuerze(daten)
+            antwort.gekuerzt_von, antwort.behalten, daten = _kuerze(daten, antwort.schutz)
             # Neu eingerueckt geschrieben: eine Zeile JSON waere kleiner, aber
             # im Diff nicht lesbar, und ein Fixture will gelesen werden.
             (FIXTURES / antwort.dateiname).write_text(
@@ -632,13 +686,10 @@ def _schreibe_provenance(antworten: list[Antwort], heute: str) -> None:
                 f"jede Liste im Baum auf die ersten {ZEILEN} gekuerzt, "
                 f"aus {a.original_bytes} Bytes Rohantwort"
             )
-        elif not a.darf_kuerzen:
-            zeilen.append(
-                "- **Auswahl:** ungekuerzt — der Server filtert oder zaehlt *in* dieser "
-                "Liste, ein Schnitt erfaende einen Negativbefund"
-            )
         else:
             zeilen.append("- **Auswahl:** ungekuerzt")
+        if a.schutz:
+            zeilen.append(f"- **Geschuetzte Liste:** `{a.schutz.schluessel}` behaelt alle Eintraege — {a.schutz.grund}")
         zeilen += [
             f"- **Groesse:** {a.bytes} Bytes",
             f"- **SHA-256:** `{a.sha256}`",

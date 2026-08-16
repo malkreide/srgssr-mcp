@@ -347,18 +347,65 @@ def test_kuerzen_ruehrt_kein_feld_an():
     assert set(gekuerzt["shows"][0]) == {"id", "title", "description"}, "ein Feld fehlt"
 
 
-def test_die_polis_listen_werden_nicht_gekuerzt():
-    """Der Server filtert und zaehlt *in* diesen Listen.
+def test_die_geschuetzte_liste_behaelt_alle_eintraege():
+    """Der Schutz gilt der Laenge, nicht dem Inhalt.
 
-    Ein positionsweiser Schnitt erfaende dort einen Negativbefund, der wie ein
-    Ergebnis aussieht — derselbe Fehler, der in `swiss-holidays-mcp` fuer jedes
-    Kantonspaar null gemeinsame Ferientage meldete.
+    Die geschuetzte Liste behaelt jeden Eintrag — der Server zaehlt sie —, aber
+    was *unter* den Eintraegen haengt, wird normal gekuerzt. Genau dort sitzt
+    bei Polis das Gewicht: die Fall-Liste ist schmal, die Ergebnisbaeume
+    darunter sind es nicht.
     """
     m = recorder()
-    nach_name = {a.name: a for a in m.PLAN}
-    for name in ("polis_votations", "polis_elections", "daily_briefing"):
-        assert not nach_name[name].kuerzen, f"{name} wird gekuerzt"
-        assert nach_name[name].notiz, f"{name} sagt nicht, warum"
+    roh = {
+        "Case": [{"id": i, "Votations": {"Votation": list(range(10))}} for i in range(20)],
+        "Anderes": list(range(20)),
+    }
+    schutz = m.schutz_fuer("https://api.srgssr.ch/polis-api/v2/cases?lang=de")
+    assert schutz is not None and schutz.schluessel == "Case"
+    _, _, gekuerzt = m._kuerze(json.loads(json.dumps(roh)), schutz)
+    assert len(gekuerzt["Case"]) == 20, "die geschuetzte Liste wurde gekuerzt"
+    assert len(gekuerzt["Case"][0]["Votations"]["Votation"]) == m.ZEILEN, (
+        "unter der geschuetzten Liste wurde nicht gekuerzt — dort sitzt das Gewicht"
+    )
+    assert len(gekuerzt["Anderes"]) == m.ZEILEN, "eine ungeschuetzte Liste blieb voll"
+
+
+def test_ohne_schutzregel_wird_alles_gekuerzt():
+    """Die Gegenrichtung: sonst waere der Schutz nicht von «immer voll» zu trennen."""
+    m = recorder()
+    assert m.schutz_fuer("https://api.srgssr.ch/srf-meteo/v2/geolocations?latitude=47") is None
+    _, _, gekuerzt = m._kuerze({"Case": list(range(20))}, None)
+    assert len(gekuerzt["Case"]) == m.ZEILEN
+
+
+def test_die_schutzregeln_nennen_die_container_des_servers():
+    """Sonst schuetzt die Regel eine Liste, die der Server gar nicht liest.
+
+    `_fetch_filtered` bekommt den Containerpfad als Argument — `("Items",)` fuer
+    Abstimmungen, `("Elections", "Election")` fuer Wahlen —, und
+    `_case_ids_in_range` liest `Case`. Der geschuetzte Schluessel muss der
+    letzte Teil dieses Pfades sein; steht er woanders, laeuft der Schutz ins
+    Leere und der Ordner waechst wieder auf 16 MB oder die Treffer verschieben
+    sich.
+    """
+    m = recorder()
+    quelle = (WURZEL / "src" / "srgssr_mcp" / "tools" / "polis.py").read_text(encoding="utf-8")
+    erwartet = {
+        "/polis-api/v2/votations": '_fetch_filtered("votations", ("Items",)',
+        "/polis-api/v2/elections": '_fetch_filtered("elections", ("Elections", "Election")',
+        "/polis-api/v2/cases": '_as_items(data, "Case")',
+    }
+    nach_muster = {s.muster: s for s in m.SCHUTZ}
+    for muster, beleg in erwartet.items():
+        assert muster in nach_muster, f"keine Schutzregel fuer {muster}"
+        assert beleg in quelle, (
+            f"der Server ruft {muster} nicht mehr so ab — die Schutzregel "
+            f"`{nach_muster[muster].schluessel}` ist womoeglich falsch geworden"
+        )
+        assert nach_muster[muster].schluessel in beleg, (
+            f"geschuetzt wird `{nach_muster[muster].schluessel}`, der Server liest {beleg}"
+        )
+    assert all(s.grund for s in m.SCHUTZ), "eine Schutzregel steht ohne Begruendung da"
 
 
 def test_der_nachweis_nennt_schluessel_datum_und_pruefsumme(tmp_path, monkeypatch):
