@@ -1,0 +1,517 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1713703286824-0000)/",
+      null
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1617",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 21.04.2024",
+    "EventDate": "/Date(1713650400000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1617",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "6895",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67487",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Uri",
+                        "ShortName": "UR",
+                        "id": "25",
+                        "locationNumber": "4"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713702996458+0200)/",
+                      "DateChanged": "2024-04-21T14:36:36.4584791+02:00",
+                      "id": "221938"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67487",
+                  "CandidateId": "15725",
+                  "ElectionId": "1772",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Uri",
+                    "ShortName": "UR",
+                    "id": "25",
+                    "locationNumber": "4"
+                  }
+                }
+              ],
+              "FirstName": "Georg",
+              "LastName": "Simmen",
+              "YearBirth": "1974",
+              "City": "Realp",
+              "ImageName": "297fd4",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "297fd4",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "FDP.Die Liberalen",
+                "ShortName": "FDP",
+                "ParentShortName": "FDP",
+                "leftRightPosition": "205",
+                "partyLogoUrl": "b1a158",
+                "id": "306",
+                "smartVoteID": "10612",
+                "partyNumber": "10612",
+                "partyColor": "#3872B5"
+              },
+              "Images": {
+                "ImageOriginal": "297fd4",
+                "ImageEdited": "297fd4",
+                "ImageWebSmall": "297fd4",
+                "ImageWebBig": "297fd4"
+              },
+              "candidateNumber": "0",
+              "id": "15725"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "6082",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67486",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Uri",
+                        "ShortName": "UR",
+                        "id": "25",
+                        "locationNumber": "4"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713702996458+0200)/",
+                      "DateChanged": "2024-04-21T14:36:36.4584791+02:00",
+                      "id": "221939"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67486",
+                  "CandidateId": "19902",
+                  "ElectionId": "1772",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Uri",
+                    "ShortName": "UR",
+                    "id": "25",
+                    "locationNumber": "4"
+                  }
+                }
+              ],
+              "FirstName": "Hermann",
+              "LastName": "Epp",
+              "YearBirth": "1973",
+              "City": "Silenen",
+              "ImageName": "ce15e1",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "ce15e1",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "CVP - Die Mitte",
+                "ShortName": "Mitte",
+                "ParentShortName": "Mitte",
+                "leftRightPosition": "150",
+                "partyLogoUrl": "e9fe6c",
+                "id": "39214",
+                "smartVoteID": "10533",
+                "partyNumber": "10533",
+                "partyColor": "#D6862B"
+              },
+              "Images": {
+                "ImageOriginal": "ce15e1",
+                "ImageEdited": "ce15e1",
+                "ImageWebSmall": "ce15e1",
+                "ImageWebBig": "ce15e1"
+              },
+              "candidateNumber": "0",
+              "id": "19902"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "5032",
+                      "AlreadyElected": true,
+                      "CandidacyId": "67467",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item7",
+                        "Value": "abgewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Uri",
+                        "ShortName": "UR",
+                        "id": "25",
+                        "locationNumber": "4"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713703286824+0200)/",
+                      "DateChanged": "2024-04-21T14:41:26.8248582+02:00",
+                      "id": "221940"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67467",
+                  "CandidateId": "12354",
+                  "ElectionId": "1772",
+                  "AlreadyElected": true,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Uri",
+                    "ShortName": "UR",
+                    "id": "25",
+                    "locationNumber": "4"
+                  }
+                }
+              ],
+              "FirstName": "Dimitri",
+              "LastName": "Moretti",
+              "YearBirth": "1973",
+              "City": "Erstfeld",
+              "ImageName": "727c15",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "727c15",
+              "Incumbent": true,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1530714002686-0000)/",
+                "UpdateDateSpecified": true,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Sozialdemokratische Partei",
+                "ShortName": "SP",
+                "ParentShortName": "SP",
+                "leftRightPosition": "50",
+                "partyLogoUrl": "16e2bb",
+                "id": "38526",
+                "smartVoteID": "10559",
+                "partyNumber": "10559",
+                "partyColor": "#F0554D"
+              },
+              "Images": {
+                "ImageOriginal": "727c15",
+                "ImageEdited": "727c15",
+                "ImageWebSmall": "727c15",
+                "ImageWebBig": "727c15"
+              },
+              "candidateNumber": "0",
+              "id": "12354"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": []
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1713702996458-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1713703016052-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Uri",
+                "ShortName": "UR",
+                "id": "25",
+                "locationNumber": "4"
+              }
+            ],
+            "MetaResult": [
+              {
+                "votingParticipation": "43.5",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1713702996458-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1713702996458-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1713702996458-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Uri",
+                  "ShortName": "UR",
+                  "id": "25",
+                  "locationNumber": "4"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1713703013000+0200)/",
+                "DateChanged": "2024-04-21T14:36:53.0000000+02:00",
+                "id": "221941"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item4",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Regierungsrat                                     ",
+          "OfficialType": {
+            "id": "2",
+            "Value": "Regierung"
+          },
+          "id": "57"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "1",
+          "ElectionPower": 1,
+          "LocationType": {
+            "id": "2",
+            "Value": "Kanton"
+          },
+          "LocationName": "Uri",
+          "ShortName": "UR",
+          "id": "25",
+          "locationNumber": "4"
+        },
+        "id": "1772"
+      }
+    ]
+  },
+  "language": "DE"
+}

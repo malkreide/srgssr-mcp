@@ -1,0 +1,553 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1713093972241-0000)/",
+      null
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1616",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 14.04.2024",
+    "EventDate": "/Date(1713045600000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1616",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "47674",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67484",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "St. Gallen",
+                        "ShortName": "SG",
+                        "id": "21",
+                        "locationNumber": "17"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713093972241+0200)/",
+                      "DateChanged": "2024-04-14T13:26:12.2412394+02:00",
+                      "id": "221925"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67484",
+                  "CandidateId": "4671",
+                  "ElectionId": "1771",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "St. Gallen",
+                    "ShortName": "SG",
+                    "id": "21",
+                    "locationNumber": "17"
+                  }
+                }
+              ],
+              "FirstName": "Bettina",
+              "LastName": "Surber",
+              "YearBirth": "1981",
+              "City": "St. Gallen",
+              "ImageName": "9b3084",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "9b3084",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1696355996138-0000)/",
+                "UpdateDateSpecified": true,
+                "SmartspiderLink": "18cef2",
+                "Canton": "St. Gallen",
+                "Country": "",
+                "Language": "de",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "St. Gallen",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "Rechtsanwältin, Vorstand kantonaler Gewerkschaftsbund, Kantonsrätin, Co-Fraktionspräsidentin",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Website": "",
+                "PoliticalOffices": [
+                  {
+                    "name": "Kantonsrätin ",
+                    "start": "2012-06-01",
+                    "end": "2016-06-01"
+                  },
+                  {
+                    "name": "Mitglied Kantonsrat Kanton St.Gallen ",
+                    "start": "2012-01-01",
+                    "end": ""
+                  },
+                  {
+                    "name": "Co-Fraktionspräsidentin SP-GRÜNE Kantonsrat St.Gallen ",
+                    "start": "2018-01-01",
+                    "end": ""
+                  }
+                ]
+              },
+              "CandidateParty": {
+                "Name": "Sozialdemokratische Partei",
+                "ShortName": "SP",
+                "ParentShortName": "SP",
+                "leftRightPosition": "60",
+                "partyLogoUrl": "b7e4f8",
+                "id": "170",
+                "smartVoteID": "10556",
+                "partyNumber": "10556",
+                "partyColor": "#F0554D"
+              },
+              "Images": {
+                "ImageOriginal": "9b3084",
+                "ImageEdited": "9b3084",
+                "ImageWebSmall": "9b3084",
+                "ImageWebBig": "9b3084"
+              },
+              "candidateNumber": "513648",
+              "id": "4671",
+              "smartVoteID": "513648"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "45117",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67465",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "St. Gallen",
+                        "ShortName": "SG",
+                        "id": "21",
+                        "locationNumber": "17"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713093972241+0200)/",
+                      "DateChanged": "2024-04-14T13:26:12.2412394+02:00",
+                      "id": "221924"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67465",
+                  "CandidateId": "11186",
+                  "ElectionId": "1771",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "St. Gallen",
+                    "ShortName": "SG",
+                    "id": "21",
+                    "locationNumber": "17"
+                  }
+                }
+              ],
+              "FirstName": "Christof",
+              "LastName": "Hartmann",
+              "YearBirth": "1976",
+              "City": "Walenstadt",
+              "ImageName": "6254dc",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "6254dc",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1443797478080-0000)/",
+                "UpdateDateSpecified": true,
+                "SmartspiderLink": "",
+                "Canton": "St.Gallen",
+                "Country": "",
+                "Language": "de_CH",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "Walenstadt",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "Bankangestellter, Gemeinderat, Kantonsrat",
+                "InterestBook": "",
+                "InterestHobby": "Familie, Wandern, Schwingsport",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Website": "http://www.christof-hartmann.ch",
+                "PoliticalOffices": [
+                  {
+                    "name": "Gemeinderat",
+                    "start": "2007-07-01",
+                    "end": ""
+                  },
+                  {
+                    "name": "Kantonsrat",
+                    "start": "2011-09-19",
+                    "end": ""
+                  }
+                ]
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "149",
+                "smartVoteID": "10635",
+                "partyNumber": "10635",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "6254dc",
+                "ImageEdited": "6254dc",
+                "ImageWebSmall": "6254dc",
+                "ImageWebBig": "6254dc"
+              },
+              "candidateNumber": "8595",
+              "id": "11186",
+              "smartVoteID": "8595"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "41127",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67466",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "St. Gallen",
+                        "ShortName": "SG",
+                        "id": "21",
+                        "locationNumber": "17"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1713093972241+0200)/",
+                      "DateChanged": "2024-04-14T13:26:12.2412394+02:00",
+                      "id": "221927"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67466",
+                  "CandidateId": "19897",
+                  "ElectionId": "1771",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "St. Gallen",
+                    "ShortName": "SG",
+                    "id": "21",
+                    "locationNumber": "17"
+                  }
+                }
+              ],
+              "FirstName": "Dana",
+              "LastName": "Zemp",
+              "YearBirth": "1970",
+              "City": "Mörschwil",
+              "ImageName": "7a3ebc",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "7a3ebc",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "149",
+                "smartVoteID": "10635",
+                "partyNumber": "10635",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "7a3ebc",
+                "ImageEdited": "7a3ebc",
+                "ImageWebSmall": "7a3ebc",
+                "ImageWebBig": "7a3ebc"
+              },
+              "candidateNumber": "0",
+              "id": "19897"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": []
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1713093972241-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1713094052211-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "St. Gallen",
+                "ShortName": "SG",
+                "id": "21",
+                "locationNumber": "17"
+              }
+            ],
+            "MetaResult": [
+              {
+                "countedCommunities": "75",
+                "totalCommunities": "75",
+                "votingParticipation": "30.5",
+                "eligibleVoters": "320374",
+                "ballotPaperCount": "97793",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1713093972241-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1713093972241-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1713093972241-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "St. Gallen",
+                  "ShortName": "SG",
+                  "id": "21",
+                  "locationNumber": "17"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1713094050000+0200)/",
+                "DateChanged": "2024-04-14T13:27:30.0000000+02:00",
+                "id": "221928"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item4",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Regierungsrat                                     ",
+          "OfficialType": {
+            "id": "2",
+            "Value": "Regierung"
+          },
+          "id": "52"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "1",
+          "ElectionPower": 1,
+          "LocationType": {
+            "id": "2",
+            "Value": "Kanton"
+          },
+          "LocationName": "St. Gallen",
+          "ShortName": "SG",
+          "id": "21",
+          "locationNumber": "17"
+        },
+        "id": "1771"
+      }
+    ]
+  },
+  "language": "DE"
+}

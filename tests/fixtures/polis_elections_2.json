@@ -1,0 +1,523 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1723993652074-0000)/",
+      null
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1625",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 18.08.2024",
+    "EventDate": "/Date(1723932000000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1625",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "14086",
+                      "AlreadyElected": true,
+                      "CandidacyId": "67516",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Schaffhausen",
+                        "ShortName": "SH",
+                        "id": "19",
+                        "locationNumber": "14"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1723993652074+0200)/",
+                      "DateChanged": "2024-08-18T17:07:32.0741061+02:00",
+                      "id": "232190"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67516",
+                  "CandidateId": "9744",
+                  "ElectionId": "1785",
+                  "AlreadyElected": true,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Schaffhausen",
+                    "ShortName": "SH",
+                    "id": "19",
+                    "locationNumber": "14"
+                  }
+                }
+              ],
+              "FirstName": "Martin",
+              "LastName": "Kessler",
+              "YearBirth": "1968",
+              "City": "Trasadingen",
+              "ImageName": "6bb506",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "6bb506",
+              "Incumbent": true,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "FDP.Die Liberalen",
+                "ShortName": "FDP",
+                "ParentShortName": "FDP",
+                "leftRightPosition": "205",
+                "partyLogoUrl": "a95f88",
+                "id": "193",
+                "smartVoteID": "10606",
+                "partyNumber": "10606",
+                "partyColor": "#3872B5"
+              },
+              "Images": {
+                "ImageOriginal": "6bb506",
+                "ImageEdited": "6bb506",
+                "ImageWebSmall": "6bb506",
+                "ImageWebBig": "6bb506"
+              },
+              "candidateNumber": "0",
+              "id": "9744"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "13919",
+                      "AlreadyElected": true,
+                      "CandidacyId": "67514",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Schaffhausen",
+                        "ShortName": "SH",
+                        "id": "19",
+                        "locationNumber": "14"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1723993652074+0200)/",
+                      "DateChanged": "2024-08-18T17:07:32.0741061+02:00",
+                      "id": "232189"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67514",
+                  "CandidateId": "12416",
+                  "ElectionId": "1785",
+                  "AlreadyElected": true,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Schaffhausen",
+                    "ShortName": "SH",
+                    "id": "19",
+                    "locationNumber": "14"
+                  }
+                }
+              ],
+              "FirstName": "Cornelia",
+              "LastName": "Stamm Hurter",
+              "YearBirth": "1962",
+              "City": "Schaffhausen",
+              "ImageName": "48597e",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "48597e",
+              "Incumbent": true,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "199",
+                "smartVoteID": "10632",
+                "partyNumber": "10632",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "48597e",
+                "ImageEdited": "48597e",
+                "ImageWebSmall": "48597e",
+                "ImageWebBig": "48597e"
+              },
+              "candidateNumber": "0",
+              "id": "12416"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "13717",
+                      "AlreadyElected": true,
+                      "CandidacyId": "67515",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Schaffhausen",
+                        "ShortName": "SH",
+                        "id": "19",
+                        "locationNumber": "14"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1723993652074+0200)/",
+                      "DateChanged": "2024-08-18T17:07:32.0741061+02:00",
+                      "id": "232188"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67515",
+                  "CandidateId": "8073",
+                  "ElectionId": "1785",
+                  "AlreadyElected": true,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Schaffhausen",
+                    "ShortName": "SH",
+                    "id": "19",
+                    "locationNumber": "14"
+                  }
+                }
+              ],
+              "FirstName": "Dino",
+              "LastName": "Tamagni",
+              "YearBirth": "1968",
+              "City": "Neuhausen a/Rhf.",
+              "ImageName": "709d85",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "709d85",
+              "Incumbent": true,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "199",
+                "smartVoteID": "10632",
+                "partyNumber": "10632",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "709d85",
+                "ImageEdited": "709d85",
+                "ImageWebSmall": "709d85",
+                "ImageWebBig": "709d85"
+              },
+              "candidateNumber": "0",
+              "id": "8073"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": []
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1723993652074-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1723993510305-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              }
+            ],
+            "MetaResult": [
+              {
+                "absoluteMajority": "8841",
+                "countedCommunities": "26",
+                "totalCommunities": "26",
+                "votingParticipation": "59.3",
+                "eligibleVoters": "52330",
+                "ballotPaperCount": "24395",
+                "comment": "Vereinzelte 3319 Stimmen.",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1723993652074-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1723993652074-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1723993652074-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Schaffhausen",
+                  "ShortName": "SH",
+                  "id": "19",
+                  "locationNumber": "14"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1723993648000+0200)/",
+                "DateChanged": "2024-08-18T17:07:28.0000000+02:00",
+                "id": "232176"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item4",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [],
+            "MetaResult": [],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Regierungsrat                                     ",
+          "OfficialType": {
+            "id": "2",
+            "Value": "Regierung"
+          },
+          "id": "62"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "1",
+          "ElectionPower": 1,
+          "LocationType": {
+            "id": "2",
+            "Value": "Kanton"
+          },
+          "LocationName": "Schaffhausen",
+          "ShortName": "SH",
+          "id": "19",
+          "locationNumber": "14"
+        },
+        "id": "1785",
+        "compareid": "1615"
+      }
+    ]
+  },
+  "language": "DE"
+}

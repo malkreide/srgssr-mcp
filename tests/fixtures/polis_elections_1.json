@@ -1,0 +1,732 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1719753375596-0000)/",
+      null
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1623",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 30.06.2024",
+    "EventDate": "/Date(1719698400000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1623",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4327",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67504",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753355797+0200)/",
+                      "DateChanged": "2024-06-30T15:15:55.7979718+02:00",
+                      "id": "232155"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4327",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67504",
+                      "DataCondition": {
+                        "id": "Item7",
+                        "Value": "Zwischenresultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753365032+0200)/",
+                      "DateChanged": "2024-06-30T15:16:05.0325063+02:00",
+                      "id": "232157"
+                    }
+                  ],
+                  "dataConditionID": "Item7"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4327",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67504",
+                      "DataCondition": {
+                        "id": "Item5",
+                        "Value": "Web"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753375596+0200)/",
+                      "DateChanged": "2024-06-30T15:16:15.5961648+02:00",
+                      "id": "232161"
+                    }
+                  ],
+                  "dataConditionID": "Item5"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67504",
+                  "CandidateId": "19906",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                },
+                {
+                  "CandidacyId": "67504",
+                  "CandidateId": "19906",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                },
+                {
+                  "CandidacyId": "67504",
+                  "CandidateId": "19906",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                }
+              ],
+              "FirstName": "Hans Martin",
+              "LastName": "Meuli",
+              "ImageName": "318220",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "318220",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "FDP.Die Liberalen",
+                "ShortName": "FDP",
+                "ParentShortName": "FDP",
+                "leftRightPosition": "205",
+                "partyLogoUrl": "a95f88",
+                "id": "240",
+                "smartVoteID": "10600",
+                "partyNumber": "10600",
+                "partyColor": "#3872B5"
+              },
+              "Images": {
+                "ImageOriginal": "318220",
+                "ImageEdited": "318220",
+                "ImageWebSmall": "318220",
+                "ImageWebBig": "318220"
+              },
+              "candidateNumber": "0",
+              "id": "19906"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4309",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67503",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753355797+0200)/",
+                      "DateChanged": "2024-06-30T15:15:55.7979718+02:00",
+                      "id": "232154"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4309",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67503",
+                      "DataCondition": {
+                        "id": "Item7",
+                        "Value": "Zwischenresultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753363938+0200)/",
+                      "DateChanged": "2024-06-30T15:16:03.9387164+02:00",
+                      "id": "232156"
+                    }
+                  ],
+                  "dataConditionID": "Item7"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "4309",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67503",
+                      "DataCondition": {
+                        "id": "Item5",
+                        "Value": "Web"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "5917",
+                        "LocationType": {
+                          "id": "4",
+                          "Value": "Gemeinde"
+                        },
+                        "LocationName": "Chur",
+                        "ShortName": "Chur",
+                        "id": "4495",
+                        "locationNumber": "3901"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1719753374393+0200)/",
+                      "DateChanged": "2024-06-30T15:16:14.3930448+02:00",
+                      "id": "232160"
+                    }
+                  ],
+                  "dataConditionID": "Item5"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67503",
+                  "CandidateId": "15734",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                },
+                {
+                  "CandidacyId": "67503",
+                  "CandidateId": "15734",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                },
+                {
+                  "CandidacyId": "67503",
+                  "CandidateId": "15734",
+                  "ElectionId": "1782",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "5917",
+                    "LocationType": {
+                      "id": "4",
+                      "Value": "Gemeinde"
+                    },
+                    "LocationName": "Chur",
+                    "ShortName": "Chur",
+                    "id": "4495",
+                    "locationNumber": "3901"
+                  }
+                }
+              ],
+              "FirstName": "Patrik",
+              "LastName": "Degiacomi",
+              "YearBirth": "1972",
+              "City": "Chur",
+              "ImageName": "6f5300",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "6f5300",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDateSpecified": false,
+                "SmartspiderLink": "",
+                "Canton": "",
+                "Country": "",
+                "Language": "",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Sozialdemokratische Partei",
+                "ShortName": "SP",
+                "ParentShortName": "SP",
+                "leftRightPosition": "60",
+                "partyLogoUrl": "b7e4f8",
+                "id": "239",
+                "smartVoteID": "10547",
+                "partyNumber": "10547",
+                "partyColor": "#F0554D"
+              },
+              "Images": {
+                "ImageOriginal": "6f5300",
+                "ImageEdited": "6f5300",
+                "ImageWebSmall": "6f5300",
+                "ImageWebBig": "6f5300"
+              },
+              "candidateNumber": "0",
+              "id": "15734"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": []
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1719753355797-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1719751330734-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "5917",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Chur",
+                "ShortName": "Chur",
+                "id": "4495",
+                "locationNumber": "3901"
+              }
+            ],
+            "MetaResult": [
+              {
+                "comment": "Cunquai ch'igl èn be 18 vuschs differenza e quai correspunda a pli pauc che 0,3% da tut las vuschs valaivlas (8'986 total vuschs valaivlas) vegnan las vuschs da lescha ennà anc ina giada dumbradas or. Quai capita glindesdi il 1. da fanadur. ",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1719753355797-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1719753355797-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1719753355797-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "5917",
+                  "LocationType": {
+                    "id": "4",
+                    "Value": "Gemeinde"
+                  },
+                  "LocationName": "Chur",
+                  "ShortName": "Chur",
+                  "id": "4495",
+                  "locationNumber": "3901"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1719751330000+0200)/",
+                "DateChanged": "2024-06-30T14:42:10.0000000+02:00",
+                "id": "232159"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1719750193854-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1719750367780-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "5917",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Chur",
+                "ShortName": "Chur",
+                "id": "4495",
+                "locationNumber": "3901"
+              }
+            ],
+            "MetaResult": [
+              {
+                "comment": "Cunquai ch'igl èn be 18 vuschs differenza e quai correspunda a pli pauc che 0,3% da tut las vuschs valaivlas (8'986 total vuschs valaivlas) vegnan las vuschs da lescha ennà anc ina giada dumbradas or. Quai capita glindesdi il 1. da fanadur. ",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1719750193854-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1719750193854-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1719750193854-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item7",
+                  "Value": "Zwischenresultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "5917",
+                  "LocationType": {
+                    "id": "4",
+                    "Value": "Gemeinde"
+                  },
+                  "LocationName": "Chur",
+                  "ShortName": "Chur",
+                  "id": "4495",
+                  "locationNumber": "3901"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1719750522000+0200)/",
+                "DateChanged": "2024-06-30T14:28:42.0000000+02:00",
+                "id": "232158"
+              }
+            ],
+            "dataConditionID": "Item7",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1719751778166-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1719751786792-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "5917",
+                "LocationType": {
+                  "id": "4",
+                  "Value": "Gemeinde"
+                },
+                "LocationName": "Chur",
+                "ShortName": "Chur",
+                "id": "4495",
+                "locationNumber": "3901"
+              }
+            ],
+            "MetaResult": [
+              {
+                "comment": "Cunquai ch'igl èn be 18 vuschs differenza e quai correspunda a pli pauc che 0,3% da tut las vuschs valaivlas (8'986 total vuschs valaivlas) vegnan las vuschs da lescha ennà anc ina giada dumbradas or. Quai capita glindesdi il 1. da fanadur. ",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1719751778166-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1719751778166-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1719751778166-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item5",
+                  "Value": "Web"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "5917",
+                  "LocationType": {
+                    "id": "4",
+                    "Value": "Gemeinde"
+                  },
+                  "LocationName": "Chur",
+                  "ShortName": "Chur",
+                  "id": "4495",
+                  "locationNumber": "3901"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1719751783000+0200)/",
+                "DateChanged": "2024-06-30T14:49:43.0000000+02:00",
+                "id": "232162"
+              }
+            ],
+            "dataConditionID": "Item5",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Stadtpräsidium",
+          "OfficialType": {
+            "id": "3",
+            "Value": "Präsidium"
+          },
+          "id": "158"
+        },
+        "ElectionLocation": {
+          "ParentLocationID": "5917",
+          "LocationType": {
+            "id": "4",
+            "Value": "Gemeinde"
+          },
+          "LocationName": "Chur",
+          "ShortName": "Chur",
+          "id": "4495",
+          "locationNumber": "3901"
+        },
+        "id": "1782"
+      }
+    ]
+  },
+  "language": "DE"
+}

@@ -1,0 +1,40 @@
+{
+  "Items": [
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Case, tpc.eMedia.PolisV2.Business",
+      "Title": "Abstimmungen und Wahlen vom 11.3.2007",
+      "EventDate": "/Date(1173567600000-0000)/",
+      "EventDateSpecified": true,
+      "id": "1236",
+      "active": false
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [],
+      "Title": "Gemeinsame Trägerschaft der Universität Basel",
+      "IndividualTitle": "Trägerschaft der Universität Basel",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 0.5,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Basel-Landschaft",
+        "ShortName": "BL",
+        "id": "7",
+        "locationNumber": "13"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "1627"
+    }
+  ],
+  "language": "DE"
+}

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "47.3797,8.5342",
+    "lat": 47.3797,
+    "lon": 8.5342,
+    "station_id": "S12724",
+    "timezone": "Europe/Zurich",
+    "default_name": "Zürich",
+    "alarm_region_id": "11",
+    "alarm_region_name": "Stadt ZH",
+    "district": "",
+    "geolocation_names": [
+      {
+        "id": "4cdc93de6ddc36141f7493213eeedaee",
+        "location_id": "417204077",
+        "type": "city",
+        "language": 0,
+        "translation_type": "orig",
+        "name": "Zürich",
+        "country": "Schweiz",
+        "province": "Zürich",
+        "inhabitants": 365132,
+        "height": 408,
+        "description_short": "Zürich",
+        "description_long": "Zürich, 408 m ü.M.",
+        "district": "",
+        "ch": 1
+      },
+      {
+        "id": "1192045f06b811b701d8d7fcfd9dec64",
+        "location_id": "417204077",
+        "type": "city",
+        "language": 33,
+        "translation_type": "trans",
+        "name": "Zurich",
+        "country": "Schweiz",
+        "province": "Zürich",
+        "inhabitants": 365132,
+        "height": 408,
+        "description_short": "Zürich",
+        "description_long": "Zürich, 408 m ü.M.",
+        "district": "",
+        "ch": 1
+      },
+      {
+        "id": "d7bb8c861d4a87fb55ba44539fd32060",
+        "location_id": "417204077",
+        "type": "city",
+        "language": 39,
+        "translation_type": "trans",
+        "name": "Zurigo",
+        "country": "Schweiz",
+        "province": "Zürich",
+        "inhabitants": 365132,
+        "height": 408,
+        "description_short": "Zürich",
+        "description_long": "Zürich, 408 m ü.M.",
+        "district": "",
+        "ch": 1
+      }
+    ]
+  }
+]

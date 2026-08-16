@@ -1,0 +1,1319 @@
+{
+  "FileInfo": {
+    "Items1": [
+      "1",
+      "/Date(1700401390432-0000)/",
+      "/Date(1700420876638-0000)/"
+    ],
+    "Items1ElementName": [
+      "ElectionsCount",
+      "LastCandidateResult",
+      "LastPartyResult"
+    ],
+    "Items": [
+      {
+        "Items": [
+          null,
+          "1608",
+          null
+        ],
+        "ItemsElementName": [
+          "ElectionID",
+          "CaseID",
+          "LocationID"
+        ]
+      }
+    ],
+    "created": "/Date(1786831200000+0200)/",
+    "createdSpecified": true
+  },
+  "Case": {
+    "Title": "Urnengang vom 19.11.2023",
+    "EventDate": "/Date(1700348400000-0000)/",
+    "EventDateSpecified": true,
+    "id": "1608",
+    "active": false
+  },
+  "Elections": {
+    "Election": [
+      {
+        "CandidateResults": {
+          "Candidate": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "206493",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67389",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400814137+0100)/",
+                      "DateChanged": "2023-11-19T14:33:34.1375843+01:00",
+                      "id": "216943"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "134442",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67389",
+                      "DataCondition": {
+                        "id": "Item7",
+                        "Value": "Zwischenresultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700397278675+0100)/",
+                      "DateChanged": "2023-11-19T13:34:38.6754839+01:00",
+                      "id": "216911"
+                    }
+                  ],
+                  "dataConditionID": "Item7"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "208000",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67389",
+                      "DataCondition": {
+                        "id": "Item10",
+                        "Value": "Fremde Hochrechnung"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400021194+0100)/",
+                      "DateChanged": "2023-11-19T14:20:21.1940518+01:00",
+                      "id": "216885"
+                    }
+                  ],
+                  "dataConditionID": "Item10"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67389",
+                  "CandidateId": "3279",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                },
+                {
+                  "CandidacyId": "67389",
+                  "CandidateId": "3279",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                },
+                {
+                  "CandidacyId": "67389",
+                  "CandidateId": "3279",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                }
+              ],
+              "FirstName": "Tiana Angelina",
+              "LastName": "Moser",
+              "YearBirth": "1979",
+              "City": "Zürich",
+              "ImageName": "96f05e",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "96f05e",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1696365589265-0000)/",
+                "UpdateDateSpecified": true,
+                "ProfileLink": "https://www.smartvote.ch/de/group/527/election/23_ch_nr/db/candidates/57014?lang=de_CH",
+                "SmartspiderLink": "948b71",
+                "Canton": "Zürich",
+                "Country": "",
+                "Language": "de",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "Zürich",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "Umwelt- und Politikwissenschafterin, Nationalrätin, Fraktionspräsidentin",
+                "InterestBook": "Vom Ende der Einsamkeit (Benedict Wells), Verbrechen (Ferdinand von Schirach), Herr der Diebe (Cornelia Funke)",
+                "InterestHobby": "Laufen, Lesen, Garten",
+                "InterestMovie": "Festen (1998), After the Wedding (2006),  Borgen (2010), Die göttliche Ordnung (2017)",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Children": "4",
+                "Website": "http://www.tiana-moser.ch",
+                "PoliticalOffices": []
+              },
+              "CandidateParty": {
+                "Name": "Grünliberale",
+                "ShortName": "GLP",
+                "ParentShortName": "GLP",
+                "leftRightPosition": "120",
+                "partyLogoUrl": "ff4c1d",
+                "id": "94",
+                "smartVoteID": "10694",
+                "partyNumber": "10694",
+                "partyColor": "#C4C43D"
+              },
+              "Images": {
+                "ImageOriginal": "96f05e",
+                "ImageEdited": "96f05e",
+                "ImageWebSmall": "96f05e",
+                "ImageWebBig": "96f05e"
+              },
+              "candidateNumber": "514074",
+              "id": "3279",
+              "smartVoteID": "514074"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "159328",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67391",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item5",
+                        "Value": "nicht gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400814137+0100)/",
+                      "DateChanged": "2023-11-19T14:33:34.1375843+01:00",
+                      "id": "216945"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "133426",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67391",
+                      "DataCondition": {
+                        "id": "Item7",
+                        "Value": "Zwischenresultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700397278675+0100)/",
+                      "DateChanged": "2023-11-19T13:34:38.6754839+01:00",
+                      "id": "216910"
+                    }
+                  ],
+                  "dataConditionID": "Item7"
+                },
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "160000",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67391",
+                      "DataCondition": {
+                        "id": "Item10",
+                        "Value": "Fremde Hochrechnung"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Zürich",
+                        "ShortName": "ZH",
+                        "id": "29",
+                        "locationNumber": "1"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400021194+0100)/",
+                      "DateChanged": "2023-11-19T14:20:21.1940518+01:00",
+                      "id": "216886"
+                    }
+                  ],
+                  "dataConditionID": "Item10"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67391",
+                  "CandidateId": "3586",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                },
+                {
+                  "CandidacyId": "67391",
+                  "CandidateId": "3586",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                },
+                {
+                  "CandidacyId": "67391",
+                  "CandidateId": "3586",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Zürich",
+                    "ShortName": "ZH",
+                    "id": "29",
+                    "locationNumber": "1"
+                  }
+                }
+              ],
+              "FirstName": "Gregor",
+              "LastName": "Rutz",
+              "YearBirth": "1972",
+              "City": "Zürich",
+              "ImageName": "b61b3f",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "m",
+              "ImageWeb": "b61b3f",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1696360558015-0000)/",
+                "UpdateDateSpecified": true,
+                "ProfileLink": "https://www.smartvote.ch/de/group/527/election/23_ch_nr/db/candidates/55729?lang=de_CH",
+                "SmartspiderLink": "b40e3f",
+                "Canton": "Zürich",
+                "Country": "",
+                "Language": "de",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "Zürich",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "lic.iur, Unternehmer",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Website": "http://www.gregor-rutz.ch",
+                "PoliticalOffices": [
+                  {
+                    "name": "Verfassungsrat Kanton Zürich",
+                    "start": "2000-06-01",
+                    "end": "2005-02-28"
+                  },
+                  {
+                    "name": "Kantonsrat Kanton Zürich",
+                    "start": "2011-05-01",
+                    "end": "2012-11-30"
+                  },
+                  {
+                    "name": "Generalsekretär SVP Schweiz",
+                    "start": "2001-02-01",
+                    "end": "2008-03-31"
+                  }
+                ]
+              },
+              "CandidateParty": {
+                "Name": "Schweizerische Volkspartei",
+                "ShortName": "SVP",
+                "ParentShortName": "SVP",
+                "leftRightPosition": "240",
+                "partyLogoUrl": "a371eb",
+                "id": "85",
+                "smartVoteID": "10642",
+                "partyNumber": "10642",
+                "partyColor": "#4B8A3E"
+              },
+              "Images": {
+                "ImageOriginal": "b61b3f",
+                "ImageEdited": "b61b3f",
+                "ImageWebSmall": "b61b3f",
+                "ImageWebBig": "b61b3f"
+              },
+              "candidateNumber": "513794",
+              "id": "3586",
+              "smartVoteID": "513794"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "Votes": "84431",
+                      "AlreadyElected": false,
+                      "CandidacyId": "67367",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultCondition": {
+                        "id": "Item4",
+                        "Value": "gewählt"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Aargau",
+                        "ShortName": "AG",
+                        "id": "3",
+                        "locationNumber": "19"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700392662524+0100)/",
+                      "DateChanged": "2023-11-19T12:17:42.5242222+01:00",
+                      "id": "216893"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Candidacies": [
+                {
+                  "CandidacyId": "67367",
+                  "CandidateId": "7566",
+                  "ElectionId": "1749",
+                  "AlreadyElected": false,
+                  "Location": {
+                    "ParentLocationID": "1",
+                    "ElectionPower": 1,
+                    "LocationType": {
+                      "id": "2",
+                      "Value": "Kanton"
+                    },
+                    "LocationName": "Aargau",
+                    "ShortName": "AG",
+                    "id": "3",
+                    "locationNumber": "19"
+                  }
+                }
+              ],
+              "FirstName": "Marianne",
+              "LastName": "Binder-Keller",
+              "YearBirth": "1958",
+              "City": "Baden",
+              "ImageName": "a2814c",
+              "OldNameDateSpecified": false,
+              "OldPartyNameDateSpecified": false,
+              "Gender": "w",
+              "ImageWeb": "a2814c",
+              "Incumbent": false,
+              "CountryLocation": {
+                "LocationType": {
+                  "id": "1",
+                  "Value": "Land"
+                },
+                "LocationName": "Schweiz",
+                "ShortName": "CH",
+                "id": "1",
+                "locationNumber": "0"
+              },
+              "SmartVoteData": {
+                "UpdateDate": "/Date(1696361555558-0000)/",
+                "UpdateDateSpecified": true,
+                "ProfileLink": "https://www.smartvote.ch/de/group/527/election/23_ch_nr/db/candidates/55923?lang=de_CH",
+                "SmartspiderLink": "30c1f4",
+                "Canton": "Aargau",
+                "Country": "",
+                "Language": "de",
+                "Nationality": "",
+                "Address": "",
+                "Zip": "",
+                "City": "Baden",
+                "ProfessionLearnt": "",
+                "ProfessionToday": "Kommunikationsberaterin, Publizistin, Präsidentin Die Mitte AG",
+                "InterestBook": "",
+                "InterestHobby": "",
+                "InterestMovie": "",
+                "InterestMusic": "",
+                "Club": "",
+                "CommitmentOther": "",
+                "Children": "2",
+                "Website": "https://www.mariannebinder.ch",
+                "PoliticalOffices": [
+                  {
+                    "name": "Grossrätin Kanton Aargau ",
+                    "start": "2012-01-01",
+                    "end": ""
+                  },
+                  {
+                    "name": "Parteipräsidentin",
+                    "start": "2016-01-01",
+                    "end": ""
+                  },
+                  {
+                    "name": "Grossrätin",
+                    "start": "2013-01-01",
+                    "end": "2019-01-01"
+                  }
+                ]
+              },
+              "CandidateParty": {
+                "Name": "Die Mitte",
+                "ShortName": "Mitte",
+                "ParentShortName": "Mitte",
+                "leftRightPosition": "150",
+                "partyLogoUrl": "e9fe6c",
+                "id": "39210",
+                "smartVoteID": "10512",
+                "partyNumber": "10512",
+                "partyColor": "#D6862B"
+              },
+              "Images": {
+                "ImageOriginal": "a2814c",
+                "ImageEdited": "a2814c",
+                "ImageWebSmall": "a2814c",
+                "ImageWebBig": "a2814c"
+              },
+              "candidateNumber": "512814",
+              "id": "7566",
+              "smartVoteID": "512814"
+            }
+          ]
+        },
+        "PartyResults": {
+          "Party": [
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "1",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Solothurn",
+                        "ShortName": "SO",
+                        "id": "22",
+                        "locationNumber": "11"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700394459820+0100)/",
+                      "DateChanged": "2023-11-19T12:47:39.8203677+01:00",
+                      "id": "22"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "Sozialdemokratische Partei",
+              "ShortName": "SP",
+              "ParentShortName": "SP",
+              "leftRightPosition": "60",
+              "partyLogoUrl": "b7e4f8",
+              "id": "168",
+              "smartVoteID": "10555",
+              "partyNumber": "10555",
+              "partyColor": "#F0554D"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "1",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Tessin",
+                        "ShortName": "TI",
+                        "id": "23",
+                        "locationNumber": "21"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400327092+0100)/",
+                      "DateChanged": "2023-11-19T14:25:27.0927415+01:00",
+                      "id": "23"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "Die Mitte",
+              "ShortName": "Mitte",
+              "ParentShortName": "Mitte",
+              "leftRightPosition": "150",
+              "partyLogoUrl": "e9fe6c",
+              "id": "39203",
+              "smartVoteID": "10531",
+              "partyNumber": "10531",
+              "partyColor": "#D6862B"
+            },
+            {
+              "LocationResults": [
+                {
+                  "LocationResult": [
+                    {
+                      "ListResults": [],
+                      "Seats": "1",
+                      "DataCondition": {
+                        "id": "Item3",
+                        "Value": "Resultat"
+                      },
+                      "ResultLocation": {
+                        "ParentLocationID": "1",
+                        "ElectionPower": 1,
+                        "LocationType": {
+                          "id": "2",
+                          "Value": "Kanton"
+                        },
+                        "LocationName": "Tessin",
+                        "ShortName": "TI",
+                        "id": "23",
+                        "locationNumber": "21"
+                      },
+                      "locked": true,
+                      "DateChangedDateTime": "/Date(1700400327092+0100)/",
+                      "DateChanged": "2023-11-19T14:25:27.0927415+01:00",
+                      "id": "23"
+                    }
+                  ],
+                  "dataConditionID": "Item3"
+                }
+              ],
+              "Name": "Schweizerische Volkspartei",
+              "ShortName": "SVP",
+              "ParentShortName": "SVP",
+              "leftRightPosition": "240",
+              "partyLogoUrl": "a371eb",
+              "id": "74",
+              "smartVoteID": "10636",
+              "partyNumber": "10636",
+              "partyColor": "#4B8A3E"
+            }
+          ]
+        },
+        "MetaResults": [
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700392662524-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(1700394480555-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700392705714-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Aargau",
+                "ShortName": "AG",
+                "id": "3",
+                "locationNumber": "19"
+              },
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700398014090-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(1700420876638-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700398044872-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700394317185-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(1700394459820-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700394337796-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Solothurn",
+                "ShortName": "SO",
+                "id": "22",
+                "locationNumber": "11"
+              }
+            ],
+            "MetaResult": [
+              {
+                "countedCommunities": "198",
+                "totalCommunities": "198",
+                "votingParticipation": "38.1",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700392662524-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700392662524-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700392662524-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Aargau",
+                  "ShortName": "AG",
+                  "id": "3",
+                  "locationNumber": "19"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700392705000+0100)/",
+                "DateChanged": "2023-11-19T12:18:25.0000000+01:00",
+                "id": "216897"
+              },
+              {
+                "countedCommunities": "107",
+                "totalCommunities": "107",
+                "votingParticipation": "44.1",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700394317185-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700394317185-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700394317185-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Solothurn",
+                  "ShortName": "SO",
+                  "id": "22",
+                  "locationNumber": "11"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700394337000+0100)/",
+                "DateChanged": "2023-11-19T12:45:37.0000000+01:00",
+                "id": "216906"
+              },
+              {
+                "countedCommunities": "26",
+                "totalCommunities": "26",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700398014090-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700398014090-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700398014090-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item3",
+                  "Value": "Resultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Schaffhausen",
+                  "ShortName": "SH",
+                  "id": "19",
+                  "locationNumber": "14"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700398043000+0100)/",
+                "DateChanged": "2023-11-19T13:47:23.0000000+01:00",
+                "id": "216928"
+              }
+            ],
+            "dataConditionID": "Item3",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700396141542-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700395157264-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700393082629-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700391685469-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Solothurn",
+                "ShortName": "SO",
+                "id": "22",
+                "locationNumber": "11"
+              },
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700396869863-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700393563005-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Tessin",
+                "ShortName": "TI",
+                "id": "23",
+                "locationNumber": "21"
+              }
+            ],
+            "MetaResult": [
+              {
+                "countedCommunities": "165",
+                "totalCommunities": "175",
+                "votingParticipation": "40.2",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700397278675-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700397278675-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700397278675-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item7",
+                  "Value": "Zwischenresultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Zürich",
+                  "ShortName": "ZH",
+                  "id": "29",
+                  "locationNumber": "1"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700397276000+0100)/",
+                "DateChanged": "2023-11-19T13:34:36.0000000+01:00",
+                "id": "216909"
+              },
+              {
+                "countedCommunities": "22",
+                "totalCommunities": "26",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700396141542-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700396141542-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700396141542-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item7",
+                  "Value": "Zwischenresultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Schaffhausen",
+                  "ShortName": "SH",
+                  "id": "19",
+                  "locationNumber": "14"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700396112000+0100)/",
+                "DateChanged": "2023-11-19T13:15:12.0000000+01:00",
+                "id": "216916"
+              },
+              {
+                "countedCommunities": "100",
+                "totalCommunities": "106",
+                "comment": "Stand: 13:12",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700396869863-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700396869863-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700396869863-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item7",
+                  "Value": "Zwischenresultat"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Tessin",
+                  "ShortName": "TI",
+                  "id": "23",
+                  "locationNumber": "21"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700396820000+0100)/",
+                "DateChanged": "2023-11-19T13:27:00.0000000+01:00",
+                "id": "216903"
+              }
+            ],
+            "dataConditionID": "Item7",
+            "dataConditionIDSpecified": true
+          },
+          {
+            "OnAirInfo": [
+              {
+                "candidateData": {
+                  "dateChanged": "/Date(1700400021194-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "partyData": {
+                  "dateChanged": "/Date(-62135596800000-0000)/",
+                  "dateChangedSpecified": false,
+                  "Value": false
+                },
+                "metaData": {
+                  "dateChanged": "/Date(1700391020032-0000)/",
+                  "dateChangedSpecified": true,
+                  "Value": true
+                },
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Zürich",
+                "ShortName": "ZH",
+                "id": "29",
+                "locationNumber": "1"
+              }
+            ],
+            "MetaResult": [
+              {
+                "comment": "Stand 14:10\nQuelle: Statistisches Amt des Kantons Zürich\nBasis: 170 von 175 Gemeinden",
+                "OnAir": {
+                  "candidateData": {
+                    "dateChanged": "/Date(1700400021194-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "partyData": {
+                    "dateChanged": "/Date(1700400021194-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  },
+                  "metaData": {
+                    "dateChanged": "/Date(1700400021194-0000)/",
+                    "dateChangedSpecified": true,
+                    "Value": true
+                  }
+                },
+                "DataCondition": {
+                  "id": "Item10",
+                  "Value": "Fremde Hochrechnung"
+                },
+                "ResultCondition": {
+                  "id": "Item1",
+                  "Value": "Unknown"
+                },
+                "ResultLocation": {
+                  "ParentLocationID": "1",
+                  "ElectionPower": 1,
+                  "LocationType": {
+                    "id": "2",
+                    "Value": "Kanton"
+                  },
+                  "LocationName": "Zürich",
+                  "ShortName": "ZH",
+                  "id": "29",
+                  "locationNumber": "1"
+                },
+                "locked": false,
+                "DateChangedDateTime": "/Date(1700400008000+0100)/",
+                "DateChanged": "2023-11-19T14:20:08.0000000+01:00",
+                "id": "216887"
+              }
+            ],
+            "dataConditionID": "Item10",
+            "dataConditionIDSpecified": true
+          }
+        ],
+        "Official": {
+          "OfficialName": "Ständerat",
+          "OfficialType": {
+            "id": "1",
+            "Value": "Parlament"
+          },
+          "id": "44"
+        },
+        "ElectionLocation": {
+          "LocationType": {
+            "id": "1",
+            "Value": "Land"
+          },
+          "LocationName": "Schweiz",
+          "ShortName": "CH",
+          "id": "1",
+          "locationNumber": "0"
+        },
+        "id": "1749"
+      }
+    ]
+  },
+  "language": "DE"
+}

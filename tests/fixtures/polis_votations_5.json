@@ -1,0 +1,147 @@
+{
+  "Items": [
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Case, tpc.eMedia.PolisV2.Business",
+      "Title": "Urnengang vom 18.08.2024",
+      "EventDate": "/Date(1723932000000-0000)/",
+      "EventDateSpecified": true,
+      "id": "1625",
+      "active": false
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1723984590000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "12374",
+                "No": "14186"
+              },
+              "Relative": {
+                "Yes": "46.6",
+                "No": "53.4",
+                "Participation": "60.4"
+              },
+              "id": "232195"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Genehmigung des Axpo-Aktionärsbindungsvertrags und der Eignerstrategie",
+      "IndividualTitle": "Ablösung des NOK-Gründungsvertrags",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5053"
+    },
+    {
+      "__type": "tpc.eMedia.PolisV2.Business.API.v1.Models.Export.Votation, tpc.eMedia.PolisV2.Business",
+      "Results": [
+        {
+          "Result": [
+            {
+              "DataCondition": {
+                "id": "Item3",
+                "Value": "Resultat"
+              },
+              "ResultCondition": {
+                "id": "Item3",
+                "Value": "abgelehnt"
+              },
+              "LastUpdate": "/Date(1724064585000-0000)/",
+              "Location": {
+                "ParentLocationID": "1",
+                "ElectionPower": 1,
+                "LocationType": {
+                  "id": "2",
+                  "Value": "Kanton"
+                },
+                "LocationName": "Schaffhausen",
+                "ShortName": "SH",
+                "id": "19",
+                "locationNumber": "14"
+              },
+              "Absolute": {
+                "Yes": "13352",
+                "No": "13400"
+              },
+              "Relative": {
+                "Yes": "49.9",
+                "No": "50.1",
+                "Participation": "60.4"
+              },
+              "id": "232185"
+            }
+          ],
+          "dataConditionID": "Item3",
+          "dataConditionIDSpecified": true
+        }
+      ],
+      "Title": "Änderung des Gesetzes über den Kantonsrat",
+      "IndividualTitle": "Temporäre Stellvertretung (Kantonsrat)",
+      "ShortName": "",
+      "VotationLocation": {
+        "ParentLocationID": "1",
+        "ElectionPower": 1,
+        "LocationType": {
+          "id": "2",
+          "Value": "Kanton"
+        },
+        "LocationName": "Schaffhausen",
+        "ShortName": "SH",
+        "id": "19",
+        "locationNumber": "14"
+      },
+      "VoteType": {
+        "Name": "Obligatorisches Referendum",
+        "ScoreMore": true,
+        "ShortName": "O",
+        "id": "1"
+      },
+      "adminid": "0",
+      "id": "5054"
+    }
+  ],
+  "language": "DE"
+}
