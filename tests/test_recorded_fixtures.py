@@ -40,7 +40,11 @@ from typing import Any
 import httpx
 import pytest
 import respx
-from fixture_data import (
+
+from srgssr_mcp import _http, server
+from srgssr_mcp._app import BusinessUnit
+from srgssr_mcp.tools import polis
+from tests.fixture_data import (
     fixture_json,
     fixture_text,
     provenance,
@@ -48,10 +52,6 @@ from fixture_data import (
     schluessel_fuer,
     schluesselverzeichnis,
 )
-
-from srgssr_mcp import _http, server
-from srgssr_mcp._app import BusinessUnit
-from srgssr_mcp.tools import polis
 
 #: Ein erfundenes Token. Die echte Token-Antwort ist nicht aufgezeichnet — ihr
 #: Rumpf waere ein gueltiges Bearer-Token —, also wird sie hier gestellt.
@@ -483,7 +483,7 @@ async def test_die_fall_liste_bleibt_vollzaehlig(quelle):
 # --------------------------------------------------------------------------
 def test_der_recorder_faehrt_dieselben_aufrufe():
     """Sonst zeichnet der eine auf, was der andere nie abspielt."""
-    from test_record_fixtures import recorder
+    from tests.test_record_fixtures import recorder
 
     im_plan = {a.name for a in recorder().PLAN}
     assert im_plan == set(WERKZEUGE), "Recorder und Testtabelle nennen verschiedene Aufrufe"
@@ -495,7 +495,7 @@ def test_die_eingaben_stimmen_mit_denen_des_recorders_ueberein():
     Verglichen wird nur, was in beiden fest steht — die zur Laufzeit gesetzten
     IDs kommen hier aus den Schluesseln und dort aus der Quelle.
     """
-    from test_record_fixtures import recorder
+    from tests.test_record_fixtures import recorder
 
     nach_name = {a.name: a for a in recorder().PLAN}
     for name, (werkzeug, klasse, eingabe) in WERKZEUGE.items():
@@ -509,8 +509,8 @@ def test_die_eingaben_stimmen_mit_denen_des_recorders_ueberein():
 
 def test_der_schluessel_ist_in_beiden_derselbe():
     """Zwei Regeln, die auseinanderlaufen, ordnen still falsch zu."""
-    import fixture_data
-    from test_record_fixtures import recorder
+    from tests import fixture_data
+    from tests.test_record_fixtures import recorder
 
     request = httpx.Request(
         "GET",
