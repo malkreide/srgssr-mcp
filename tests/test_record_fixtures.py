@@ -554,3 +554,99 @@ def test_entartet_findet_den_fehler_auch_ganz_oben_und_nirgends():
     assert m._entartet(fehler) == ["(oben)"]
     assert m._entartet(None) == []
     assert m._entartet("ein String") == []
+
+
+@respx.mock
+async def test_eine_schon_geholte_antwort_wird_nicht_erneut_angefordert(geschlossener_client):
+    """Vier Werkzeuge loesen dieselbe Koordinate auf — das waren acht Abrufe fuer zwei URLs.
+
+    `srf-meteo` drosselt danach. Gemessen am 16.8.2026: der erste Abruf kam
+    durch, der zweite auf dieselbe URL bekam HTTP 429 und blieb ueber vier
+    Retries gedrosselt; der Lauf brach ab. Der Lauf davor war aus demselben
+    Grund still unvollstaendig.
+
+    Geprueft wird an der Quelle, nicht am Ergebnis: die zweite Abfrage darf sie
+    gar nicht mehr erreichen.
+    """
+    m = recorder()
+    mocke_token()
+    orte = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": "47.0,8.0", "lat": 47.0, "lon": 8.0}])
+    )
+    punkt = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/forecastpoint").mock(
+        return_value=httpx.Response(200, json={"days": [], "hours": [], "three_hours": []})
+    )
+
+    bestand: dict[str, object] = {}
+    for werkzeug in ("srgssr_weather_current", "srgssr_weather_forecast_24h"):
+        for antwort in await m._fahre(
+            m.Aufruf(
+                werkzeug,
+                werkzeug,
+                "WeatherForecastInput",
+                {"latitude": 47.0, "longitude": 8.0},
+            ),
+            bestand,
+        ):
+            bestand.setdefault(antwort.schluessel, antwort)
+
+    assert orte.call_count == 1, f"die Ortsaufloesung ging {orte.call_count}x an die Quelle"
+    assert punkt.call_count == 1, f"der Vorhersagepunkt ging {punkt.call_count}x an die Quelle"
+    assert len(bestand) == 2, f"aufgezeichnet wurden {sorted(bestand)}"
+
+
+@respx.mock
+async def test_ohne_bestand_geht_jede_anfrage_wieder_raus(geschlossener_client):
+    """Die Gegenrichtung: sonst waere die Zusicherung oben von «gar nichts geholt» nicht zu trennen."""
+    m = recorder()
+    mocke_token()
+    orte = respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/geolocations").mock(
+        return_value=httpx.Response(200, json=[{"id": "47.0,8.0", "lat": 47.0, "lon": 8.0}])
+    )
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo/v2/forecastpoint").mock(
+        return_value=httpx.Response(200, json={"days": [], "hours": [], "three_hours": []})
+    )
+    for werkzeug in ("srgssr_weather_current", "srgssr_weather_forecast_24h"):
+        await m._fahre(m.Aufruf(werkzeug, werkzeug, "WeatherForecastInput", {"latitude": 47.0, "longitude": 8.0}))
+    assert orte.call_count == 2, "ohne Bestand muss jede Abfrage wieder rausgehen"
+
+
+def test_der_lauf_pausiert_zwischen_den_plan_eintraegen():
+    """Ein Recorder ist Gast bei der Quelle.
+
+    Am Quelltext gelesen: eine Pause, die niemand faehrt, ist keine. Die
+    Zusicherung faellt, wenn `main()` die Eintraege wieder ohne Abstand
+    hintereinander abarbeitet.
+    """
+    import inspect
+
+    m = recorder()
+    assert m.PAUSE_SEKUNDEN > 0
+    quelle = inspect.getsource(m.main)
+    assert "await _sleep(PAUSE_SEKUNDEN)" in quelle, "der Lauf pausiert nicht mehr"
+    assert "_fahre(a, nach_schluessel)" in quelle, "der Bestand wird nicht mehr durchgereicht"
+
+
+@respx.mock
+async def test_der_bestand_nimmt_die_token_antwort_nie_auf(geschlossener_client):
+    """Die Invariante, auf der die Umleitung steht.
+
+    `_EinmalHolen` beantwortet aus dem Bestand, was schon geholt wurde. Waere
+    die Token-Antwort darin, bekaeme ein spaeterer Refresh ein abgelaufenes
+    Token zurueck — und schlimmer: sie waere abgelegt worden. Ein Riegel *in*
+    der Umleitung koennte das nicht belegen, denn er kann nie einrasten; die
+    Zusicherung gehoert an den Bestand selbst.
+    """
+    m = recorder()
+    mocke_token()
+    respx.get(url__startswith=f"{_http.BASE_URL}/srf-meteo").mock(
+        return_value=httpx.Response(200, json={"geolocations": []})
+    )
+    bestand: dict[str, object] = {}
+    for antwort in await m._fahre(
+        m.Aufruf("w", "srgssr_weather_search_location", "WeatherSearchInput", {"query": "Bern"}),
+        bestand,
+    ):
+        bestand.setdefault(antwort.schluessel, antwort)
+    assert bestand, "gar nichts aufgezeichnet — die Zusicherung prueft nichts"
+    assert not any(_http.TOKEN_URL in s for s in bestand), f"die Token-Antwort steht im Bestand: {sorted(bestand)}"

@@ -76,6 +76,12 @@ FIXTURES = WURZEL / "tests" / "fixtures"
 
 VERSUCHE = 3
 
+# Pause zwischen zwei Plan-Eintraegen. Der Recorder ist Gast bei der Quelle, und
+# `srf-meteo` drosselt spuerbar: im Lauf vom 16.8.2026 kam der erste Abruf
+# durch, der zweite auf dieselbe Koordinate mit HTTP 429 zurueck — und blieb
+# gedrosselt, ueber vier Retries und rund 50 Sekunden hinweg.
+PAUSE_SEKUNDEN = 1.0
+
 # Der Backoff-Schlaf unter eigenem Namen. Ein Test, der `asyncio.sleep` selbst
 # patcht, greift ins fremde Modul und entschaerft die Mechanik im ganzen
 # Prozess; ueber den Alias trifft er genau diese Schleife.
@@ -153,6 +159,55 @@ SCHUTZ: tuple[Schutz, ...] = (
         "wie bei den Abstimmungen; die Liste haengt hier eine Ebene tiefer unter `Elections`",
     ),
 )
+
+
+class _EinmalHolen(httpx.AsyncBaseTransport):
+    """Beantwortet eine Anfrage, die dieser Lauf schon geholt hat, aus dem Bestand.
+
+    Der Recorder deduplizierte bisher die *Aufzeichnungen* nach Schluessel, aber
+    nicht die *Anfragen*. Vier Werkzeuge loesen dieselbe Koordinate auf —
+    `srgssr_weather_current`, `_forecast_24h`, `_forecast_7day` und das
+    Tagesbriefing —, also gingen acht Abrufe fuer zwei verschiedene URLs raus.
+
+    Gegen ein Kontingent, das nach ein bis zwei Abrufen zumacht, ist das der
+    Unterschied zwischen Durchkommen und Abbruch. Gemessen am 16.8.2026:
+    `weather_current` kam durch, `weather_24h` bekam auf dieselbe URL HTTP 429
+    und blieb ueber alle Retries gedrosselt; der Lauf brach ab. Der Lauf davor
+    war aus demselben Grund still unvollstaendig — dem Tagesbriefing fehlte
+    seine `forecastpoint`-Antwort.
+
+    Das Token-Endpunkt geht von selbst immer durch: sein Rumpf wird nie in den
+    Bestand aufgenommen (der Hook laesst ihn fallen), also findet die Umleitung
+    dafuer nie etwas. Ein zusaetzlicher Riegel hier waere ein Schloss, das nie
+    einrasten kann — es laese sich von aussen nicht von einem wirksamen
+    unterscheiden. Die Zusicherung sitzt deshalb dort, wo sie greift:
+    `test_der_bestand_nimmt_die_token_antwort_nie_auf`.
+    """
+
+    def __init__(self, echt: httpx.AsyncBaseTransport, bestand: dict[str, Antwort]) -> None:
+        self._echt = echt
+        self._bestand = bestand
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        schluessel = schluessel_fuer(request)
+        vorhanden = self._bestand.get(schluessel)
+        if vorhanden is not None:
+            return httpx.Response(
+                200,
+                text=vorhanden.text,
+                headers={"content-type": "application/json"},
+                request=request,
+            )
+        return await self._echt.handle_async_request(request)
+
+
+def _umleiten(echt_fuer: Callable[[Any], Any], bestand: dict[str, Antwort]) -> Callable[[Any], Any]:
+    """Bindet `echt_fuer` als Argument statt aus dem umgebenden Namensraum (ruff B023)."""
+
+    def fuer(url: Any) -> Any:
+        return _EinmalHolen(echt_fuer(url), bestand)
+
+    return fuer
 
 
 def schutz_fuer(url: str) -> Schutz | None:
@@ -395,8 +450,12 @@ def _entartet(modell: Any, pfad: str = "") -> list[str]:
     return treffer
 
 
-async def _fahre(a: Aufruf) -> list[Antwort]:
-    """Ruft ein Werkzeug und gibt die dabei gesehenen Antworten zurueck."""
+async def _fahre(a: Aufruf, bestand: dict[str, Antwort] | None = None) -> list[Antwort]:
+    """Ruft ein Werkzeug und gibt die dabei gesehenen Antworten zurueck.
+
+    `bestand` sind die Antworten, die dieser Lauf schon hat. Was darin steht,
+    wird nicht noch einmal von der Quelle geholt — siehe :class:`_EinmalHolen`.
+    """
     fn = getattr(server, a.werkzeug)
     modell = getattr(server, a.klasse)(**a.eingabe)
     letzter: Exception | None = None
@@ -409,12 +468,21 @@ async def _fahre(a: Aufruf) -> list[Antwort]:
         hook = _hook_fuer(gesehen)
         client = await _http._get_http_client()
         client.event_hooks.setdefault("response", []).append(hook)
+        # Umgehaengt wird `_transport_for_url` und nicht `_transport`: httpx
+        # fragt zuerst `_mounts`, und die sind hier belegt (Proxy-Konfiguration
+        # aus der Umgebung). Ein Tausch von `_transport` allein lief deshalb
+        # ins Leere — gemessen, nicht angenommen: die zweite Abfrage ging
+        # weiterhin an die Quelle.
+        echt_fuer = client._transport_for_url
+        if bestand is not None:
+            client._transport_for_url = _umleiten(echt_fuer, bestand)
         try:
             ergebnis = await fn(modell)
         except Exception as e:  # noqa: BLE001 — jeder Fehler ist hier ein Retry-Grund
             letzter = e
             continue
         finally:
+            client._transport_for_url = echt_fuer
             client.event_hooks["response"].remove(hook)
 
         # Die Werkzeuge geben seit SDK-002 typisierte Modelle zurueck. Auf einen
@@ -599,9 +667,11 @@ async def main() -> int:
 
     try:
         aufrufe = _mit_laufzeitwerten(PLAN, await _laufzeitwerte())
-        for a in aufrufe:
+        for nummer, a in enumerate(aufrufe):
+            if nummer:
+                await _sleep(PAUSE_SEKUNDEN)
             print(f"… {a.werkzeug} ({a.name})", file=sys.stderr)
-            for antwort in await _fahre(a):
+            for antwort in await _fahre(a, nach_schluessel):
                 if antwort.schluessel in nach_schluessel:
                     vorhanden = nach_schluessel[antwort.schluessel]
                     if a.werkzeug not in vorhanden.werkzeuge:

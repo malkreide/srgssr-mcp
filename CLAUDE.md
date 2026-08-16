@@ -91,6 +91,13 @@ halb geschriebene Aufzeichnung ist wiederholbar, ein veröffentlichtes Token
 nicht. Der Workflow prüft danach noch einmal, ausserhalb des Programms, das er
 bewacht.
 
+**`srf-meteo` drosselt hart.** Gemessen: der zweite Abruf auf dieselbe
+Koordinate kommt mit HTTP 429 zurück und bleibt es über vier Retries. Vier
+Werkzeuge lösen dieselbe Koordinate auf, der Recorder holt sie deshalb genau
+einmal (`_EinmalHolen`) und pausiert zwischen den Plan-Einträgen. Wer den
+Aufnahme-Workflow zweimal kurz hintereinander fährt, misst die Drosselung und
+nicht die Quelle — nach einem roten Lauf erst warten, dann wiederholen.
+
 Bis die Aufzeichnungen da sind, trägt der nächtliche Live-Lauf die Drift-Frage
 — stärker als Fixtures, weil er die Quelle von heute prüft, aber nur solange er
 *jedes* Werkzeug erreicht. Genau das hält `test_live_coverage.py` fest, samt
