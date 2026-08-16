@@ -6,6 +6,61 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Fixture-Recorder samt Aufnahme-Workflow — und der Befund, dass die alte
+  Begründung zu weit ging.** `CLAUDE.md` hielt fest: «Fixtures: keine, und das
+  ist gemessen». Die Messung stimmte (ohne Consumer Key antworten alle Basen
+  mit 401), die Schlussfolgerung nicht. Nachgemessen: die 401 kommt von SRG SSR
+  selbst — eigene Header, CONNECT geht durch —, der Host ist also erreichbar,
+  es fehlen allein die Credentials. Und die liegen längst da, wo der nächtliche
+  Live-Lauf sie nimmt.
+
+  Neu ist deshalb beides: `scripts/record_fixtures.py` und
+  `.github/workflows/record-fixtures.yml`, der ihn mit denselben Secrets fährt
+  wie `live-test.yml`. Eine dokumentierte Lücke ohne den Weg, sie zu füllen,
+  ist keine Lücke, sondern ein Loch mit Beschriftung.
+
+  Eine Aufzeichnung je **Abfrage**, nicht je Endpunkt:
+  `srgssr_weather_search_location` fächert über `_query_variants` in mehrere
+  Suchen auf, `srgssr_daily_briefing` spannt EPG und Wetter nebenläufig, und
+  drei Werkzeuge holen sich vorher eine ID — wie die Live-Suite es tut, denn
+  eine fest eingetragene ID wäre in Wochen ein toter Verweis. Die Eingaben
+  stammen aus `tests/test_live.py`: dass sie Treffer liefern, ist damit belegt
+  und nicht behauptet.
+
+- **`tests/test_record_fixtures.py` — der Recorder, gefahren gegen eine
+  gemockte API.** Ein Recorder, den niemand fahren *und* niemand prüfen kann,
+  wäre genau das plausibel aussehende, unwiderlegbare Artefakt, gegen das die
+  ganze Konvention gerichtet ist. Seine Mechanik hängt nicht an den
+  Credentials: Plan, Zuordnung nach Anfrage, Kürzung, Nachweis und der
+  Token-Umgang lassen sich mit einem erfundenen Token vollständig prüfen.
+
+  `test_jede_plan_eingabe_baut_ein_gueltiges_modell` fand beim Schreiben neun
+  ungültige Eingaben auf einmal — `business_unit` will die Enum, nicht den
+  String. Ohne diese Zusicherung hätte der erste echte Lauf sie nach dem
+  Token-Refresh gemeldet, einzeln.
+
+### Sicherheit / Security
+- **Das OAuth-Token gelangt in keine Datei.** Diese API ist die einzige im
+  Portfolio mit OAuth2: die Antwort von `/oauth/v1/accesstoken` trägt ein
+  gültiges Bearer-Token, die Anfrage dorthin
+  `Authorization: Basic <key:secret>`. Ein Recorder, der «jede Antwort» ablegt,
+  committet beim ersten Lauf ein funktionierendes Token in ein öffentliches
+  Repository.
+
+  Drei Riegel, jeder einzeln gegengeprobt: die Token-URL ist ausgenommen
+  (`NIE_AUFZEICHNEN`), der Schlüssel ist die URL **ohne jeden Header**, und vor
+  dem Schreiben läuft `_pruefe_kein_geheimnis` über jede Datei *und* über
+  `PROVENANCE.md` — sie bricht ab statt zu warnen, denn eine halb geschriebene
+  Aufzeichnung ist wiederholbar, ein veröffentlichtes Token nicht.
+
+  Der Workflow prüft danach ein zweites Mal, mit `grep` und ausserhalb des
+  Programms, das er bewacht: ein Riegel, der im selben Programm sitzt wie das
+  Geprüfte, fällt mit ihm.
+
+  `test_der_token_refresh_ist_ueberhaupt_gelaufen` hält fest, dass der Refresh
+  überhaupt stattfindet — sonst wäre «kein Token in den Aufzeichnungen» wahr
+  und bedeutungslos.
+
 - **`srgssr_daily_briefing` hatte keinerlei Drift-Deckung.** Von 15 Werkzeugen
   fehlte genau eines in der nächtlichen Live-Suite — ausgerechnet der
   Aggregator, der Wetter und EPG über zwei Produkte hinweg zusammenführt und

@@ -65,13 +65,36 @@ Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
 auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
 
-**Fixtures: keine, und das ist gemessen — nicht erneut proben.** Ohne Consumer
-Key lässt die SRG-SSR-API nichts durch; am 15.08.2026 antworteten der
-Token-Endpunkt und alle fünf Produkt-Basen mit 401. Einen 401 aufzuzeichnen
-hiesse, ihn als die normale Antwort der Quelle auszugeben. An die Stelle der
-Fixtures tritt der nächtliche Live-Lauf — stärker, weil er die Quelle von heute
-prüft, aber nur solange er *jedes* Werkzeug erreicht. Genau das hält
-`test_live_coverage.py` fest, samt der Probe im Docstring.
+**Fixtures: der Recorder steht, die Aufzeichnungen fehlen noch.** Die Messung
+vom 15.08.2026 stimmt — ohne Consumer Key antworten Token-Endpunkt und alle
+fünf Produkt-Basen mit 401 —, aber die Schlussfolgerung daraus war zu weit.
+Nachgemessen am 16.08.2026: die 401 kommt von SRG SSR selbst (eigene Header,
+CONNECT geht durch), der Host ist also erreichbar und es fehlen allein die
+Credentials. Die liegen längst da, wo der nächtliche Live-Lauf sie nimmt.
+`.github/workflows/record-fixtures.yml` fährt `scripts/record_fixtures.py` mit
+denselben Secrets, auf Knopfdruck.
+
+Ein Recorder, den niemand fahren *und* niemand prüfen kann, wäre das plausibel
+aussehende, unwiderlegbare Artefakt, gegen das die Konvention gerichtet ist.
+Seine Mechanik hängt aber nicht an den Credentials:
+`tests/test_record_fixtures.py` fährt ihn gegen eine gemockte API und prüft
+Plan, Zuordnung, Kürzung, Nachweis — und vor allem den Token-Umgang.
+
+**Das Token gehört in keine Datei.** Diese API ist die einzige im Portfolio mit
+OAuth2. Die Antwort von `/oauth/v1/accesstoken` trägt ein gültiges
+Bearer-Token, die Anfrage dorthin `Authorization: Basic <key:secret>`. Ein
+Recorder, der «jede Antwort» ablegt, committet beim ersten Lauf ein
+funktionierendes Token. Drei Riegel: die Token-URL ist ausgenommen, der
+Schlüssel ist die URL ohne jeden Header, und vor dem Schreiben läuft eine
+Prüfung gegen Token, Key und Secret, die **abbricht** statt zu warnen — eine
+halb geschriebene Aufzeichnung ist wiederholbar, ein veröffentlichtes Token
+nicht. Der Workflow prüft danach noch einmal, ausserhalb des Programms, das er
+bewacht.
+
+Bis die Aufzeichnungen da sind, trägt der nächtliche Live-Lauf die Drift-Frage
+— stärker als Fixtures, weil er die Quelle von heute prüft, aber nur solange er
+*jedes* Werkzeug erreicht. Genau das hält `test_live_coverage.py` fest, samt
+der Probe im Docstring.
 
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
 (`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf; ein
