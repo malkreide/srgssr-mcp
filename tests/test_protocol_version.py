@@ -47,3 +47,18 @@ def test_die_mitgliedschaftspruefung_allein_wuerde_nicht_reichen() -> None:
 
 def test_der_pin_ist_ein_datum_und_kein_bewegliches_ziel() -> None:
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", PROTOCOL_VERSION), PROTOCOL_VERSION
+
+
+def test_die_readme_nennt_dieselbe_revision() -> None:
+    """Ein Pin, den die Doku anders angibt, ist zwei Angaben.
+
+    Die README nannte `2025-06-18` an zwei Stellen und beschrieb den Schutz als
+    Absicherung gegen ein «`fastmcp`/`mcp` upgrade» — `fastmcp` steht in keiner
+    Abhaengigkeit dieses Servers.
+    """
+    import pathlib
+
+    readme = (pathlib.Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    section = readme.split("MCP Protocol Version", 1)[1][:900]
+    assert PROTOCOL_VERSION in section, f"die README nennt nicht {PROTOCOL_VERSION}"
+    assert "2025-06-18" not in section, "die README nennt weiterhin die alte Revision"
