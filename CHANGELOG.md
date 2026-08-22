@@ -6,6 +6,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 ## [Unreleased]
 
 ### Added
+
+- **Frischehinweise auf den auflistenden Methoden** (SEP-2549, Spec
+  `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt beides auf
+  «sofort veraltet, nie geteilt» — wer nichts übergibt, lässt jeden Client bei
+  jeder Verbindung neu auflisten. `resources/read` und `prompts/get` bleiben
+  ohne Hinweis: das wäre eine Zusicherung über den Inhalt statt über das
+  Verzeichnis.
+
+### Added
 - **Fixture-Recorder samt Aufnahme-Workflow — und der Befund, dass die alte
   Begründung zu weit ging.** `CLAUDE.md` hielt fest: «Fixtures: keine, und das
   ist gemessen». Die Messung stimmte (ohne Consumer Key antworten alle Basen
