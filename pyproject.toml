@@ -52,7 +52,7 @@ dev = [
     # deliberate act — a new ruff can change the default rule set or the
     # formatter and turn untouched code red. `test_ruff_is_pinned_exactly`
     # fails if this is ever loosened back to a range.
-    "ruff==0.16.1",
+    "ruff==0.16.3",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
