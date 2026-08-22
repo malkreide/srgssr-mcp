@@ -316,9 +316,9 @@ The server exposes only `GET`-style operations against public SRG SSR APIs. Ther
 
 ## MCP Protocol Version
 
-This server is built and tested against MCP protocol version **`2025-06-18`**.
+This server is built and tested against MCP protocol version **`2026-07-28`**.
 
-The version is pinned explicitly as `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) and validated at import time against the installed SDK's `SUPPORTED_PROTOCOL_VERSIONS` — a `fastmcp`/`mcp` upgrade that drops support for the pinned revision will fail fast at startup instead of silently changing wire-level behaviour. Bumps are tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
+The version is pinned explicitly as `PROTOCOL_VERSION` (currently `2026-07-28`) in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) and validated at import time against the installed SDK's `SUPPORTED_PROTOCOL_VERSIONS` — an `mcp` upgrade that drops support for the pinned revision will fail fast at startup instead of silently changing wire-level behaviour. Bumps are tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
 
 ### Update Policy
 
