@@ -308,9 +308,23 @@ Der Server exponiert ausschliesslich `GET`-Operationen gegen die öffentlichen S
 
 ## MCP Protocol Version
 
-Dieser Server wird gegen die MCP-Protokollversion **`2025-06-18`** entwickelt und getestet.
+`mcp` 2.x bedient **zwei Protokoll-Ären** über denselben Server; die erste
+Anfrage einer Verbindung entscheidet, welche gilt:
 
-Die Version ist als Konstante `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) explizit gepinnt und wird beim Import gegen die `SUPPORTED_PROTOCOL_VERSIONS` des installierten SDK validiert — ein `fastmcp`/`mcp`-Upgrade, das die gepinnte Spec-Revision fallen lässt, schlägt sofort beim Start fehl, statt still die Wire-Semantik zu ändern. Spec-Bumps werden in [CHANGELOG.md](CHANGELOG.md) unter dem jeweiligen Release dokumentiert.
+| Ära | Revision | Wer sie erreicht |
+|---|---|---|
+| `initialize`-Handshake | `2024-11-05` … **`2025-11-25`** | Was heutige Clients sprechen. Der Server antwortet mit der angefragten Revision — oder mit der Obergrenze `2025-11-25`, wenn die Anfrage etwas Neueres verlangt. |
+| Pro-Request-Envelope | **`2026-07-28`** | Eine Anfrage mit dem `2026-07-28`-`_meta`-Envelope öffnet eine moderne Verbindung. |
+
+Die Konstante `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py)
+benennt die **moderne** Ära. Sie wird beim Import gegen die
+`SUPPORTED_PROTOCOL_VERSIONS` des installierten SDK validiert — diese Liste ist
+allerdings rückwärtskompatibel und enthält noch `2024-11-05`. Die
+Mitgliedschaftsprüfung fängt damit den Wegfall einer Revision ab, nie eine
+Drift. Das tut [`tests/test_protocol_version.py`](tests/test_protocol_version.py),
+und zwar für beide Ären. `fastmcp` ist hier nicht beteiligt: es steht in keiner
+Abhängigkeit dieses Servers. Spec-Bumps werden in [CHANGELOG.md](CHANGELOG.md)
+unter dem jeweiligen Release dokumentiert.
 
 ### Update-Policy
 
@@ -326,7 +340,7 @@ Die Version ist als Konstante `PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](s
 srgssr-mcp/
 ├── src/srgssr_mcp/
 │   ├── __init__.py          # Paket
-│   └── server.py            # FastMCP-Server: 15 Tools, OAuth2-Client
+│   └── server.py            # MCPServer: 15 Tools, OAuth2-Client
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI (Python 3.11–3.13)
@@ -471,7 +485,7 @@ Tool-Return ist ein typisiertes [Pydantic-`BaseModel`](src/srgssr_mcp/_models.py
 mit eingebauten Feldern `source` / `license` / `provenance_url` /
 `fetched_at` auf Top-Level — damit nachgelagerte Konsumenten die
 Datenherkunft nachvollziehen können, ohne zurück in dieses README zu
-springen. FastMCP exponiert das zugehörige `outputSchema` im
+springen. Das SDK exponiert das zugehörige `outputSchema` im
 `tools/list`-Manifest, damit MCP-Clients Folge-Calls präzise planen
 können.
 

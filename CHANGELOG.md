@@ -14,6 +14,43 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   ohne Hinweis: das wäre eine Zusicherung über den Inhalt statt über das
   Verzeichnis.
 
+- **Der Protokoll-Pin sicherte nur eine der beiden Spec-Aeren.** `mcp` 2.x
+  bedient zwei ueber denselben Server; die erste Anfrage einer Verbindung
+  entscheidet, welche gilt: der `initialize`-Handshake deckelt bei
+  `2025-11-25`, der Pro-Request-Envelope erreicht `2026-07-28`.
+
+  Die bisherige Zusicherung lautete `PIN == LATEST_PROTOCOL_VERSION` und las
+  sich vollstaendig. `LATEST_PROTOCOL_VERSION` ist aber ein Alias auf die
+  MODERNE Aera — gesichert war damit die Aera, in der heute praktisch niemand
+  spricht, waehrend die andere frei wandern konnte. Man sieht es dem
+  Konstantennamen nicht an.
+
+  **Der Wert der Konstante aendert sich nicht.** Er war richtig, nur
+  unvollstaendig beschrieben. Neu steht er gegen `LATEST_MODERN_VERSION` —
+  dieselbe Zahl, aber die Aera ist benannt —, die Handshake-Obergrenze bekommt
+  eine eigene Zusicherung, und ein dritter Test haelt die Alias-Eigenschaft
+  fest, damit die Falle beim naechsten Lesen benannt dasteht.
+
+  Ohne gemessenen Teil: dieser Server baut keine ASGI-App, durch die sich ein
+  `initialize` schicken liesse. Die Aushandlung steht in
+  `mcp/server/runner.py::_negotiate_initialize` und haengt an keinem Transport
+  — an neun Schwester-Servern gemessen, hier an den SDK-Konstanten gehalten.
+
+  **README.de.md nannte `2025-06-18`, README.md `2026-07-28`** — dieselbe
+  Angabe, zwei Werte, drei Revisionen auseinander.
+
+  Dazu vier Stellen, die diesen Server als FastMCP-Server beschrieben: der
+  Kommentar im Projektbaum und der Absatz zum `outputSchema`, je in beiden
+  Sprachen. `pyproject.toml` haelt seit der Migration fest, dass `fastmcp`
+  fallengelassen wurde und `mcp.server.fastmcp` ersatzlos entfernt ist. Ein
+  Test prueft das jetzt ueber die ganze Datei, nicht nur ueber den
+  Protokoll-Abschnitt — genau dort war es naemlich schon richtig.
+
+  Der Import-Schutz in `_app.py` bleibt, wo er ist, und ein Test sagt jetzt
+  auch, warum er nicht reicht: `SUPPORTED_PROTOCOL_VERSIONS` mischt beide Aeren
+  in einer flachen, rueckwaertskompatiblen Liste. Aus einer Mitgliedschaft
+  folgt weder, dass man vorne steht, noch in welcher Aera bedient wird.
+
 ### Added
 - **Fixture-Recorder samt Aufnahme-Workflow — und der Befund, dass die alte
   Begründung zu weit ging.** `CLAUDE.md` hielt fest: «Fixtures: keine, und das

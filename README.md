@@ -316,9 +316,21 @@ The server exposes only `GET`-style operations against public SRG SSR APIs. Ther
 
 ## MCP Protocol Version
 
-This server is built and tested against MCP protocol version **`2026-07-28`**.
+`mcp` 2.x serves **two protocol eras** over the same server, and the client's
+first request on a connection decides which one applies:
 
-The version is pinned explicitly as `PROTOCOL_VERSION` (currently `2026-07-28`) in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) and validated at import time against the installed SDK's `SUPPORTED_PROTOCOL_VERSIONS` — an `mcp` upgrade that drops support for the pinned revision will fail fast at startup instead of silently changing wire-level behaviour. Bumps are tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
+| Era | Revision | Who reaches it |
+|---|---|---|
+| `initialize` handshake | `2024-11-05` … **`2025-11-25`** | What today's clients speak. The server answers with the revision asked for, or with the `2025-11-25` ceiling when the request asks for something newer. |
+| Per-request envelope | **`2026-07-28`** | A request carrying the `2026-07-28` `_meta` envelope opens a modern connection. |
+
+`PROTOCOL_VERSION` in [`src/srgssr_mcp/_app.py`](src/srgssr_mcp/_app.py) names
+the **modern** era. It is validated at import time against the installed SDK's
+`SUPPORTED_PROTOCOL_VERSIONS` — but that list is backwards-compatible and still
+contains `2024-11-05`, so the membership check catches a revision being dropped,
+never a drift. [`tests/test_protocol_version.py`](tests/test_protocol_version.py)
+holds both eras against the SDK and is the check that catches drift. Bumps are
+tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
 
 ### Update Policy
 
@@ -334,7 +346,7 @@ The version is pinned explicitly as `PROTOCOL_VERSION` (currently `2026-07-28`) 
 srgssr-mcp/
 ├── src/srgssr_mcp/
 │   ├── __init__.py          # Package
-│   └── server.py            # FastMCP server: 15 tools, OAuth2 client
+│   └── server.py            # MCPServer: 15 tools, OAuth2 client
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI (Python 3.11–3.13)
@@ -478,7 +490,7 @@ provider, **SRG SSR Public API V2** (`https://api.srgssr.ch`). Every tool
 return is a typed [Pydantic `BaseModel`](src/srgssr_mcp/_models.py) that
 embeds `source` / `license` / `provenance_url` / `fetched_at` at the top
 level — so downstream consumers can record the data origin without
-round-tripping through this README. FastMCP exposes the corresponding
+round-tripping through this README. The SDK exposes the corresponding
 `outputSchema` in the `tools/list` manifest so MCP clients can plan
 follow-up calls precisely.
 
