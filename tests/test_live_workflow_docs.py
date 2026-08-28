@@ -77,16 +77,41 @@ def test_the_documented_hour_is_the_one_the_cron_runs(doc: pathlib.Path):
 def test_a_hand_started_red_run_reports_too():
     """The notify step must not be gated back onto the schedule.
 
-    It was `if: failure() && github.event_name == 'schedule'`, which made the
+    It was `if: failure() && github.event_name == \'schedule\'`, which made the
     manual trigger a trap: a run started to check a suspected drift went red and
     filed nothing. Both CONTRIBUTING files now promise the opposite.
+
+    The condition it checks is no longer `failure()` but the classified verdict.
+    `failure()` covered two different runs with one word: a suite that ran and
+    found a drift, and a suite that never ran at all — a missing secret, a failed
+    install, a renamed marker. Only the first is something to file an issue
+    about; the second has measured nothing about the API. What this test
+    guards is unchanged, and is the same thing the docs promise: a red run that
+    has something to report, reports it, whoever started it.
     """
     step = _notify_step()
-    assert "if: failure()" in step, "the notify step no longer runs on failure"
+    assert "steps.verdict.outputs.state == 'finding'" in step, "the notify step no longer runs on a classified finding"
     lines = [ln for ln in step.splitlines() if not ln.lstrip().startswith(("#", "//"))]
     assert "event_name == 'schedule'" not in "\n".join(lines), (
         "the notify step is gated on the schedule again — a hand-started red run "
         "would file nothing, while both CONTRIBUTING files promise it reports."
+    )
+
+
+def test_a_run_that_measured_nothing_still_turns_the_job_red():
+    """`unknown` files no issue, so without this step it would be silent.
+
+    That is the trade the classification makes: the notify step above stops
+    firing on runs that never reached the API, and the price is that those runs
+    would leave no trace at all. They have to stay visible somewhere, and a red
+    job is where — otherwise a nightly that skipped every test since the secrets
+    expired would look exactly like a nightly that passed.
+    """
+    text = _workflow_text()
+    assert "steps.verdict.outputs.state != 'clear'" in text, (
+        "nothing turns the job red on a non-clear verdict — an unmeasured run "
+        "would pass green while checking nothing, which is what the credentials "
+        "pre-check existed to prevent."
     )
 
 
