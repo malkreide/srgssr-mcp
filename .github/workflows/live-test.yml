@@ -22,26 +22,59 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
-      # Without this, missing secrets are indistinguishable from a healthy API:
-      # the live_credentials fixture skips every test, pytest exits 0, and the
+      # Missing secrets used to be indistinguishable from a healthy API: the
+      # live_credentials fixture skips every test, pytest exits 0, and the
       # nightly reports green while checking nothing. That is the exact failure
       # mode that let four dead API basepaths survive a release.
-      - name: Verify credentials are configured
-        env:
-          KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
-          SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
-        run: |
-          if [ -z "$KEY" ] || [ -z "$SECRET" ]; then
-            echo "::error::LIVE_TEST_CONSUMER_KEY / LIVE_TEST_CONSUMER_SECRET are not set."
-            echo "::error::Every live test would skip and this job would pass green while verifying nothing."
-            exit 1
-          fi
-
+      #
+      # The credential check that guarded against it lives here now, in the
+      # suite step, because a separate step could only say "fail" — and a bare
+      # failure was read one step further down as "the API drifted", filing an
+      # issue about a schema change nobody had looked for. Missing secrets are
+      # not a drift; they are a run that never happened. `not_started` says so
+      # in the caller's own words instead of borrowing an exit code.
+      #
+      # `continue-on-error` so the verdict step runs either way. The job turns
+      # red further down, out of the classified result.
       - name: Run live tests
-        run: pytest -m live -v
+        id: suite
+        continue-on-error: true
         env:
           SRGSSR_CONSUMER_KEY: ${{ secrets.LIVE_TEST_CONSUMER_KEY }}
           SRGSSR_CONSUMER_SECRET: ${{ secrets.LIVE_TEST_CONSUMER_SECRET }}
+        run: |
+          set +e
+          if [ -z "$SRGSSR_CONSUMER_KEY" ] || [ -z "$SRGSSR_CONSUMER_SECRET" ]; then
+            echo "LIVE_TEST_CONSUMER_KEY / LIVE_TEST_CONSUMER_SECRET are not set."
+            echo "not_started=LIVE_TEST_CONSUMER_KEY / LIVE_TEST_CONSUMER_SECRET are not set in this repository, so the live suite was never started. Nothing was checked against the SRG SSR APIs." \
+              >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          pytest -m live -v --junitxml=live-report.xml 2>&1 | tee live-output.txt
+          echo "pytest_exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      # `if: failure()` knows red and not-red. A live run has three answers, and
+      # the third is the one that matters: a failed `pip install`, a timeout or
+      # a renamed marker are NOT the same as an API that changed shape — but
+      # under `failure()` they look identical, and the issue below then claims a
+      # drift nobody measured. A run in which every test skipped exits 0 and
+      # looks like success under any exit-code check.
+      - name: Classify the run
+        id: verdict
+        env:
+          PYTEST_EXIT: ${{ steps.suite.outputs.pytest_exit }}
+          NOT_STARTED: ${{ steps.suite.outputs.not_started }}
+        run: |
+          # Exactly one of the two is set: either pytest ran (an exit code) or
+          # it did not (a reason). An empty `--pytest-exit` is not an exit code,
+          # it is an argparse error.
+          args=(live-report.xml)
+          if [ -n "$NOT_STARTED" ]; then
+            args+=(--not-started "$NOT_STARTED")
+          elif [ -n "$PYTEST_EXIT" ]; then
+            args+=(--pytest-exit "$PYTEST_EXIT")
+          fi
+          python scripts/classify_live_run.py "${args[@]}"
 
       # Deliberately not gated on `github.event_name == 'schedule'`. It was, and
       # that made the manual trigger a trap: someone suspecting a schema drift
@@ -50,7 +83,7 @@ jobs:
       # run is the one most likely to be checking a real suspicion, so it is the
       # last one that should stay silent.
       - name: Notify on failure
-        if: failure()
+        if: steps.verdict.outputs.state == 'finding'
         uses: actions/github-script@v9
         with:
           script: |
@@ -106,3 +139,20 @@ jobs:
               ].join("\n"),
               labels: ["bug", "live-tests"],
             });
+
+      # Only here does the job turn red. `clear` is green; `finding` and
+      # `unknown` are both red, but only `finding` filed an issue above — the
+      # difference is in the log, not in the exit code.
+      #
+      # Through `env`, not `${{ }}` inside the script: the reason can carry a
+      # parser message about someone else's file, and `${{ }}` substitutes it
+      # into the shell verbatim before the shell starts.
+      - name: Surface the verdict
+        if: steps.verdict.outputs.state != 'clear'
+        env:
+          LIVE_STATE: ${{ steps.verdict.outputs.state }}
+          LIVE_REASON: ${{ steps.verdict.outputs.reason }}
+        run: |
+          echo "Live suite: $LIVE_STATE"
+          echo "$LIVE_REASON"
+          exit 1
