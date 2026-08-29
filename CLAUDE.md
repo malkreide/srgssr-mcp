@@ -244,6 +244,43 @@ bekannten Schubladen zu zwingen: Dieser Abschnitt musste schon einmal von drei
 auf vier Gründe wachsen, und die 👍-Reaktion stand hier zwei Fassungen lang als
 Tatsache.
 
+**Seit dem 29.8.2026 gibt es eine weitere Form, und sie ist keine der bekannten.**
+In `srgssr-mcp` meldete sich Codex unter PR #103 nicht mit einem der bekannten
+Texte, sondern mit einer Statustabelle:
+
+```
+## Codex Review Summary
+
+| Review | Status | Commit | Review trigger |
+| 📝 **Code Review** | ✅ **Completed** 2026-08-29T12:43:00Z | `ca747ea` | Draft marked ready |
+```
+
+Zweierlei daran ändert das Vorgehen oben.
+
+**Der Kommentar wird überschrieben, nicht ergänzt.** Dieselbe ID (5462475643)
+trug um 12:42:01 noch `🔄 Running` und um 12:43:03 `✅ Completed`. Ein Text, der
+einmal gelesen wurde, ist damit kein Beleg mehr — `created_at` und `updated_at`
+gehen auseinander, und wer zu früh liest, hält einen laufenden Review für das
+Ergebnis. Aus den drei Bedeutungen unter `comments: 1` werden damit fünf — und
+zwei davon liegen nacheinander in derselben Zahl, an derselben ID.
+
+**Die Befundlos-Meldung blieb aus.** Kein «Didn't find any major issues», kein
+Review-Objekt (`get_reviews` gab `[]`), nur die Tabelle auf `Completed`. Wer
+nach dem alten Satz sucht, zählt diesen Lauf als ungeprüft — genau der
+Fehlalarm, den der Absatz oben in die andere Richtung verhindern soll. Die neue
+Form ist als Beleg dabei *stärker* als der alte Satz: sie nennt Commit und
+Auslöser, er nannte keines von beidem.
+
+Ob die Tabelle den alten Text überall ersetzt, ist damit **nicht** belegt. Das
+ist eine Beobachtung an einem Repo zu einem Zeitpunkt, keine Messreihe. Bis
+eine zweite dazukommt, gilt beides als möglicher Beleg — und ein weiterer
+unbekannter Text wird wörtlich zitiert, nicht einsortiert.
+
+Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
+while any review is running … and reacts with 👍 once all reviews finish with no
+findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
+während des Laufs noch danach. Der Kasten bleibt keine Quelle.
+
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
 Eingabe, gegenteiliges Urteil, alles in denselben neun Minuten. Ein sauberer
@@ -264,6 +301,16 @@ mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
 bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
+
+Wie viel Zeit, ist inzwischen einmal durchgemessen. PR #103 in `srgssr-mcp` am
+29.8.2026: ready um 12:41:51, gemergt um 12:41:53, Review **gestartet** um
+12:41:58 und fertig um 12:43:00. Zwei Sekunden bis zum Merge, fünf bis zum
+Start, siebzig bis zum Ergebnis — der Review lief also vollständig auf einem
+bereits geschlossenen PR. Dass er nichts fand, ist Glück und nicht Verfahren:
+ein Befund wäre an einem gemergten PR gelandet, wo ihn die Regel «beantworten
+oder beheben» nur noch über einen Folge-PR erreicht. Eine Minute Abstand
+zwischen ready und Merge ist nach dieser einen Messung die Untergrenze, nicht
+der Sicherheitsabstand.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
