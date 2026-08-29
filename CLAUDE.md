@@ -360,7 +360,13 @@ durchwinkt, wäre die Attrappe, gegen die es gebaut ist. Lokal ohne Token prüft
 es nur die Deklaration und sagt das ausdrücklich, ist also kein Beleg. Der
 Befund vom 28.8.2026 (Labels fehlten in 23 von 24 geprüften Repos) betrifft das
 Portfolio, nicht nur dieses Repo: `github-actions` steht hier deshalb bewusst
-**nicht** in `dependabot.yml` — belegt ist bislang nur `dependencies`.
+**nicht** in `dependabot.yml`. Das ist gemessen, nicht vermutet — am 29.8.2026
+um 12:38 UTC kam `dependencies` als Treffer zurück und `github-actions` als
+echtes «not found»; das Label existiert hier also nicht. Die Positivkontrolle im
+selben Aufruf ist der Punkt: gut eine Stunde davor meldete dieselbe Abfrage nur
+die Kontingent-Sperre, und ein «nicht gefunden» ohne gleichzeitigen Treffer
+misst nichts als die eigene Erschöpfung (siehe «Ein 403 ist gar keine Auskunft»
+in Teil 1).
 
 **`secret-scan.yml` gatet ebenfalls jeden PR** (gitleaks, gegen `main`) und
 steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
