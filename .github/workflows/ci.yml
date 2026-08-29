@@ -45,3 +45,14 @@ jobs:
 
       - name: Versions-Sync (pyproject ↔ server.json / README / src)
         run: python scripts/check_version_sync.py
+
+      # Dependabot legt ein Label nicht an, das in dependabot.yml steht und im
+      # Repo fehlt — es kommentiert nur an jedem PR. Genau so ist es hier
+      # passiert: unter PR #48 vom 30.7.2026 steht die Meldung, und aufgefallen
+      # ist sie einen Monat lang niemandem. Der Token ist der Standard-
+      # GITHUB_TOKEN; ohne ihn faellt der Check hier absichtlich, statt still
+      # zu ueberspringen.
+      - name: Dependabot-Labels (Deklaration ↔ Repo)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/check_dependabot_labels.py

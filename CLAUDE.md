@@ -270,10 +270,11 @@ ruff check src/ tests/ scripts/
 ruff format --check src/ tests/ scripts/
 python -m py_compile src/srgssr_mcp/server.py
 python scripts/check_version_sync.py
+python scripts/check_dependabot_labels.py
 pytest -m "not live" --cov=src --cov-report=term-missing --cov-fail-under=80
 ```
 
-**«Die CI» sind hier zwei Workflows.** Die ersten vier Befehle stehen im Job
+**«Die CI» sind hier zwei Workflows.** Die ersten sechs Befehle stehen im Job
 `quality` in `ci.yml`, der `pytest` allein im Job `test` in `test.yml` —
 beide mit Matrix 3.11/3.12/3.13, beide auf `push`/`pull_request` gegen `main`.
 Ein roter Check «CI» und ein roter Check «Tests» zeigen also auf verschiedene
@@ -281,6 +282,22 @@ Dateien; wer nach dem falschen sucht, findet nichts. In `test.yml` trägt der
 `pytest` zusätzlich `--cov-report=xml` für den Upload danach — der Upload ist
 auf 3.11 beschränkt und `continue-on-error: true`, also kein Gate. Das
 Coverage-Minimum von 80 % ist eines: es steht im `pytest`-Aufruf selbst.
+
+**Das Label-Gate braucht einen Token.** `check_dependabot_labels.py` vergleicht,
+was `.github/dependabot.yml` unter `labels:` verlangt, mit den Labels, die das
+Repo wirklich hat. Ohne diesen Abgleich ist die Deklaration eine Behauptung:
+Dependabot legt ein fehlendes Label nicht an, sondern kommentiert nur an jedem
+PR und lässt ihn ungelabelt — kein roter Check, kein Log. Genau so ist es hier
+gelaufen, die Meldung steht unter PR #48 vom 30.7.2026 und blieb einen Monat
+liegen.
+
+In der CI kommt der Token aus `secrets.GITHUB_TOKEN`; fehlt er dort, **fällt**
+der Schritt, statt zu überspringen — ein Gate, das ohne Zugangsdaten
+durchwinkt, wäre die Attrappe, gegen die es gebaut ist. Lokal ohne Token prüft
+es nur die Deklaration und sagt das ausdrücklich, ist also kein Beleg. Der
+Befund vom 28.8.2026 (Labels fehlten in 23 von 24 geprüften Repos) betrifft das
+Portfolio, nicht nur dieses Repo: `github-actions` steht hier deshalb bewusst
+**nicht** in `dependabot.yml` — belegt ist bislang nur `dependencies`.
 
 **`secret-scan.yml` gatet ebenfalls jeden PR** (gitleaks, gegen `main`) und
 steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
