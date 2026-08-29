@@ -271,10 +271,22 @@ Fehlalarm, den der Absatz oben in die andere Richtung verhindern soll. Die neue
 Form ist als Beleg dabei *stärker* als der alte Satz: sie nennt Commit und
 Auslöser, er nannte keines von beidem.
 
-Ob die Tabelle den alten Text überall ersetzt, ist damit **nicht** belegt. Das
-ist eine Beobachtung an einem Repo zu einem Zeitpunkt, keine Messreihe. Bis
-eine zweite dazukommt, gilt beides als möglicher Beleg — und ein weiterer
-unbekannter Text wird wörtlich zitiert, nicht einsortiert.
+Die zweite Beobachtung kam vier Stunden später, unter PR #105 im selben Repo:
+wieder die Tabelle, neue Kommentar-ID (5463680232), Commit `1bd0a23`, Auslöser
+«Draft marked ready», wieder `Running` → `Completed` an Ort und Stelle, wieder
+`get_reviews` → `[]` und keine Befundlos-Meldung. Die Form ist damit **kein
+Einzelfall** — was der Absatz vorher offenliess.
+
+Was sie nicht hergibt: dass die Tabelle den alten Text *überall* ersetzt. Zwei
+Läufe an einem Repo an einem Tag sind keine Messreihe über das Portfolio, und
+ob der alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt
+beides als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich
+zitiert, nicht einsortiert.
+
+Die Laufzeit ist in beiden Fällen ähnlich: 62 s unter #103 (12:41:58,07 →
+12:43:00,23) und 78 s unter #105 (16:57:06,81 → 16:58:24,64). Wer nach dem
+Auslösen nachsieht, sieht also gut eine Minute lang `Running` und danach erst
+das Ergebnis.
 
 Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
 while any review is running … and reacts with 👍 once all reviews finish with no
@@ -302,15 +314,26 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen einmal durchgemessen. PR #103 in `srgssr-mcp` am
-29.8.2026: ready um 12:41:51, gemergt um 12:41:53, Review **gestartet** um
-12:41:58 und fertig um 12:43:00. Zwei Sekunden bis zum Merge, fünf bis zum
-Start, siebzig bis zum Ergebnis — der Review lief also vollständig auf einem
-bereits geschlossenen PR. Dass er nichts fand, ist Glück und nicht Verfahren:
-ein Befund wäre an einem gemergten PR gelandet, wo ihn die Regel «beantworten
-oder beheben» nur noch über einen Folge-PR erreicht. Eine Minute Abstand
-zwischen ready und Merge ist nach dieser einen Messung die Untergrenze, nicht
-der Sicherheitsabstand.
+Wie viel Zeit, ist inzwischen zweimal durchgemessen, beide Male in
+`srgssr-mcp` am 29.8.2026:
+
+| PR | ready | gemergt | Review startet | Review fertig |
+| --- | --- | --- | --- | --- |
+| #103 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 |
+| #105 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 |
+
+Zwei beziehungsweise drei Sekunden bis zum Merge, fünf bis sieben bis zum
+Start, gut eine Minute bis zum Ergebnis. Beide Reviews liefen damit
+vollständig auf einem bereits geschlossenen PR, und dass keiner etwas fand, ist
+Glück und nicht Verfahren: ein Befund wäre an einem gemergten PR gelandet, wo
+ihn die Regel «beantworten oder beheben» nur noch über einen Folge-PR erreicht.
+
+Der zweite Fall ist der lehrreichere: #105 war der PR, der diese Falle
+dokumentiert, und ist ihr trotzdem zum Opfer gefallen. Eine Regel
+aufzuschreiben und sie im selben Handgriff zu verletzen, kostet nichts weiter
+als den Prüfer — man merkt es nur nicht. Zwei Minuten Abstand zwischen ready
+und Merge decken beide Messungen; eine Minute deckt sie knapp und lässt keinen
+Spielraum.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
