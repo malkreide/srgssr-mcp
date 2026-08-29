@@ -461,27 +461,35 @@ Dateien; wer nach dem falschen sucht, findet nichts. In `test.yml` trägt der
 auf 3.11 beschränkt und `continue-on-error: true`, also kein Gate. Das
 Coverage-Minimum von 80 % ist eines: es steht im `pytest`-Aufruf selbst.
 
-**Das Label-Gate braucht einen Token.** `check_dependabot_labels.py` vergleicht,
-was `.github/dependabot.yml` unter `labels:` verlangt, mit den Labels, die das
-Repo wirklich hat. Ohne diesen Abgleich ist die Deklaration eine Behauptung:
-Dependabot legt ein fehlendes Label nicht an, sondern kommentiert nur an jedem
-PR und lässt ihn ungelabelt — kein roter Check, kein Log. Genau so ist es hier
-gelaufen, die Meldung steht unter PR #48 vom 30.7.2026 und blieb einen Monat
-liegen.
+**Das Label-Gate steht, deklariert wird trotzdem nichts.**
+`check_dependabot_labels.py` vergleicht, was `.github/dependabot.yml` unter
+`labels:` verlangt, mit den Labels, die das Repo wirklich hat. Für einen
+*deklarierten* Namen legt Dependabot nichts an, sondern kommentiert nur an
+jedem PR und lässt ihn ungelabelt — kein roter Check, kein Log. Genau so ist es
+hier gelaufen, die Meldung steht unter PR #48 vom 30.7.2026 und blieb einen
+Monat liegen. In der CI kommt der Token aus `secrets.GITHUB_TOKEN`; fehlt er
+dort, **fällt** der Schritt, statt zu überspringen — ein Gate, das ohne
+Zugangsdaten durchwinkt, wäre die Attrappe, gegen die es gebaut ist. Lokal ohne
+Token prüft es nur die Deklaration und sagt das ausdrücklich, ist also kein
+Beleg.
 
-In der CI kommt der Token aus `secrets.GITHUB_TOKEN`; fehlt er dort, **fällt**
-der Schritt, statt zu überspringen — ein Gate, das ohne Zugangsdaten
-durchwinkt, wäre die Attrappe, gegen die es gebaut ist. Lokal ohne Token prüft
-es nur die Deklaration und sagt das ausdrücklich, ist also kein Beleg. Der
-Befund vom 28.8.2026 (Labels fehlten in 23 von 24 geprüften Repos) betrifft das
-Portfolio, nicht nur dieses Repo: `github-actions` steht hier deshalb bewusst
-**nicht** in `dependabot.yml`. Das ist gemessen, nicht vermutet — am 29.8.2026
-um 12:38 UTC kam `dependencies` als Treffer zurück und `github-actions` als
-echtes «not found»; das Label existiert hier also nicht. Die Positivkontrolle im
-selben Aufruf ist der Punkt: gut eine Stunde davor meldete dieselbe Abfrage nur
-die Kontingent-Sperre, und ein «nicht gefunden» ohne gleichzeitigen Treffer
-misst nichts als die eigene Erschöpfung (siehe «Ein 403 ist gar keine Auskunft»
-in Teil 1).
+**Die Deklaration selbst war der Fehler, nicht ihre Lücke.** PR #103 trug
+`labels: ["dependencies"]` wieder ein und liess `github-actions` bewusst weg,
+weil dieses Label hier gemessen nicht existiert (29.8.2026, 12:38 UTC:
+`dependencies` als Treffer, `github-actions` als echtes «not found», mit
+Positivkontrolle im selben Aufruf — die Methode dazu steht unter «Ein 403 ist
+gar keine Auskunft» in Teil 1). Die Messung stimmt; der Schluss daraus nicht.
+Das Ökosystem-Label fehlte, **weil** eine eigene Liste den Vorgabesatz ersetzt,
+den Dependabot sonst selbst anlegt und pflegt. Die Abwesenheit war also die
+Folge der Deklaration und nicht ihr Grund — dieselbe Umkehrung wie in Teil 1,
+nur eine Ebene tiefer.
+
+Seit diesem PR steht `labels:` deshalb in keinem der beiden Blöcke, und der
+Ankertest sichert das zu. Ehrlicherweise heisst das: **das Gate prüft im
+Moment nichts** — ohne Deklaration hat es keinen Namen abzugleichen. Es
+bleibt trotzdem, weil es genau den Fall abfängt, der es nötig macht: sobald
+jemand wieder eine Liste einträgt, wird ein fehlender Name dort ein roter
+Check statt eines übersehenen Kommentars.
 
 **`secret-scan.yml` gatet ebenfalls jeden PR** (gitleaks, gegen `main`) und
 steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
