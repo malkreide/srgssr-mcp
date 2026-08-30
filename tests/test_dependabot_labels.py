@@ -130,15 +130,27 @@ def test_ohne_labels_block_wird_nichts_verlangt(skript) -> None:
     assert skript.declared_labels(OHNE) == set()
 
 
-def test_die_eigene_konfiguration_verlangt_genau_dependencies(skript) -> None:
+def test_die_eigene_konfiguration_deklariert_keine_labels(skript) -> None:
     """Verankert den Parser an der echten Datei, nicht nur an Attrappen.
 
-    Handgeschriebene Beispiele kodieren die Annahme des Autors. Diese Zusicherung
-    faellt, sobald jemand die Labels dieses Repos aendert, ohne den Check
-    mitzudenken.
+    Handgeschriebene Beispiele kodieren die Annahme des Autors — und diese
+    Zusicherung hat genau das einmal getan: sie verlangte `dependencies` und
+    machte damit die Annahme unwiderlegbar, die sie pruefen sollte.
+
+    Die Optionsreferenz sagt es andersherum. Ohne `labels:` vergibt Dependabot
+    `dependencies` und, weil hier zwei Paketmanager deklariert sind, ein
+    Oekosystem-Label dazu — und legt beide selbst an. Eine eigene Liste
+    ERSETZT diesen Satz und laesst unbekannte Namen stillschweigend fallen.
+    Die Deklaration war deshalb kein Gewinn, sondern ein Tausch: ein sich
+    selbst pflegender Vorgabesatz gegen eine starre Liste.
     """
     text = (_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
-    assert skript.declared_labels(text) == {"dependencies"}
+    gefunden = skript.declared_labels(text)
+    assert gefunden == set(), (
+        f"dependabot.yml deklariert {sorted(gefunden)}, erwartet ist keine "
+        "Deklaration. Wer wieder eine Liste eintraegt, ersetzt damit den "
+        "Vorgabesatz, den Dependabot sonst selbst anlegt und pflegt."
+    )
 
 
 def test_ein_fehlendes_label_macht_den_lauf_rot(skript, monkeypatch, capsys) -> None:
