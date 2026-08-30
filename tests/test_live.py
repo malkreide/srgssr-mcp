@@ -268,6 +268,23 @@ async def test_live_daily_briefing(live_credentials):
     contract — and it means an upstream break here shows up as a *field*, not
     as an exception. Asserting only that the call returned would pass through
     a total outage, so each half is checked in place.
+
+    Die Koordinate ist dieselbe wie in den drei Wetter-Tests, und das ist keine
+    Kosmetik. `_resolve_geolocation_id` fragt `/geolocations` mit
+    `f"{latitude:.4f}"`; aus `47.37, 8.54` wird damit `47.3700, 8.5400` und
+    also eine *andere* Location als `47.3769, 8.5417`. Die Developer-App ist
+    nur fuer eine freigeschaltet, die zweite quittiert SRF Meteo mit
+
+        400 { "code": "400.01.007",
+              "message": "location mismatch for developer app",
+              "info": "You have exceeded your location limit" }
+
+    Am 30.8.2026 um 09:52 UTC ist der naechtliche Lauf genau daran gescheitert,
+    waehrend die drei Wetter-Tests mit der anderen Koordinate in derselben
+    Minute gruen durchliefen. Diese Positivkontrolle ist der Beleg: nicht die
+    Quelle war weg und nicht das Kontingent global erschoepft, sondern diese
+    eine Koordinate war eine zweite Location. Wer hier eine neue Koordinate
+    einsetzt, macht den naechtlichen Lauf wieder rot.
     """
     from datetime import date, timedelta
 
@@ -279,8 +296,8 @@ async def test_live_daily_briefing(live_credentials):
             business_unit=BusinessUnit.SRF,
             channel_id="srf-1",
             date=yesterday,
-            latitude=47.37,
-            longitude=8.54,
+            latitude=47.3769,
+            longitude=8.5417,
         ),
     )
     assert not isinstance(result, ToolErrorResponse), result
