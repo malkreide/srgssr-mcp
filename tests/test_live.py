@@ -271,20 +271,36 @@ async def test_live_daily_briefing(live_credentials):
 
     Die Koordinate ist dieselbe wie in den drei Wetter-Tests, und das ist keine
     Kosmetik. `_resolve_geolocation_id` fragt `/geolocations` mit
-    `f"{latitude:.4f}"`; aus `47.37, 8.54` wird damit `47.3700, 8.5400` und
-    also eine *andere* Location als `47.3769, 8.5417`. Die Developer-App ist
-    nur fuer eine freigeschaltet, die zweite quittiert SRF Meteo mit
+    `f"{latitude:.4f}"`, und SRF Meteo rastert die Anfrage auf einen
+    Gitterpunkt. Die Spur des Laufs vom 17.8.2026 zeigt beide Schritte:
 
-        400 { "code": "400.01.007",
-              "message": "location mismatch for developer app",
-              "info": "You have exceeded your location limit" }
+        GET /srf-meteo/v2/geolocations?latitude=47.3700&longitude=8.5400
+            -> 200 OK
+        GET /srf-meteo/v2/forecastpoint/47.3640,8.5286
+            -> 400 { "code": "400.01.007",
+                     "message": "location mismatch for developer app",
+                     "info": "You have exceeded your location limit" }
 
-    Am 30.8.2026 um 09:52 UTC ist der naechtliche Lauf genau daran gescheitert,
-    waehrend die drei Wetter-Tests mit der anderen Koordinate in derselben
-    Minute gruen durchliefen. Diese Positivkontrolle ist der Beleg: nicht die
-    Quelle war weg und nicht das Kontingent global erschoepft, sondern diese
-    eine Koordinate war eine zweite Location. Wer hier eine neue Koordinate
-    einsetzt, macht den naechtlichen Lauf wieder rot.
+    Die Aufloesung *gelingt* also. Sie liefert fuer `47.3700, 8.5400` den
+    Gitterpunkt `47.3640, 8.5286`, und dieser ist fuer die Developer-App nicht
+    freigeschaltet; `47.3769, 8.5417` rastert auf einen anderen, der es ist.
+    Entscheidend sind nicht die Ziffern hinter dem Komma, sondern welcher
+    Gitterpunkt herauskommt — zwei Koordinaten keine 100 m auseinander koennen
+    auf verschiedenen Punkten landen. Wer den 400er nur an der Meldung liest,
+    sucht den Fehler bei der Aufloesung; die war in Ordnung.
+
+    Dieser Test hat live nie bestanden. Er kam am 16.8.2026 um 17:45 auf
+    `main`, also nach dem letzten gruenen naechtlichen Lauf (16.8. um 04:40 auf
+    `3f5a136`, das ihn noch nicht enthielt). Der erste Lauf, der ihn ausfuehrte
+    — 17.8. um 04:50 auf `0f69c07` —, fiel mit genau dieser Meldung, und jeder
+    der 14 Laeufe bis zum 30.8. ebenso. Aufgefallen ist es niemandem, weil die
+    CI der Pull Requests `-m "not live"` faehrt: sein eigener PR war gruen. Ein
+    Live-Test kann hier also einziehen, ohne je bestanden zu haben.
+
+    Die Positivkontrolle steht in jedem dieser Laeufe daneben: die drei
+    Wetter-Tests mit `47.3769, 8.5417` liefen in derselben Minute durch. Nicht
+    die Quelle war weg und nicht das Kontingent global erschoepft. Wer hier eine
+    neue Koordinate einsetzt, macht den naechtlichen Lauf wieder rot.
     """
     from datetime import date, timedelta
 
