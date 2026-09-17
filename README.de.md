@@ -326,6 +326,33 @@ und zwar für beide Ären. `fastmcp` ist hier nicht beteiligt: es steht in keine
 Abhängigkeit dieses Servers. Spec-Bumps werden in [CHANGELOG.md](CHANGELOG.md)
 unter dem jeweiligen Release dokumentiert.
 
+### Was der Server wirklich auf den Draht legt
+
+Die Tabelle oben war eine Behauptung, gehalten gegen SDK-Konstanten.
+[`tests/test_spec_2026_07_28.py`](tests/test_spec_2026_07_28.py) schickt jetzt
+echte Anfragen durch `MCPServer.streamable_http_app()` über
+`httpx.ASGITransport` und prüft die Antworten — in beiden Ären. Was diese
+Messung festhält:
+
+| Eigenschaft | Am Draht |
+|---|---|
+| Moderner Einstieg | `server/discover`, kein `initialize`, keine `Mcp-Session-Id`; `supportedVersions: ["2026-07-28"]` |
+| Handshake-Obergrenze | Ein Client, der per `initialize` nach `2026-07-28` fragt, bekommt `2025-11-25` zurück — gemessen, nicht geschlossen |
+| Server-Identität | `io.modelcontextprotocol/serverInfo` hängt am `_meta` **jedes** modernen Resultats und trägt die Version des installierten Pakets |
+| Frischehinweis (SEP-2549) | `ttlMs: 300000`, `cacheScope: public` auf `server/discover` und den vier auflistenden Methoden |
+| Anzeigenamen der Werkzeuge | `title` nach `BaseMetadata`, gespiegelt in `annotations.title` für Clients der Handshake-Ära, die nur dort lesen |
+| Bei `2026-07-28` zurückgezogen | `ping`, `logging/setLevel`, `resources/subscribe`, `resources/unsubscribe` und `tasks/*` antworten mit `-32601` |
+| Logging-Capability | Nicht deklariert und nicht benutzt: SEP-2577 setzt sie mit `2026-07-28` ab, und die Zustellung ist dort ein Opt-in pro Anfrage, das kein Server unterstellen darf. Tool-Aktivität geht an structlog auf stderr — siehe [`src/srgssr_mcp/tools/__init__.py`](src/srgssr_mcp/tools/__init__.py) |
+
+Die Messung hat sich im ersten Lauf bezahlt, bei 425 grünen Tests und 96 %
+Coverage: `serverInfo.version` war der Leerstring, jedes `tools/call` kam mit
+`isError` zurück (die Aufrufform `ctx.info(msg, **kwargs)` aus FastMCP 1.x, die
+`mcp` 2.x ablehnt), und acht Werkzeuge verweigerten den Enum-String, den ihr
+eigenes veröffentlichtes `inputSchema` ausweist (`ConfigDict(strict=True)`
+verlangt eine Enum-*Instanz*, und die kann keine JSON-Nutzlast tragen). Von
+innen war davon nichts zu sehen — genau das ist das Argument dafür, die
+Drahtform zu prüfen.
+
 ### Update-Policy
 
 - SDK-Dependency-Updates kommen via Dependabot (`.github/dependabot.yml`, monatlich, gruppiert unter dem Label `mcp-sdk`) und müssen die komplette Testsuite passieren, bevor sie gemerged werden.

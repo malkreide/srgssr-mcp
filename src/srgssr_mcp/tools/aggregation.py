@@ -30,8 +30,17 @@ logger = get_logger("mcp.srgssr.aggregation")
 
 class DailyBriefingInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit für das EPG: 'srf', 'rts' oder 'rsi' (RTR/SWI ohne EPG)",
     )
     channel_id: str = Field(..., min_length=1, max_length=100, pattern=r"^[A-Za-z0-9_-]+$")
@@ -43,6 +52,7 @@ class DailyBriefingInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_daily_briefing",
+    title="SRG SSR – Tagesbriefing (Wetter + EPG)",
     description=(
         "Aggregiertes Tagesbriefing: kombiniert die 24-Stunden-Wettervorhersage "
         "von SRF Meteo mit dem EPG-Tagesprogramm eines SRG SSR TV- oder "
@@ -88,12 +98,6 @@ async def srgssr_daily_briefing(
     )
     log.info("tool_invoked")
     if ctx is not None:
-        await ctx.info(
-            "srgssr_daily_briefing invoked",
-            business_unit=params.business_unit.value,
-            channel_id=params.channel_id,
-            date=params.date,
-        )
         await ctx.report_progress(0.0, total=2.0, message="Wetter und EPG parallel abrufen")
 
     weather_input = WeatherForecastInput(

@@ -17,11 +17,23 @@ zweite Aera gibt, und die konnte damit frei wandern. Sie steht jetzt daneben.
 unvollstaendig beschrieben — anders als in `bag-epl-mcp` und `parlament-mcp`,
 wo eine Konstante drei Revisionen hinterherhinkte und korrigiert werden musste.
 
-Ohne gemessenen Teil: dieses Repo baut keine ASGI-App, durch die sich ein
-`initialize` schicken liesse. Die Aushandlung steht in
-`mcp/server/runner.py::_negotiate_initialize` und haengt an keinem Transport —
-an neun Schwester-Servern gemessen, hier an den SDK-Konstanten gehalten. Das
-ist die schwaechere Form, und sie steht hier benannt statt unausgesprochen.
+Diese Datei haelt beide Revisionen gegen die **SDK-Konstanten**. Das ist die
+schwaechere Form, und sie stand hier zwei Fassungen lang mit einer falschen
+Begruendung: «dieses Repo baut keine ASGI-App, durch die sich ein `initialize`
+schicken liesse». Es baut eine — `MCPServer.streamable_http_app()` —, und
+`httpx.ASGITransport` fuehrt eine Anfrage ohne Socket hindurch. Die Messung
+war nicht unmoeglich, sie war bloss nicht gemacht.
+
+Sie steht jetzt in `tests/test_spec_2026_07_28.py` und hat beim ersten Lauf
+drei Befunde geliefert, die von hier aus strukturell nicht zu sehen waren: ein
+leeres `serverInfo.version` an jeder Antwort, ein `TypeError` in jedem
+`tools/call` und acht Werkzeuge, die den Enum-String aus ihrem eigenen
+`inputSchema` ablehnten.
+
+Was hier bleibt, ist deshalb die Frage nach der **Drift der Konstanten** —
+ob das SDK die Revisionen verschiebt —, nicht die nach dem Verhalten des
+Servers. Beides gehoert gefahren: faellt nur diese Datei, hat sich das SDK
+bewegt; faellt nur die andere, dieser Server.
 """
 
 from __future__ import annotations
@@ -67,6 +79,12 @@ def test_die_handshake_aera_steht_wo_die_readmes_sie_nennen() -> None:
 
     Ein Client, der ueber den `initialize`-Handshake nach der modernen Revision
     fragt, bekommt diese Obergrenze zurueck, nicht das, wonach er gefragt hat.
+
+    Das ist hier die Behauptung des SDK. Dass dieser Server sie auch einhaelt,
+    steht gemessen in
+    `test_spec_2026_07_28.py::test_der_handshake_deckelt_bei_der_dokumentierten_revision`
+    — beides ist noetig, weil die Aushandlung am Konstruktor oder an `run()`
+    haengen bleiben kann, ohne dass die Konstante sich ruehrt.
     """
     assert LATEST_HANDSHAKE_VERSION == DOCUMENTED_HANDSHAKE_VERSION, (
         f"das SDK deckelt den Handshake jetzt bei {LATEST_HANDSHAKE_VERSION}, "

@@ -13,6 +13,7 @@ from mcp.server.caching import CacheableMethod, CacheHint
 from mcp.server.mcpserver import MCPServer
 from mcp.types.version import SUPPORTED_PROTOCOL_VERSIONS
 
+from srgssr_mcp import __version__
 from srgssr_mcp._http import close_http_client
 from srgssr_mcp.logging_config import configure_logging, get_logger
 
@@ -77,10 +78,16 @@ async def lifespan(_server: MCPServer) -> AsyncIterator[None]:
 # jeden Client bei jeder Verbindung neu auflisten, fuer Verzeichnisse, die beim
 # Import feststehen und sich zur Laufzeit des Prozesses nicht aendern koennen.
 #
-# `public` folgt aus der Sache, nicht aus Bequemlichkeit: die 10 Tools werden
+# `public` folgt aus der Sache, nicht aus Bequemlichkeit: die 15 Tools werden
 # per Dekorator beim Import registriert, es gibt keine Filterung nach Aufrufer.
 # Sobald eine Liste vom Aufrufer abhaengt, muss der Scope im selben Commit auf
 # `private` wechseln.
+#
+# Die Zahl stand hier auf 10 und war nie richtig — `tools/list` liefert
+# gemessen 15. Sie ist keine Zierde: sie ist die Begruendung dafuer, dass
+# nichts pro Aufrufer gefiltert wird, und eine Begruendung, deren Grundlage
+# niemand nachgezaehlt hat, traegt nicht. `test_spec_2026_07_28.py` zaehlt
+# jetzt gegen die Registry.
 #
 # `resources/read` und `prompts/get` stehen bewusst nicht dabei: das waere eine
 # Zusicherung ueber den INHALT statt ueber das Verzeichnis.
@@ -98,8 +105,25 @@ CACHE_HINTS: dict[CacheableMethod, CacheHint] = {
     "server/discover": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
 }
 
+# Spec 2026-07-28, `Implementation`: `name` UND `version` sind Pflichtfelder,
+# `title`, `websiteUrl` und `description` sind optional. Ohne `version=` setzt
+# das SDK den Leerstring — formal ein String, inhaltlich keine Version.
+#
+# In der modernen Aera kostet das mehr als in der alten. Es gibt kein
+# `initialize`-Resultat, das die Server-Identitaet einmal pro Verbindung
+# tragen koennte, also haengt das SDK sie an das `_meta` **jedes** Resultats
+# (`io.modelcontextprotocol/serverInfo`). Gemessen am 17.9.2026 ging an jeder
+# Antwort `{"name": "srgssr_mcp", "version": ""}` hinaus — in beiden Aeren.
+# Damit kann ein Client nicht sagen, mit welchem Build er spricht, und eine
+# versionsabhaengige Umgehung nicht ansetzen.
+#
+# Die Nummer kommt aus den Paket-Metadaten und steht nirgends in `src/` als
+# Literal; `scripts/check_version_sync.py` erzwingt genau das.
 mcp = MCPServer(
     "srgssr_mcp",
+    version=__version__,
+    title="SRG SSR – Schweizer Medien, Wetter und Politik",
+    website_url="https://github.com/malkreide/srgssr-mcp",
     cache_hints=CACHE_HINTS,
     instructions=(
         "Provides access to SRG SSR public APIs covering Swiss weather, "

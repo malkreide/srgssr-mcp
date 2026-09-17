@@ -335,6 +335,7 @@ def _election_from_dict(d: dict, case: dict | None = None) -> Election:
 
 @mcp.tool(
     name="srgssr_polis_get_votations",
+    title="SRG SSR Polis – Schweizer Abstimmungen",
     description=(
         "Ruft Schweizer Volksabstimmungen und Referenden (national und kantonal) "
         "aus dem Polis-System ab. Liefert Datum, Titel und votation_id pro Eintrag.\n\n"
@@ -371,13 +372,6 @@ async def srgssr_polis_get_votations(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_polis_get_votations invoked",
-            year_from=params.year_from,
-            year_to=params.year_to,
-            canton=params.canton,
-        )
     try:
         raw_votations = await _fetch_filtered("votations", ("Items",), params)
     except Exception as e:
@@ -406,6 +400,7 @@ async def srgssr_polis_get_votations(
 
 @mcp.tool(
     name="srgssr_polis_get_votation_results",
+    title="SRG SSR Polis – Abstimmungsresultate",
     description=(
         "Ruft detaillierte Resultate einer einzelnen Schweizer Volksabstimmung ab "
         "(Ja/Nein-Anteile, Stimmbeteiligung, kantonale Ergebnisse, "
@@ -433,11 +428,6 @@ async def srgssr_polis_get_votation_results(
         votation_id=params.votation_id,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_polis_get_votation_results invoked",
-            votation_id=params.votation_id,
-        )
     try:
         data = await _api_get(f"{POLIS_BASE}/votations/{params.votation_id}", params={"lang": "de"})
     except Exception as e:
@@ -462,6 +452,7 @@ async def srgssr_polis_get_votation_results(
 
 @mcp.tool(
     name="srgssr_polis_get_elections",
+    title="SRG SSR Polis – Schweizer Wahlen",
     description=(
         "Ruft Schweizer Nationalrats-, Ständerats- und kantonale Wahlen aus "
         "dem Polis-System ab. Liefert Datum, Wahlbezeichnung und Wahl-ID.\n\n"
@@ -492,13 +483,6 @@ async def srgssr_polis_get_elections(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_polis_get_elections invoked",
-            year_from=params.year_from,
-            year_to=params.year_to,
-            canton=params.canton,
-        )
     try:
         raw_elections = await _fetch_filtered("elections", ("Elections", "Election"), params)
     except Exception as e:

@@ -12,10 +12,12 @@ input is constructed via the Pydantic models from server.py.
 import asyncio
 import json  # noqa: F401  (still used by some assertions)
 import re
+from unittest.mock import create_autospec
 
 import httpx
 import pytest
 import respx
+from mcp.server.mcpserver import Context
 from pydantic import ValidationError
 
 from srgssr_mcp._models import (
@@ -1581,9 +1583,29 @@ async def test_daily_briefing_combines_weather_and_epg():
 
 
 @respx.mock
-async def test_daily_briefing_emits_ctx_progress_and_info():
-    """SDK-003: when invoked with a Context, the aggregator emits structured
-    log + progress events that an MCP client can surface as activity."""
+async def test_daily_briefing_emits_ctx_progress():
+    """SDK-003: mit einem Context berichtet der Aggregator Fortschritt um den
+    `asyncio.gather`-Fan-out, damit ein Client Lebenszeichen sieht.
+
+    Der Doppel des Contexts kommt aus `create_autospec(Context)` und nicht mehr
+    von Hand. Das ist der eigentliche Punkt dieses Tests.
+
+    Vorher stand hier ein `_StubCtx` mit ``async def info(self, message, **extra)``
+    — und damit genau die Annahme, die zu widerlegen war: dass `Context.info`
+    freie Schluesselwoerter nimmt. Auf `mcp` 2.x tut es das nicht
+    (``info(data, *, logger_name=None)``), also endeten alle 15 Werkzeuge in
+    einem `TypeError`, sobald ein echter Client sie aufrief. Der Stub konnte das
+    nicht sehen, weil er die Signatur des Codes nachbaute statt die des SDK.
+    `autospec` leitet die Signatur aus der echten Klasse ab und faellt bei einem
+    falschen Aufruf mit `TypeError`.
+
+    Die `ctx.info`-Aufrufe sind inzwischen weg (Spec 2026-07-28 setzt die
+    Logging-Capability ab, SEP-2577 — die Begruendung steht in
+    `srgssr_mcp/tools/__init__.py`), deshalb prueft dieser Test nur noch den
+    Fortschritt. Dass ein Werkzeug mit einem **echten** Context durchlaeuft,
+    steht in `tests/test_spec_2026_07_28.py`; ein Doppel kann das grundsaetzlich
+    nicht zusichern.
+    """
     respx.get(f"{WEATHER_BASE}/geolocations").mock(
         return_value=httpx.Response(200, json=[{"id": 100001, "default_name": "Zürich"}])
     )
@@ -1592,15 +1614,7 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
     )
     respx.get(_epg_station()).mock(return_value=httpx.Response(200, json={"programList": []}))
 
-    info_events: list[tuple[str, dict]] = []
-    progress_events: list[tuple[float, float | None, str | None]] = []
-
-    class _StubCtx:
-        async def info(self, message: str, **extra):
-            info_events.append((message, extra))
-
-        async def report_progress(self, progress: float, total: float | None = None, message: str | None = None):
-            progress_events.append((progress, total, message))
+    ctx = create_autospec(Context, instance=True)
 
     await srgssr_daily_briefing(
         DailyBriefingInput(
@@ -1610,15 +1624,31 @@ async def test_daily_briefing_emits_ctx_progress_and_info():
             latitude=47.0,
             longitude=8.0,
         ),
-        ctx=_StubCtx(),
+        ctx=ctx,
     )
 
-    # At least one info event with the tool name
-    assert any("srgssr_daily_briefing" in msg for msg, _ in info_events)
-    # Two progress events: 0/2 (start of fan-out) and 2/2 (after gather)
-    assert len(progress_events) == 2
-    assert progress_events[0][0] == 0.0
-    assert progress_events[1][0] == 2.0
+    # Zwei Meldungen: 0/2 vor dem Fan-out, 2/2 danach.
+    fortschritt = [call.args for call in ctx.report_progress.await_args_list]
+    assert len(fortschritt) == 2, fortschritt
+    assert fortschritt[0][0] == 0.0
+    assert fortschritt[1][0] == 2.0
+
+
+async def test_der_context_doppel_laesst_die_alte_aufrufform_nicht_durch():
+    """Gegenprobe zum Doppel selbst — ohne die sagt der Test oben nichts.
+
+    Ein `autospec`-Doppel ist nur dann besser als der handgeschriebene Stub,
+    wenn es einen falschen Aufruf wirklich ablehnt. Hier steht, dass es das tut:
+    dieselbe Zeile, die im `src/` stand, an demselben Doppel.
+    """
+    ctx = create_autospec(Context, instance=True)
+
+    with pytest.raises(TypeError):
+        await ctx.info("srgssr_daily_briefing invoked", business_unit="srf")
+
+    # Positivkontrolle: die Form, die die Signatur vorsieht, geht durch — sonst
+    # wuerde die Zusicherung darueber auch bei einem kaputten Doppel halten.
+    await ctx.info({"event": "srgssr_daily_briefing invoked", "business_unit": "srf"})
 
 
 @respx.mock
