@@ -336,21 +336,45 @@ wieder die Tabelle, neue Kommentar-ID (5463680232), Commit `1bd0a23`, Auslöser
 `get_reviews` → `[]` und keine Befundlos-Meldung. Die Form ist damit **kein
 Einzelfall** — was der Absatz vorher offenliess.
 
-Was sie nicht hergibt: dass die Tabelle den alten Text *überall* ersetzt. Zwei
-Läufe an einem Repo an einem Tag sind keine Messreihe über das Portfolio, und
-ob der alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt
-beides als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich
-zitiert, nicht einsortiert.
+Die dritte kam am 17.9.2026 unter PR #113, wieder `srgssr-mcp`: Kommentar-ID
+5719569936, Commit `005c66c`, Auslöser «Draft marked ready», `Running` →
+`Completed` an derselben ID, `get_reviews` → `[]`, keine Befundlos-Meldung.
+Das ist **dieselbe Form 19 Tage später** und damit das, was den beiden Läufen
+vom 29.8. fehlte: ein zweites Datum. Der Einwand stand hier bis zu diesem
+Nachtrag als «zwei Läufe an einem Repo an einem Tag sind keine Messreihe» —
+seine erste Hälfte ist beantwortet, die zweite nicht: das Datum ist nicht mehr
+eines, das Repo schon.
 
-Die Laufzeit ist in beiden Fällen ähnlich: 62 s unter #103 (12:41:58,07 →
-12:43:00,23) und 78 s unter #105 (16:57:06,81 → 16:58:24,64). Wer nach dem
-Auslösen nachsieht, sieht also gut eine Minute lang `Running` und danach erst
-das Ergebnis.
+Was die drei Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+ersetzt. Alle drei stehen in **einem** Repo. Über zwei Daten hinweg ist die
+Form dort stabil, über das Portfolio sagt sie nichts, und ob der alte Satz
+anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides als
+möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
+nicht einsortiert.
+
+Die Laufzeit liegt in allen drei Fällen nah beieinander: 62 s unter #103
+(12:41:58,07 → 12:43:00,23), 78 s unter #105 (16:57:06,81 → 16:58:24,64) und
+70,9 s unter #113 (18:50:10,42 → 18:51:21,28). Der dritte Wert liegt zwischen
+den beiden ersten, das Fenster von gut einer Minute bis knapp achtzig Sekunden
+hält also. Wer nach dem Auslösen nachsieht, sieht so lange `Running` und
+danach erst das Ergebnis.
+
+**Und deshalb die Startzeit gegen die Uhr halten, bevor man `Running` deutet.**
+Der Absatz oben warnt davor, zu früh zu lesen und einen laufenden Review für
+das Ergebnis zu nehmen. Unter #113 wurde der Fehler andersherum beinahe
+gemacht: die Tabelle stand beim ersten Lesen auf `Running`, und weil der PR
+zu diesem Zeitpunkt schon gemergt war, lag der Schluss «der Lauf hängt, weil
+der PR unter ihm zuging» nahe. Er wäre falsch gewesen — es waren 56 Sekunden
+seit dem Start, also mitten im Fenster. Die Tabelle nennt ihre Startzeit
+selbst («Running since …»); die Differenz zur aktuellen Zeit kostet eine
+Zeile und unterscheidet einen normalen Lauf von einer Störung. Ohne sie ist
+`Running` nur ein Wort.
 
 Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
 while any review is running … and reacts with 👍 once all reviews finish with no
 findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
-während des Laufs noch danach. Der Kasten bleibt keine Quelle.
+während des Laufs noch danach — unter #113 erneut, also in allen drei
+Beobachtungen. Der Kasten bleibt keine Quelle.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -373,26 +397,37 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen zweimal durchgemessen, beide Male in
-`srgssr-mcp` am 29.8.2026:
+Wie viel Zeit, ist inzwischen dreimal durchgemessen, alle drei Male in
+`srgssr-mcp`:
 
-| PR | ready | gemergt | Review startet | Review fertig |
-| --- | --- | --- | --- | --- |
-| #103 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 |
-| #105 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 |
+| PR | Datum | ready | gemergt | Review startet | Review fertig |
+| --- | --- | --- | --- | --- | --- |
+| #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 |
+| #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 |
+| #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 |
 
-Zwei beziehungsweise drei Sekunden bis zum Merge, fünf bis sieben bis zum
-Start, gut eine Minute bis zum Ergebnis. Beide Reviews liefen damit
-vollständig auf einem bereits geschlossenen PR, und dass keiner etwas fand, ist
-Glück und nicht Verfahren: ein Befund wäre an einem gemergten PR gelandet, wo
-ihn die Regel «beantworten oder beheben» nur noch über einen Folge-PR erreicht.
+Zwei, drei und zehn Sekunden bis zum Merge, fünf bis sieben bis zum Start, gut
+eine Minute bis zum Ergebnis. Alle drei Reviews liefen damit vollständig auf
+einem bereits geschlossenen PR — unter #113 war das Ergebnis 68 Sekunden nach
+dem Merge da. Dass keiner etwas fand, ist Glück und nicht Verfahren: ein Befund
+wäre an einem gemergten PR gelandet, wo ihn die Regel «beantworten oder
+beheben» nur noch über einen Folge-PR erreicht.
 
-Der zweite Fall ist der lehrreichere: #105 war der PR, der diese Falle
-dokumentiert, und ist ihr trotzdem zum Opfer gefallen. Eine Regel
-aufzuschreiben und sie im selben Handgriff zu verletzen, kostet nichts weiter
-als den Prüfer — man merkt es nur nicht. Zwei Minuten Abstand zwischen ready
-und Merge decken beide Messungen; eine Minute deckt sie knapp und lässt keinen
-Spielraum.
+**Der Abstand ist gewachsen und hat trotzdem nicht gereicht.** Von zwei auf
+zehn Sekunden ist eine Verfünffachung und gegenüber siebzig Sekunden Laufzeit
+bedeutungslos. Wer hier «etwas warten» liest, hat die Grössenordnung
+verfehlt: gebraucht werden zwei Minuten, nicht ein paar Sekunden mehr. Zwei
+Minuten Abstand zwischen ready und Merge decken alle drei Messungen; eine
+Minute deckt sie knapp und lässt keinen Spielraum.
+
+Der lehrreiche Teil ist die Wiederholung. #105 war der PR, der diese Falle
+dokumentiert, und ist ihr zum Opfer gefallen. #113 war der PR, der die
+Drahtform-Messung einführte — und ist ihr, mit der Tabelle bereits im Repo,
+erneut zum Opfer gefallen. Zweimal dieselbe Falle bei zwei Sessions, die den
+Absatz vor sich hatten: die Regel steht offenbar an der falschen Stelle, um zu
+greifen, denn sie wird nicht beim Mergen gelesen, sondern beim Schreiben. Wer
+sie wirksam haben will, hängt sie an den Handgriff und nicht an den Text —
+erst nachsehen, ob ein Review läuft, dann mergen.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
@@ -445,7 +480,7 @@ wie der Code: Nichts ist rot, weil nichts geprüft wird, worauf es ankommt.
 
 ## Teil 2 — dieses Repo
 
-**ruff:** genau eine Quelle — `ruff==0.16.3` im `[dev]`-Extra von
+**ruff:** genau eine Quelle — `ruff==0.16.4` im `[dev]`-Extra von
 `pyproject.toml`. `pip install -e ".[dev]"` reicht also, lokal wie in der CI.
 Keine zweite Version in die Workflows schreiben: ein solcher Schritt läuft
 nach dem `[dev]`-Install und überstimmt den Pin still (`test_dependencies.py`

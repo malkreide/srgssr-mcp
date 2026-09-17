@@ -218,3 +218,34 @@ def test_runtime_imports_are_all_declared(name: str):
     declared = _declared_dependencies()
     # Distribution names use hyphens where module names use underscores.
     assert name.replace("_", "-") in declared or name in declared
+
+
+def test_claude_md_nennt_denselben_ruff_pin_wie_pyproject():
+    """Die Konventionen-Datei nennt den Pin im Klartext — und driftete.
+
+    `CLAUDE.md` schreibt «genau eine Quelle — `ruff==X.Y.Z` im `[dev]`-Extra
+    von `pyproject.toml`». Der Satz ist richtig und seine Zahl war es nicht:
+    ein Dependabot-Lauf hob den Pin von 0.16.3 auf 0.16.4
+    (`deps(deps-dev): Bump ruff from 0.16.3 to 0.16.4`), die Datei blieb auf
+    0.16.3 stehen. Das kostet nichts Rotes und genau deshalb faellt es nicht
+    auf — wer den Gates-Abschnitt liest, installiert die falsche Version und
+    sucht die Abweichung danach im Diff.
+
+    Verglichen wird, nicht nachgeschrieben: eine Zusicherung, die die erwartete
+    Nummer selbst enthielte, waere aus derselben Annahme geschrieben wie die
+    Doku und koennte ihr nicht widersprechen. Dasselbe Vorgehen wie in
+    `test_live_workflow_docs.py`.
+    """
+    specs = [s for s in _dev_dependencies() if re.match(r"^ruff==", s)]
+    assert len(specs) == 1, f"kein eindeutiger ruff-Pin in pyproject.toml: {specs}"
+    pinned = specs[0].split("==", 1)[1]
+
+    text = (_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    genannt = re.findall(r"ruff==(\d+\.\d+\.\d+)", text)
+    assert genannt, "CLAUDE.md nennt keinen ruff-Pin — dann ist diese Zusicherung gegenstandslos"
+
+    abweichend = sorted({v for v in genannt if v != pinned})
+    assert not abweichend, (
+        f"CLAUDE.md nennt ruff=={', '.join(abweichend)}, pyproject.toml pinnt {pinned}. "
+        "Wer der Datei folgt, fährt die Gates mit einer anderen Version als die CI."
+    )
