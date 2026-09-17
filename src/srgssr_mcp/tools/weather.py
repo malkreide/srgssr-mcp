@@ -63,6 +63,7 @@ class WeatherForecastInput(BaseModel):
 
 @mcp.tool(
     name="srgssr_weather_search_location",
+    title="SRF Meteo – Standort suchen",
     description=(
         "Sucht Schweizer Standorte für die Wettervorhersage nach Name oder Postleitzahl "
         "und gibt eine Liste von Orten mit geolocationId zurück.\n\n"
@@ -90,8 +91,6 @@ async def srgssr_weather_search_location(
     """Search Swiss locations for weather forecasting (SDK-002 strict model)."""
     log = logger.bind(tool="srgssr_weather_search_location", query=params.query)
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info("srgssr_weather_search_location invoked", query=params.query)
     raw_locations: list = []
     matched_variant = params.query
     tried: list[str] = []
@@ -198,6 +197,7 @@ async def _fetch_forecast_point(latitude: float, longitude: float, geolocation_i
 
 @mcp.tool(
     name="srgssr_weather_current",
+    title="SRF Meteo – Aktuelles Wetter",
     description=(
         "Liefert die aktuelle Wettersituation von SRF Meteo für einen Schweizer Standort "
         "(Temperatur, Wettercode, Wind, Niederschlag, Luftfeuchtigkeit).\n\n"
@@ -228,12 +228,6 @@ async def srgssr_weather_current(
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_weather_current invoked",
-            latitude=params.latitude,
-            longitude=params.longitude,
-        )
     try:
         data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:
@@ -263,6 +257,7 @@ async def srgssr_weather_current(
 
 @mcp.tool(
     name="srgssr_weather_forecast_24h",
+    title="SRF Meteo – 24-Stunden-Prognose",
     description=(
         "Liefert die stündliche Wettervorhersage der nächsten 24 Stunden von SRF Meteo.\n\n"
         "<use_case>Tagesplanung, Veranstaltungsorganisation, kurzfristige "
@@ -291,12 +286,6 @@ async def srgssr_weather_forecast_24h(
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_weather_forecast_24h invoked",
-            latitude=params.latitude,
-            longitude=params.longitude,
-        )
     try:
         data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:
@@ -327,6 +316,7 @@ async def srgssr_weather_forecast_24h(
 
 @mcp.tool(
     name="srgssr_weather_forecast_7day",
+    title="SRF Meteo – 7-Tages-Prognose",
     description=(
         "Liefert die tägliche Wettervorhersage der nächsten 7 Tage von SRF Meteo "
         "mit Min/Max-Temperatur, Niederschlag und Wetterlage pro Tag.\n\n"
@@ -355,12 +345,6 @@ async def srgssr_weather_forecast_7day(
         geolocation_id=params.geolocation_id,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_weather_forecast_7day invoked",
-            latitude=params.latitude,
-            longitude=params.longitude,
-        )
     try:
         data = await _fetch_forecast_point(params.latitude, params.longitude, params.geolocation_id)
     except Exception as e:

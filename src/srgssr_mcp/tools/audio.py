@@ -59,8 +59,17 @@ async def _fetch_show_bucket(bu: str, channel_id: str, character: str, page_size
 
 class AudioShowsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
     channel_id: str = Field(
@@ -87,8 +96,17 @@ class AudioShowsInput(BaseModel):
 
 class AudioEpisodesInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
     show_id: str = Field(..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$")
@@ -123,6 +141,7 @@ def _audio_channel_from_dict(d: dict) -> AudioChannel:
 
 @mcp.tool(
     name="srgssr_audio_get_shows",
+    title="SRG SSR Audio – Radiosendungen auflisten",
     description=(
         "Listet Radiosendungen eines SRG SSR Radiokanals auf.\n\n"
         "<use_case>Katalog-Browsing für Radio- und Podcast-Formate.</use_case>\n\n"
@@ -158,8 +177,6 @@ async def srgssr_audio_get_shows(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info("srgssr_audio_get_shows invoked", business_unit=bu)
 
     if params.character_filter is not None:
         try:
@@ -226,6 +243,7 @@ async def srgssr_audio_get_shows(
 
 @mcp.tool(
     name="srgssr_audio_get_episodes",
+    title="SRG SSR Audio – Episoden einer Sendung",
     description=(
         "Ruft die neuesten Episoden einer Radiosendung ab.\n\n"
         "<use_case>Auffinden konkreter Radiobeiträge oder Podcast-Folgen.</use_case>\n\n"
@@ -253,12 +271,6 @@ async def srgssr_audio_get_episodes(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_audio_get_episodes invoked",
-            business_unit=bu,
-            show_id=params.show_id,
-        )
     try:
         data = await _api_get(
             f"{AUDIO_BASE}/episodeComposition/shows/{params.show_id}",
@@ -286,6 +298,7 @@ async def srgssr_audio_get_episodes(
 
 @mcp.tool(
     name="srgssr_audio_get_livestreams",
+    title="SRG SSR Audio – Live-Radiosender",
     description=(
         "Listet alle Live-Radiosender einer SRG SSR Unternehmenseinheit auf.\n\n"
         "<use_case>Aufbau von Radio-Senderverzeichnissen, Live-Stream-Auswahl, "
@@ -312,8 +325,6 @@ async def srgssr_audio_get_livestreams(
     bu = params.business_unit.value
     log = logger.bind(tool="srgssr_audio_get_livestreams", business_unit=bu)
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info("srgssr_audio_get_livestreams invoked", business_unit=bu)
     try:
         data = await _api_get(f"{AUDIO_BASE}/radio/channels", params={"bu": bu})
     except Exception as e:

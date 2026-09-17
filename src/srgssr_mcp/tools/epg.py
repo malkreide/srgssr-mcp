@@ -67,8 +67,17 @@ def _station_overview() -> str:
 
 class EpgProgramsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi' (EPG für RTR/SWI nicht verfügbar)",
     )
     broadcast_type: str = Field(
@@ -123,6 +132,7 @@ def _build_epg_response(raw_programs: list, channel_id: str, bu: str, date: str)
 
 @mcp.tool(
     name="srgssr_epg_get_programs",
+    title="SRG SSR EPG – Programmvorschau",
     description=(
         "Ruft den vollständigen Programmplan (Electronic Program Guide) eines "
         "SRG SSR TV- oder Radiosenders für einen bestimmten Tag ab.\n\n"
@@ -157,13 +167,6 @@ async def srgssr_epg_get_programs(
         date=params.date,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_epg_get_programs invoked",
-            business_unit=bu,
-            channel_id=params.channel_id,
-            date=params.date,
-        )
     try:
         data = await _api_get(
             _epg_station_url(bu, params.broadcast_type, params.channel_id),

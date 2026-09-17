@@ -5,6 +5,112 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Jedes `tools/call` kam mit `isError` zurueck — bei 425 gruenen Tests.** Die
+  15 Werkzeuge riefen `await ctx.info("... invoked", business_unit=bu)`. Das ist
+  die Signatur von FastMCP 1.x; auf `mcp` 2.x heisst sie
+  `info(data, *, logger_name=None)` und nimmt keine freien Schluesselwoerter
+  mehr. Jeder Aufruf durch einen echten Client endete damit in
+  `TypeError: Context.info() got an unexpected keyword argument` und einer
+  Fehlerantwort. Gemessen am 17.9.2026 ueber die ASGI-App des Servers.
+
+  **Warum es niemand gesehen hat.** Die Suite ruft die Tool-Funktionen direkt
+  auf, wo `ctx` auf `None` defaultet — der `if ctx is not None`-Zweig lief nie.
+  Der einzige Test, der ueberhaupt ein `ctx` durchgab, brachte ein
+  handgeschriebenes `_StubCtx` mit `async def info(self, message, **extra)` mit,
+  also genau die Annahme, die zu widerlegen war. Und im Coverage-Bericht standen
+  diese 14 Zeilen die ganze Zeit als nicht ausgefuehrt; sie waren die Haelfte
+  aller Fehlstellen unter `tools/`. Der Bericht hat den Fehler einen Monat lang
+  benannt, nur hat niemand ihn als solchen gelesen.
+
+  Eingefuehrt hatte die Aufrufe Audit-Finding SDK-003 — mit der Verifikation
+  «`grep -rE 'await ctx\.(info|...)' src/` muss min. 15 Treffer liefern». Ein
+  grep kann eine Signatur nicht aufrufen. Das Finding stand auf PASS, waehrend
+  jeder der 15 Treffer eine Ausnahme warf.
+
+  Behoben nicht durch Reparieren der Aufrufform, sondern durch Entfernen der
+  Aufrufe: Spec `2026-07-28` setzt die Logging-Capability ab (SEP-2577), die
+  Zustellung ist dort ein Opt-in pro Anfrage
+  (`io.modelcontextprotocol/logLevel`), und dieser Server hat die Capability nie
+  deklariert — gemessen im Handshake, `capabilities` traegt `prompts`,
+  `resources`, `tools`, `experimental`. Verloren geht nichts: jedes Werkzeug
+  bindet dieselben Felder eine Zeile darueber an structlog.
+  `ctx.report_progress` in `srgssr_daily_briefing` bleibt; Fortschritt ist nicht
+  abgesetzt. Die Begruendung im Langtext steht in
+  `src/srgssr_mcp/tools/__init__.py`.
+
+  Der Context-Doppel im Unit-Test kommt jetzt aus
+  `create_autospec(Context, instance=True)` und nicht mehr von Hand — ein
+  Doppel, das die Signatur des SDK ableitet statt die des Codes nachzubauen,
+  kann die Annahme des Autors widerlegen. Mit eigener Gegenprobe, dass es das
+  auch tut.
+
+- **Acht Werkzeuge lehnten den Enum-String ab, den ihr eigenes `inputSchema`
+  ausweist.** Die Eingabemodelle fahren `ConfigDict(strict=True)`. Fuer ein Enum
+  heisst strikt bei Pydantic: es muss eine Enum-*Instanz* sein — ueber die
+  Drahtform kommt aber ein JSON-String. `business_unit: "srf"`, also genau der
+  Wert, den das veroeffentlichte Schema als
+  `{"enum": ["srf", ...], "type": "string"}` fuehrt, kam als
+  `is_instance_of`-Validierungsfehler zurueck. Betroffen waren
+  `srgssr_epg_get_programs`, `srgssr_daily_briefing`, die drei
+  `srgssr_video_*`- und die drei `srgssr_audio_*`-Werkzeuge; von einem Client
+  aufrufbar waren damit 7 von 15.
+
+  Auch das war von innen nicht zu sehen: jeder Unit-Test baut sein
+  Eingabemodell in Python und uebergibt `BusinessUnit.SRF`, also die Instanz.
+  Der JSON-Weg kam in der Suite nicht vor.
+
+  Behoben mit `strict=False` an genau diesem Feld — keine Lockerung, sondern die
+  Aufhebung der Instanz-Forderung: die Mitgliedschaft bleibt geprueft (`'SRF'`,
+  `'xx'`, `1` fallen weiter durch), und der Rest des Modells bleibt strikt.
+  Beide Haelften stehen als Gegenprobe im Test, damit niemand `strict` spaeter
+  ganz vom `model_config` nimmt und dabei mehr oeffnet als der Befund verlangt.
+
+### Added
+
+- **Die Zielrevision an der Drahtform gemessen** — `tests/test_spec_2026_07_28.py`.
+  Echte JSON-RPC-Anfragen durch `MCPServer.streamable_http_app()` ueber
+  `httpx.ASGITransport`, in beiden Aeren, ohne Socket und ohne Credentials.
+  Zugesichert sind: der moderne Einstieg ueber `server/discover` ohne
+  `initialize` und ohne `Mcp-Session-Id`; die Handshake-Obergrenze **gemessen**
+  statt aus einer Konstante gelesen (wer nach `2026-07-28` fragt, bekommt
+  `2025-11-25`); `ttlMs` und `cacheScope` auf allen fuenf gehinweisten
+  Methoden; dass die bei `2026-07-28` zurueckgezogenen Methoden (`ping`,
+  `logging/setLevel`, `resources/subscribe`, `resources/unsubscribe`,
+  `tasks/*`) mit `-32601` antworten; und dass jedes der 15 Werkzeuge mit einem
+  **echten** `Context` durchlaeuft. Die drei `Fixed`-Eintraege daneben sind der
+  Ertrag des ersten Laufs.
+
+  Mit Gegenprobe zu der Zusicherung, auf die es ankommt: ein Kontrollserver mit
+  genau der alten Aufrufform, durch dieselbe Drahtform, muss als `isError`
+  herauskommen. Ein gruener Test ueber 15 Werkzeuge sagt nichts, solange nicht
+  gezeigt ist, dass er den Fehler sehen wuerde.
+
+- **Die Server-Identitaet nennt jetzt eine Version.** `MCPServer` bekam kein
+  `version=`, also setzte das SDK den Leerstring — formal ein String,
+  inhaltlich keine Auskunft. In der modernen Aera kostet das mehr als in der
+  alten: es gibt kein `initialize`-Resultat, das die Identitaet einmal pro
+  Verbindung tragen koennte, also haengt das SDK sie an das `_meta` **jedes**
+  Resultats (`io.modelcontextprotocol/serverInfo`). An jeder Antwort dieses
+  Servers ging `{"name": "srgssr_mcp", "version": ""}` hinaus, in beiden Aeren.
+  Die Nummer kommt aus den Paket-Metadaten, nicht aus einem Literal in `src/` —
+  `scripts/check_version_sync.py` erzwingt genau das. Dazu `title` und
+  `website_url`, die beiden anderen Felder von `Implementation`, die ein Client
+  anzeigen kann.
+
+- **Die Werkzeuge tragen ihren Anzeigenamen in `title`.** Alle 15 hatten ihn
+  ausschliesslich unter `annotations={"title": ...}`. Das ist in Spec
+  `2026-07-28` die falsche Stelle: `ToolAnnotations` ist dort ausdruecklich als
+  Satz von *Hinweisen* beschrieben, «including descriptive properties like
+  `title`», mit dem Zusatz, ein Client solle darauf bei einem nicht
+  vertrauenswuerdigen Server keine Entscheidung stuetzen. Gemessen ging
+  `tools/list` ohne `title` hinaus, waehrend `prompts/list` und
+  `resources/templates/list` eines trugen — ein spec-konformer Client zeigte
+  fuer Werkzeuge also `srgssr_epg_get_programs` und fuer Prompts den Klartext.
+  Die Annotation bleibt gleichlautend daneben, fuer Clients der Handshake-Aera,
+  die nur dort lesen; ein Test haelt die beiden Stellen zusammen.
+
 ### Added
 
 - **Frischehinweise auf den auflistenden Methoden** (SEP-2549, Spec
@@ -31,10 +137,14 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   eine eigene Zusicherung, und ein dritter Test haelt die Alias-Eigenschaft
   fest, damit die Falle beim naechsten Lesen benannt dasteht.
 
-  Ohne gemessenen Teil: dieser Server baut keine ASGI-App, durch die sich ein
-  `initialize` schicken liesse. Die Aushandlung steht in
-  `mcp/server/runner.py::_negotiate_initialize` und haengt an keinem Transport
-  — an neun Schwester-Servern gemessen, hier an den SDK-Konstanten gehalten.
+  Ohne gemessenen Teil — **und diese Begruendung war falsch.** Hier stand:
+  «dieser Server baut keine ASGI-App, durch die sich ein `initialize` schicken
+  liesse». Er baut eine, `MCPServer.streamable_http_app()`, und
+  `httpx.ASGITransport` fuehrt eine Anfrage ohne Socket hindurch. Die Messung
+  war nicht unmoeglich, sie war bloss nicht gemacht — nachgezogen im Eintrag
+  «Die Zielrevision an der Drahtform gemessen» weiter unten. Der
+  konstantengestuetzte Teil bleibt, weil er eine andere Frage beantwortet: ob
+  das SDK die Revisionen verschiebt, nicht ob dieser Server sich daran haelt.
 
   **README.de.md nannte `2025-06-18`, README.md `2026-07-28`** — dieselbe
   Angabe, zwei Werte, drei Revisionen auseinander.

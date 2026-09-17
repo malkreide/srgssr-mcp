@@ -332,6 +332,31 @@ never a drift. [`tests/test_protocol_version.py`](tests/test_protocol_version.py
 holds both eras against the SDK and is the check that catches drift. Bumps are
 tracked in [CHANGELOG.md](CHANGELOG.md) under the matching release.
 
+### What the server actually puts on the wire
+
+The table above used to be an assertion held against SDK constants.
+[`tests/test_spec_2026_07_28.py`](tests/test_spec_2026_07_28.py) now sends real
+requests through `MCPServer.streamable_http_app()` over `httpx.ASGITransport`
+and asserts the answers, in both eras. What that measurement pins:
+
+| Property | On the wire |
+|---|---|
+| Modern entry | `server/discover`, no `initialize`, no `Mcp-Session-Id`; `supportedVersions: ["2026-07-28"]` |
+| Handshake ceiling | A client asking for `2026-07-28` via `initialize` gets `2025-11-25` back — measured, not inferred |
+| Server identity | `io.modelcontextprotocol/serverInfo` rides the `_meta` of **every** modern result and carries the installed package version |
+| Freshness (SEP-2549) | `ttlMs: 300000`, `cacheScope: public` on `server/discover` and the four listing methods |
+| Tool display names | `title` per [`BaseMetadata`](https://modelcontextprotocol.io/specification), mirrored into `annotations.title` for handshake-era clients, which read only there |
+| Withdrawn at `2026-07-28` | `ping`, `logging/setLevel`, `resources/subscribe`, `resources/unsubscribe` and `tasks/*` answer `-32601` |
+| Logging capability | Not declared, and not used: SEP-2577 deprecates it as of `2026-07-28`, and delivery there is a per-request opt-in the server must not presume. Tool activity goes to structlog on stderr — see [`src/srgssr_mcp/tools/__init__.py`](src/srgssr_mcp/tools/__init__.py) |
+
+The measurement paid for itself on its first run, against 425 green tests and
+96% coverage: `serverInfo.version` was the empty string, every `tools/call`
+came back `isError` (a FastMCP 1.x `ctx.info(msg, **kwargs)` call shape that
+`mcp` 2.x rejects), and eight tools refused the enum string their own published
+`inputSchema` advertises (`ConfigDict(strict=True)` demands an enum *instance*,
+which no JSON payload can carry). None of that is visible from inside the
+process — which is the whole argument for testing the wire.
+
 ### Update Policy
 
 - SDK dependency updates land via Dependabot (`.github/dependabot.yml`, monthly cadence, grouped under the `mcp-sdk` label) and run the full test suite before merge.

@@ -28,8 +28,17 @@ ALPHABET_BUCKETS: tuple[str, ...] = (*string.ascii_lowercase, "#")
 
 class VideoShowsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
     character_filter: str | None = Field(
@@ -46,8 +55,17 @@ class VideoShowsInput(BaseModel):
 
 class VideoEpisodesInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
     show_id: str = Field(..., min_length=1, max_length=200, pattern=r"^[A-Za-z0-9_-]+$")
@@ -57,8 +75,17 @@ class VideoEpisodesInput(BaseModel):
 
 class VideoLivestreamsInput(BaseModel):
     model_config = ConfigDict(strict=True, str_strip_whitespace=True, extra="forbid")
+    # `strict=False` gilt fuer genau dieses Feld, und es ist keine Lockerung.
+    # Unter `strict=True` verlangt Pydantic bei einem Enum eine
+    # Enum-*Instanz*; ueber die Drahtform kommt aber ein JSON-String. Das
+    # Werkzeug lehnte damit genau die Eingabe ab, die sein eigenes
+    # `inputSchema` als `{"enum": ["srf", ...], "type": "string"}` ausweist —
+    # `is_instance_of`, und in der Antwort `isError`. Die Mitgliedschaft
+    # bleibt geprueft ('SRF', 'xx' und 1 fallen weiter durch), und der Rest
+    # des Modells bleibt strikt. Siehe `tests/test_spec_2026_07_28.py`.
     business_unit: BusinessUnit = Field(
         ...,
+        strict=False,
         description="SRG SSR Unternehmenseinheit: 'srf', 'rts', 'rsi', 'rtr' oder 'swi'",
     )
 
@@ -120,6 +147,7 @@ async def _fetch_show_bucket(bu: str, character: str, page_size: int) -> dict | 
 
 @mcp.tool(
     name="srgssr_video_get_shows",
+    title="SRG SSR Video – Sendungen auflisten",
     description=(
         "Listet TV-Sendungen einer SRG SSR Unternehmenseinheit auf "
         "(SRF, RTS, RSI, RTR, SWI) mit Sendungstitel, ID und Beschreibung.\n\n"
@@ -153,8 +181,6 @@ async def srgssr_video_get_shows(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info("srgssr_video_get_shows invoked", business_unit=bu)
 
     if params.character_filter is not None:
         # Single bucket: let the error surface so the caller sees why.
@@ -219,6 +245,7 @@ async def srgssr_video_get_shows(
 
 @mcp.tool(
     name="srgssr_video_get_episodes",
+    title="SRG SSR Video – Episoden einer Sendung",
     description=(
         "Ruft die neuesten Episoden einer TV-Sendung ab (Episodentitel, Datum, "
         "Dauer und Video-ID für den Mediaplayer Pillarbox).\n\n"
@@ -249,12 +276,6 @@ async def srgssr_video_get_episodes(
         page_size=params.page_size,
     )
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info(
-            "srgssr_video_get_episodes invoked",
-            business_unit=bu,
-            show_id=params.show_id,
-        )
     try:
         data = await _api_get(
             f"{VIDEO_BASE}/latest_episodes/shows/{params.show_id}",
@@ -284,6 +305,7 @@ async def srgssr_video_get_episodes(
 
 @mcp.tool(
     name="srgssr_video_get_livestreams",
+    title="SRG SSR Video – Live-TV-Sender",
     description=(
         "Listet alle Live-TV-Sender einer SRG SSR Unternehmenseinheit auf.\n\n"
         "<use_case>Live-Stream-Auswahl, Voraussetzung für srgssr_epg_get_programs "
@@ -306,8 +328,6 @@ async def srgssr_video_get_livestreams(
     bu = params.business_unit.value
     log = logger.bind(tool="srgssr_video_get_livestreams", business_unit=bu)
     log.info("tool_invoked")
-    if ctx is not None:
-        await ctx.info("srgssr_video_get_livestreams invoked", business_unit=bu)
     try:
         data = await _api_get(f"{VIDEO_BASE}/tv_channels", params={"bu": bu})
     except Exception as e:
