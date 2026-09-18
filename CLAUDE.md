@@ -401,8 +401,8 @@ gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
 ist dieselbe Mechanik wie beim ruff-Literal, nur ohne roten Check, der es
 meldet.
 
-Was die sieben Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
-ersetzt. Alle sieben stehen in **einem** Repo. Über zwei Tage und sieben Läufe
+Was die acht Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+ersetzt. Alle acht stehen in **einem** Repo. Über zwei Tage und acht Läufe
 hinweg ist die Form dort stabil, über das Portfolio sagt sie nichts, und ob der
 alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
@@ -458,8 +458,16 @@ Zahl daneben nicht. Ohne ihn ist `Running` nur ein Wort.
 Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
 while any review is running … and reacts with 👍 once all reviews finish with no
 findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
-während des Laufs noch danach — zuletzt unter #117, also in allen sieben
-Beobachtungen. Der Kasten bleibt keine Quelle.
+während des Laufs noch danach — zuletzt unter #118, also in allen acht
+Beobachtungen. Unter #118 fällt dabei genau die 👀-Hälfte der Behauptung: Der
+Lauf hatte einen Befund, das 👍 stand also ohnehin nicht zu, aber während der
+129 Sekunden Laufzeit war auch kein 👀 da. Der Kasten bleibt keine Quelle.
+
+**Und diese drei Zählungen hingen wieder hinterher** — «sieben», nachdem der
+achte Lauf zwei Absätze höher eingetragen war. Der Absatz über die driftende
+Zählung hat also beim Schreiben seiner eigenen Fortsetzung wieder gedriftet.
+Das ist kein Argument gegen das Zählen, sondern dafür, es an einer Stelle zu
+tun; solange es an dreien steht, ist die nächste Drift eingebaut.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
