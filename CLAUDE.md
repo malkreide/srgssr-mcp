@@ -347,33 +347,36 @@ eines, das Repo schon.
 
 Die vierte kam am selben Abend unter PR #114, 17 Minuten nach der dritten:
 Kommentar-ID 5719773021, Commit `215a223`, wieder `Running` → `Completed` an
-derselben ID, `get_reviews` → `[]`, keine Befundlos-Meldung.
+derselben ID, `get_reviews` → `[]`, keine Befundlos-Meldung. Die fünfte am
+18.9.2026 unter PR #115: Kommentar-ID 5724899490, Commit `4a270e3`, derselbe
+Ablauf, derselbe leere `get_reviews`.
 
-Was die vier Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
-ersetzt. Alle vier stehen in **einem** Repo. Über zwei Daten und vier Läufe hinweg ist
-die Form dort stabil, über das Portfolio sagt sie nichts, und ob der alte Satz
-anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides als
-möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
+Was die fünf Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+ersetzt. Alle fünf stehen in **einem** Repo. Über zwei Tage und fünf Läufe
+hinweg ist die Form dort stabil, über das Portfolio sagt sie nichts, und ob der
+alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides
+als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
 nicht einsortiert.
 
 Die Laufzeit **streut weiter, als hier zwei Fassungen lang stand.** Von ready
-bis `Completed` — die Basis, die für alle vier Läufe öffentlich ablesbar ist:
-69 s unter #103, 83 s unter #105, 78 s unter #113 und **48,5 s unter #114**.
-Der Satz davor lautete «das Fenster von gut einer Minute bis knapp achtzig
-Sekunden hält also», geschrieben in #114 auf drei Beobachtungen — und derselbe
-PR hat ihn beim Mergen widerlegt, neunzehn Minuten später. Drei Punkte, die
-nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
+bis `Completed` — die Basis, die für alle fünf Läufe öffentlich ablesbar ist:
+69 s unter #103, 83 s unter #105, 78 s unter #113, **48,5 s unter #114** und
+79,0 s unter #115. Der Satz davor lautete «das Fenster von gut einer Minute bis
+knapp achtzig Sekunden hält also», geschrieben in #114 auf drei Beobachtungen —
+und derselbe PR hat ihn beim Mergen widerlegt, neunzehn Minuten später. Drei
+Punkte, die nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
 
 Die interne Laufzeit («Running since …» bis `Completed`) ist nur für drei
 davon bekannt: 62 s unter #103 (12:41:58,07 → 12:43:00,23), 78 s unter #105
 (16:57:06,81 → 16:58:24,64), 70,9 s unter #113 (18:50:10,42 → 18:51:21,28).
-Für #114 fehlt sie, weil erst nach `Completed` gelesen wurde und die Tabelle
-den Startzeitpunkt dann nicht mehr zeigt. Aus dem `created_at` des Kommentars
-(19:07:03) gerechnet wären es 41,5 s, aber das ist eine andere Basis — der
-Kommentar entsteht zwei bis drei Sekunden nach dem Start. **Die beiden Basen
-nicht mischen**; wer 41,5 gegen 62 stellt, vergleicht zwei Messgrössen.
+Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
+Tabelle den Startzeitpunkt dann nicht mehr zeigt. Aus dem `created_at` des
+Kommentars gerechnet wären es 41,5 s bzw. 65,0 s, aber das ist eine andere
+Basis — der Kommentar entsteht zwei bis drei Sekunden nach dem Start. **Die
+beiden Basen nicht mischen**; wer 41,5 gegen 62 stellt, vergleicht zwei
+Messgrössen.
 
-Praktisch heisst das: rund 40 bis 85 Sekunden, nach vier Läufen, und die
+Praktisch heisst das: rund 40 bis 85 Sekunden, nach fünf Läufen, und die
 Spanne kann sich wieder öffnen. Eine gemerkte Zahl ist hier das falsche
 Werkzeug.
 
@@ -389,8 +392,8 @@ Zahl daneben nicht. Ohne ihn ist `Running` nur ein Wort.
 Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
 while any review is running … and reacts with 👍 once all reviews finish with no
 findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
-während des Laufs noch danach — unter #113 und #114 erneut, also in allen vier
-Beobachtungen. Der Kasten bleibt keine Quelle.
+während des Laufs noch danach — unter #113, #114 und #115 erneut, also in allen
+fünf Beobachtungen. Der Kasten bleibt keine Quelle.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -413,7 +416,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen viermal durchgemessen, alle vier Male in
+Wie viel Zeit, ist inzwischen fünfmal durchgemessen, alle fünf Male in
 `srgssr-mcp`:
 
 | PR | Datum | ready | gemergt | Review startet | Review fertig |
@@ -422,23 +425,33 @@ Wie viel Zeit, ist inzwischen viermal durchgemessen, alle vier Male in
 | #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 |
 | #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 |
 | #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 |
+| #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 |
 
-Zwei, drei, zehn und fünf Sekunden bis zum Merge, fünf bis sieben bis zum
-Start, rund vierzig bis fünfundachtzig Sekunden bis zum Ergebnis. Alle vier
-Reviews liefen damit vollständig auf einem bereits geschlossenen PR — unter
-#113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
-Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge. Dass keiner
-etwas fand, ist Glück und nicht Verfahren: ein Befund wäre an einem gemergten
-PR gelandet, wo ihn die Regel «beantworten oder beheben» nur noch über einen
-Folge-PR erreicht.
+Zwei, drei, zehn, fünf und acht Sekunden bis zum Merge, rund vierzig bis
+fünfundachtzig Sekunden bis zum Ergebnis. Alle fünf Reviews liefen damit
+vollständig auf einem bereits geschlossenen PR — unter #113 war das Ergebnis
+68 Sekunden nach dem Merge da, unter #114 entstand die Statustabelle überhaupt
+erst zwei Sekunden **nach** dem Merge. Dass keiner etwas fand, ist Glück und
+nicht Verfahren: ein Befund wäre an einem gemergten PR gelandet, wo ihn die
+Regel «beantworten oder beheben» nur noch über einen Folge-PR erreicht.
 
-**Der Abstand wächst nicht monoton, und keiner der vier hat gereicht.** Zwei,
-drei, zehn, fünf — gegenüber vierzig bis fünfundachtzig Sekunden Laufzeit ist
-jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
+**Der Start ist nur dreimal gemessen, und «fünf bis sieben Sekunden» ist
+deshalb keine Spanne, sondern drei Punkte.** Belegt sind 7 s (#103), 5,8 s
+(#105) und 7,4 s (#113). Für #114 und #115 fehlt der Startzeitpunkt; was dort
+ablesbar ist, ist die Entstehung des Kommentars — 7 s nach ready unter #114,
+aber **14 s** unter #115. Der Kommentar entsteht nach dem Start, also lag der
+Start unter #115 irgendwo davor, und das kann durchaus jenseits von sieben
+Sekunden gewesen sein. Wer die drei gemessenen Werte zur Regel macht, hat
+denselben Schluss gezogen wie beim Laufzeit-Fenster, das eine Fassung weiter
+oben korrigiert werden musste.
+
+**Der Abstand wächst nicht monoton, und keiner der fünf hat gereicht.** Zwei,
+drei, zehn, fünf, acht — gegenüber vierzig bis fünfundachtzig Sekunden Laufzeit
+ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt: gebraucht werden zwei Minuten, nicht ein paar
 Sekunden mehr. Und die zwei Minuten werden durch die kürzere Untergrenze
 **nicht** kleiner: sie müssen den langsamsten Lauf decken, nicht den
-schnellsten. Eine Minute deckt die vier knapp und lässt keinen Spielraum.
+schnellsten. Eine Minute deckt die fünf knapp und lässt keinen Spielraum.
 
 **Ein ausgebliebenes Event ist keine Zustandsauskunft.** Unter #114 wurde
 genau daraus ein Fehlbefund: «bisher kein Merge erfolgt», geschlossen aus dem
@@ -453,17 +466,28 @@ Korrektur. Das ist dieselbe Asymmetrie wie bei «Ein 403 ist gar keine
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
-Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt drei Glieder.
+Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt vier Glieder.
 #105 war der PR, der diese Falle dokumentiert, und ist ihr zum Opfer
 gefallen. #113 führte die Drahtform-Messung ein und fiel ihr mit der Tabelle
 bereits im Repo erneut zum Opfer. #114 schrieb die Zwei-Minuten-Regel und
-diese Tabelle — und wurde fünf Sekunden nach «ready» gemergt. Drei PRs, zwei
-Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Damit ist die
-Vermutung aus der vorigen Fassung keine Vermutung mehr: **eine Regel im Text
-greift hier nicht.** Sie wird beim Schreiben gelesen und beim Mergen
-gebraucht, und das sind zwei verschiedene Handgriffe. Wirksam wäre nur, was am
-Merge selbst hängt — erst nachsehen, ob ein Review läuft, dann mergen; oder
-den Merge so lange technisch verstellen.
+diese Tabelle — und wurde fünf Sekunden nach «ready» gemergt. #115 schrieb den
+Satz, dass eine Regel im Text hier nicht greift, und wurde acht Sekunden nach
+«ready» gemergt.
+
+Damit ist die Vermutung keine Vermutung mehr, und der letzte Fall beweist sie
+auf die unangenehmste Art: **der PR, der die Unwirksamkeit der Textregel
+festhielt, wurde von genau dieser Unwirksamkeit eingeholt.** Vier PRs, zwei
+Sessions, derselbe Absatz jeweils unmittelbar vor Augen — die Regel wird beim
+Schreiben gelesen und beim Mergen gebraucht, und das sind zwei verschiedene
+Handgriffe.
+
+Wirksam wäre nur, was am Merge selbst hängt. Zwei Wege, beide ausserhalb
+dieser Datei: vor dem Klick `get_comments` lesen und erst mergen, wenn die
+Statustabelle auf `Completed` steht — oder den Merge technisch verstellen, bis
+der Review durch ist (ein Required Check, den Codex setzt, oder schlicht
+Auto-Merge statt Sofort-Merge). Eine sechste Zeile in dieser Tabelle wäre kein
+neuer Befund mehr, sondern nur die Bestätigung, dass weder das eine noch das
+andere eingerichtet wurde.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
