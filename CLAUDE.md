@@ -305,7 +305,7 @@ Meldung, weil er keinen Review starten kann — ist ungemessen. Die Beobachtung 
 jener PR ein Draft war, hat niemand festgehalten. Das ist kein Beleg, sondern eine
 zweite Stelle, an der etwas fehlt.
 
-Praktisch ist die Folge härter als die Deutungsfrage: **die Meldung bleibt
+Die Folge wiegt schwerer als die Deutungsfrage: **die Meldung bleibt
 stehen.** Ein Kommentar verschwindet nicht, wenn der PR auf ready geht. Wer auf
 ihren blossen Text prüft, prüft ab dann für immer positiv — genau das hätte das
 Gate in `codex-gate.yml` an diesem PR getan, bevor es am 18.9. umgebaut wurde.
@@ -323,8 +323,8 @@ sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
 beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
 Issue-Kommentare und trennen sich nur im Text. Beim Draft läuft kein Review an;
 ein kommentarloser Draft ist deshalb kein Beleg, sondern ein nicht durchgeführter
-Test — und ein *kommentierter* Draft ist es genauso wenig, siehe den Nachtrag
-unten.
+Test — und ein *kommentierter* Draft ist es genauso wenig, siehe «Die
+Environment-Meldung ist kein Befund» oben.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
 alles andere; wer nur eine nimmt, übersieht den Rest. Genau so ist die
