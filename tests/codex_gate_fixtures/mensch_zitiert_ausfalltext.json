@@ -1,0 +1,22 @@
+[
+  {
+    "id": 4000000002,
+    "user": {
+      "login": "malkreide",
+      "id": 8864492
+    },
+    "body": "Hier stand «To use Codex here, create an environment for this repo» — siehe CLAUDE.md, Abschnitt «Wenn Codex gar nicht erst hinsieht».",
+    "created_at": "2026-09-18T04:20:00Z",
+    "updated_at": "2026-09-18T04:20:00Z"
+  },
+  {
+    "id": 5724943260,
+    "user": {
+      "login": "chatgpt-codex-connector[bot]",
+      "id": 199175422
+    },
+    "body": "<!-- codex-pull-request-review-summary -->\n\n## Codex Review Summary\n\nThis comment shows the latest Codex review activity on this pull request.\n\n| Review | Status | Commit | Review trigger |\n| --- | --- | --- | --- |\n| 📝 **Code Review** | 🔄 **Running** since <relative-time datetime=\"2026-09-18T03:59:29.513929Z\">2026-09-18T03:59:29.513929Z</relative-time> | `0ee99ed` | Draft marked ready |\n",
+    "created_at": "2026-09-18T03:59:31Z",
+    "updated_at": "2026-09-18T03:59:31Z"
+  }
+]

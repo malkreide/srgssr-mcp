@@ -1,0 +1,170 @@
+# Haelt den Merge auf, bis der Codex-Review dieses Heads durch ist.
+#
+# Warum das ein Workflow sein muss und keine Zeile in CLAUDE.md: die Regel
+# «nach ready zwei Minuten warten» steht dort seit dem 29.8.2026 und ist
+# sechsmal gebrochen worden — zuletzt von genau den PRs, die sie aufschrieben
+# (#105, #113, #114, #115, #116; Abstaende 2, 3, 10, 5, 8 und 12 Sekunden bei
+# 40–85 Sekunden Reviewdauer). Eine Regel, die beim Schreiben gelesen und beim
+# Mergen gebraucht wird, greift nicht. Dieser Job haengt am Merge selbst.
+#
+# **Zwei naheliegende Wege tun es nicht**, beide gemessen am 18.9.2026:
+#
+#   - «Required Check, den Codex setzt» — den gibt es nicht. Ueber #113, #114,
+#     #115 und #116 trug jeder PR exakt dieselben sieben Check-Runs
+#     (quality x3, test x3, Gitleaks), alle aus den Workflows dieses Repos.
+#     Codex meldet sich ausschliesslich als Issue-Kommentar.
+#   - «Auto-Merge statt Sofort-Merge» — das mergt FRUEHER. Auto-Merge wartet
+#     auf Required Checks, nicht auf Kommentare. Unter #116 war der letzte
+#     Repo-Check um 03:59:10 gruen, 13 Sekunden VOR dem Ready-Klick und
+#     85 Sekunden vor dem Codex-Ergebnis.
+#
+# Wirksam wird dieser Job erst als Required Check in der Branch Protection.
+# Ohne diesen Eintrag ist er ein sichtbarer Hinweis und keine Sperre — und ein
+# sichtbarer Hinweis ist genau das, was sechsmal nicht gereicht hat.
+name: Codex Gate
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# Ein neuer Push macht den laufenden Lauf gegenstandslos: er wartete auf ein
+# Ergebnis fuer einen Head, den es nicht mehr gibt.
+concurrency:
+  group: codex-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review-abgeschlossen:
+    # Ein Draft kann nicht gemergt werden, es gibt also nichts zu halten.
+    #
+    # Der zweite Grund stand hier bis zum 18.9.2026 und war falsch: «ein Draft
+    # loest bei Codex nichts aus». Unter #117 kam elf Sekunden nach dem
+    # Eroeffnen des Drafts ein Kommentar des Bots. Ein Draft loest also etwas
+    # aus — nur keinen Review. Der Guard bleibt, seine Begruendung ist halbiert.
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    # Notbremse fuer den Fall, dass die Schleife unten haengt. Die eigentliche
+    # Wartezeit steht im Skript und ist kuerzer.
+    timeout-minutes: 10
+    steps:
+      - name: Auf das Codex-Ergebnis fuer diesen Head warten
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # Gemessen dauert ein Review 40–85 s ab «ready» (sechs Laeufe,
+          # 29.8. und 17./18.9.2026). 300 s lassen Luft nach oben, ohne einen
+          # Ausfall zur halben Stunde Wartezeit zu machen.
+          # Uebersteuerbar, damit `tests/test_codex_gate.py` dasselbe Skript
+          # gegen aufgezeichnete Kommentartexte fahren kann, statt seine Logik
+          # nachzubauen. Ein nachgebauter Parser kodierte die Annahme des
+          # Autors und koennte sie nicht widerlegen — dieselbe Falle wie der
+          # handgeschriebene `_StubCtx`, der in #113 vierzehn kaputte Aufrufe
+          # gruen hielt.
+          WARTE_SEKUNDEN=${WARTE_SEKUNDEN:-300}
+          ABSTAND=${ABSTAND:-5}
+
+          # Der Marker steht als HTML-Kommentar im Koerper und ist stabiler als
+          # jede Ueberschrift.
+          MARKER='<!-- codex-pull-request-review-summary -->'
+
+          # Die beiden dokumentierten Ausfalltexte. Sie bedeuten, dass Codex
+          # hier nicht pruefen kann; darauf zu blockieren hielte das Repo wegen
+          # einer Stoerung an. Sie werden aber ERST nach Ablauf des Fensters
+          # gelesen — siehe unten, das ist die Lehre aus #117.
+          KONTINGENT='reached your Codex usage limits'
+          ENVIRONMENT='create an environment for this repo'
+
+          # **Nur der Bot zaehlt.** Ohne diesen Filter las das Gate jeden
+          # Kommentar: ein Mensch, der einen der Ausfalltexte zitiert — etwa im
+          # PR, der dieses Gate baut —, entwaffnete es damit.
+          AUTOR='chatgpt-codex-connector[bot]'
+
+          KURZ_SHA="${HEAD_SHA:0:7}"
+          echo "Head: $HEAD_SHA (kurz: $KURZ_SHA)"
+
+          lies_kommentare() {
+            gh api --paginate "repos/$REPO/issues/$PR/comments" \
+              --jq ".[] | select(.user.login == \"$AUTOR\") | .body" || true
+          }
+
+          ENDE=$(( SECONDS + WARTE_SEKUNDEN ))
+          KOMMENTARE=''
+          while :; do
+            KOMMENTARE=$(lies_kommentare)
+
+            # Die Statustabelle wird an Ort und Stelle ueberschrieben, `Running`
+            # → `Completed` an derselben Kommentar-ID. Einmal lesen genuegt
+            # deshalb nicht; die Schleife liest neu.
+            ZEILE=$(printf '%s' "$KOMMENTARE" \
+              | grep -F "$MARKER" -A 40 \
+              | grep -F 'Code Review' || true)
+
+            if printf '%s' "$ZEILE" | grep -qF '**Completed**'; then
+              # Die Tabelle nennt den Commit, den sie geprueft hat. Ohne diesen
+              # Abgleich wuerde ein Ergebnis fuer einen frueheren Head das Gate
+              # oeffnen — also genau der Fall, gegen den es gebaut ist.
+              GEPRUEFT=$(printf '%s' "$ZEILE" | grep -oE '`[0-9a-f]{7,40}`' | tr -d '`' | head -1)
+              if [ -n "$GEPRUEFT" ] && [ "${KURZ_SHA:0:7}" = "${GEPRUEFT:0:7}" ]; then
+                echo "Codex-Review abgeschlossen fuer $GEPRUEFT."
+                exit 0
+              fi
+              echo "Ergebnis liegt vor, aber fuer ${GEPRUEFT:-unbekannt} statt $KURZ_SHA — weiter warten."
+            fi
+
+            if [ "$SECONDS" -ge "$ENDE" ]; then
+              break
+            fi
+            sleep "$ABSTAND"
+          done
+
+          # Ab hier steht fest: innerhalb des Fensters kam kein abgeschlossener
+          # Review fuer diesen Head.
+          #
+          # **Erst jetzt zaehlen die Ausfalltexte.** Bis zum 18.9.2026 wurden
+          # sie zu Beginn jeder Runde geprueft und beendeten den Job sofort.
+          # Das war falsch, und der PR, der das Gate baute, hat es vorgefuehrt:
+          # unter #117 stand elf Sekunden nach dem Eroeffnen des Drafts
+          # «create an environment for this repo» im Thread — elf Minuten
+          # nachdem #116 im selben Repo einen vollstaendigen Review bekommen
+          # hatte. Ein Kommentar verschwindet nicht; das Gate haette an diesem
+          # PR und an jedem weiteren mit derselben Meldung sofort durchgelassen,
+          # ohne dem Review auch nur die Gelegenheit zu geben.
+          #
+          # Nach dem Fenster ist die Frage, was die Meldung bedeutet, nicht mehr
+          # zu beantworten noetig: Codex hatte 300 s Zeit und hat nichts fuer
+          # diesen Head geliefert. Die Meldung sagt dann nur noch, ob daraus ein
+          # roter Lauf wird oder ein Durchlassen mit Warnung.
+          if printf '%s' "$KOMMENTARE" | grep -qF "$KONTINGENT"; then
+            echo "::warning::Codex meldet ein erschoepftes Kontingent — kein Review moeglich."
+            echo "Das Gate laesst durch: ein Ausfall bei Codex ist kein Grund, das Repo anzuhalten."
+            echo "Der PR ist damit UNGEPRUEFT; das Haekchen in der Checkliste traegt hier nichts."
+            exit 0
+          fi
+          if printf '%s' "$KOMMENTARE" | grep -qF "$ENVIRONMENT"; then
+            echo "::warning::Codex meldet «create an environment for this repo» und hat nichts geliefert."
+            echo "Anlegen unter chatgpt.com/codex/cloud/settings/environments, und zwar je Repo."
+            echo "Achtung: unter #117 kam dieselbe Meldung, waehrend die Environment nachweislich"
+            echo "bestand — sie ist kein verlaesslicher Befund, sondern hier nur der Grund, aus"
+            echo "einem ergebnislosen Fenster keinen roten Lauf zu machen."
+            echo "Das Gate laesst durch, der PR ist aber UNGEPRUEFT."
+            exit 0
+          fi
+
+          echo "::error::Kein abgeschlossener Codex-Review fuer $KURZ_SHA innerhalb von ${WARTE_SEKUNDEN}s."
+          echo ""
+          echo "Haeufigster Grund: ein Push nach dem Umschalten auf ready. Codex laeuft"
+          echo "bei «opened» und «draft marked ready» an, nicht bei jedem Commit — fuer"
+          echo "den neuen Head gibt es dann kein Ergebnis."
+          echo ""
+          echo "Ein Kommentar «@codex review» am PR loest ihn aus; danach wird dieser"
+          echo "Job durch den naechsten Push oder von Hand erneut gefahren."
+          exit 1

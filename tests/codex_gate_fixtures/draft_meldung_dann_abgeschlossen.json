@@ -1,0 +1,22 @@
+[
+  {
+    "id": 5725034944,
+    "user": {
+      "login": "chatgpt-codex-connector[bot]",
+      "id": 199175422
+    },
+    "body": "To use Codex here, [create an environment for this repo](https://chatgpt.com/codex/cloud/settings/environments).",
+    "created_at": "2026-09-18T04:12:00Z",
+    "updated_at": "2026-09-18T04:12:00Z"
+  },
+  {
+    "id": 5724943260,
+    "user": {
+      "login": "chatgpt-codex-connector[bot]",
+      "id": 199175422
+    },
+    "body": "<!-- codex-pull-request-review-summary -->\n\n## Codex Review Summary\n\n| Review | Status | Commit | Review trigger |\n| --- | --- | --- | --- |\n| 📝 **Code Review** | ✅ **Completed** <relative-time datetime=\"2026-09-18T04:00:35.090790Z\">2026-09-18T04:00:35.090790Z</relative-time> | `0ee99ed` | Draft marked ready |\n",
+    "created_at": "2026-09-18T03:59:31Z",
+    "updated_at": "2026-09-18T04:00:35Z"
+  }
+]
