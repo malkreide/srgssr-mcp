@@ -132,6 +132,37 @@ def test_claude_md_wiederholt_die_wartezeit_des_workflows_nicht():
     )
 
 
+def test_der_workflow_wiederholt_die_gemessene_reviewdauer_nicht():
+    """Die Gegenrichtung zum Test darueber — und sie hat gefehlt.
+
+    `test_claude_md_wiederholt_die_wartezeit_des_workflows_nicht` haelt eine
+    Zahl aus dem Workflow aus `CLAUDE.md` heraus. Die Kopie in der anderen
+    Richtung war ungesichert: der Workflow trug «40–85 s» als Begruendung fuer
+    sein Fenster, waehrend die Messreihe in `CLAUDE.md` gepflegt wird. Genau
+    diese Spanne ist inzwischen dreimal nach oben korrigiert worden — zuletzt
+    am 18.9.2026 auf 91 s durch #117 —, und der Workflow hat die Korrektur
+    zweimal nicht mitbekommen.
+
+    Eine Zahl, die an zwei Stellen gepflegt wird, driftet; hier ohne roten
+    Check, weil ein Kommentar nichts ausfuehrt. Der Workflow verweist deshalb
+    auf `CLAUDE.md`, statt die Spanne zu nennen.
+
+    Grenze, ausgesprochen: geprueft wird die *Form* «Zahl bis Zahl mit
+    Sekundeneinheit», nicht jede denkbare Umschreibung. «etwa anderthalb
+    Minuten» faenge dieser Test nicht.
+    """
+    text = _workflow()
+    spanne = re.search(r"\d+\s*[–—-]\s*\d+\s*s\b", text)
+    assert not spanne, (
+        f"der Workflow nennt die Spanne {spanne.group(0)!r} selbst. Sie gehoert nur in "
+        "CLAUDE.md — eine Kopie hier driftet bei der naechsten Messung, ohne dass "
+        "etwas rot wird."
+    )
+    # Positivkontrolle: der Verweis steht da, die Begruendung ist also nicht
+    # einfach geloescht worden.
+    assert "CLAUDE.md" in text
+
+
 def test_claude_md_nennt_die_grenze_des_gates():
     """Der Absatz muss sagen, dass der Workflow allein nichts sperrt.
 

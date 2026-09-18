@@ -2,10 +2,14 @@
 #
 # Warum das ein Workflow sein muss und keine Zeile in CLAUDE.md: die Regel
 # «nach ready zwei Minuten warten» steht dort seit dem 29.8.2026 und ist
-# sechsmal gebrochen worden — zuletzt von genau den PRs, die sie aufschrieben
-# (#105, #113, #114, #115, #116; Abstaende 2, 3, 10, 5, 8 und 12 Sekunden bei
-# 40–85 Sekunden Reviewdauer). Eine Regel, die beim Schreiben gelesen und beim
-# Mergen gebraucht wird, greift nicht. Dieser Job haengt am Merge selbst.
+# siebenmal gebrochen worden — zuletzt von genau den PRs, die sie aufschrieben,
+# #117 eingeschlossen: der PR, der DIESEN WORKFLOW einfuehrt, wurde fuenf
+# Sekunden nach «ready» gemergt, eine Sekunde nach dem Start seines eigenen
+# Gate-Jobs. Die Messreihe steht in CLAUDE.md unter «Wenn Codex gar nicht erst
+# hinsieht»; hier keine Kopie davon, sie driftet sonst.
+#
+# Eine Regel, die beim Schreiben gelesen und beim Mergen gebraucht wird, greift
+# nicht. Dieser Job haengt am Merge selbst.
 #
 # **Zwei naheliegende Wege tun es nicht**, beide gemessen am 18.9.2026:
 #
@@ -18,9 +22,11 @@
 #     Repo-Check um 03:59:10 gruen, 13 Sekunden VOR dem Ready-Klick und
 #     85 Sekunden vor dem Codex-Ergebnis.
 #
-# Wirksam wird dieser Job erst als Required Check in der Branch Protection.
-# Ohne diesen Eintrag ist er ein sichtbarer Hinweis und keine Sperre — und ein
-# sichtbarer Hinweis ist genau das, was sechsmal nicht gereicht hat.
+# **Wirksam wird dieser Job erst als Required Check in der Branch Protection.**
+# Ohne diesen Eintrag ist er ein sichtbarer Hinweis und keine Sperre — und das
+# ist seit dem 18.9.2026 gemessen, nicht vermutet: unter #117 lief er von
+# 05:18:06 bis 05:19:39 und schloss mit `success`, gemergt wurde um 05:18:07.
+# Die Mechanik stimmte, der Eintrag fehlte.
 name: Codex Gate
 
 on:
@@ -60,9 +66,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Gemessen dauert ein Review 40–85 s ab «ready» (sechs Laeufe,
-          # 29.8. und 17./18.9.2026). 300 s lassen Luft nach oben, ohne einen
-          # Ausfall zur halben Stunde Wartezeit zu machen.
+          # Die gemessene Reviewdauer ab «ready» steht in CLAUDE.md und wird
+          # hier nicht wiederholt — eine Kopie driftet, und die Spanne ist
+          # bereits dreimal nach oben korrigiert worden. 300 s liegen deutlich
+          # ueber allen bisherigen Laeufen, ohne einen Ausfall zur halben Stunde
+          # Wartezeit zu machen.
           # Uebersteuerbar, damit `tests/test_codex_gate.py` dasselbe Skript
           # gegen aufgezeichnete Kommentartexte fahren kann, statt seine Logik
           # nachzubauen. Ein nachgebauter Parser kodierte die Annahme des
