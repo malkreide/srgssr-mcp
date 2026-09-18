@@ -265,41 +265,47 @@ Meldung liefen ganz ohne Codex-Auslöser, dort hat niemand gemessen.
 In der Zwischenzeit sind 32 PRs mit formal erfülltem Häkchen gemergt worden,
 ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
 
-**Zweiter belegter Ausfall, 18.9.2026.** An PR #122 in diesem Repo stand um
-14:02:33 UTC dieselbe Kontingent-Meldung; der Gate-Job zum selben
-`ready_for_review`-Ereignis startete um 14:02:32. Codex hat also nicht
-angefangen und abgebrochen, sondern sofort abgewunken — im Gegensatz zu einem
-echten Review, der gemessen 62 bzw. 78 s braucht. Wer nach dem Umschalten auf
-ready eine Minute wartet und dann einen Kommentar sieht, darf daraus deshalb
-nichts schliessen: Ausfall und Ergebnis unterscheiden sich im Text, nicht in
-der Wartezeit.
+**Der 18.9. grenzt den Beginn enger ein als der ganze August.** Der letzte
+vollständige Review dieses Tages endete um 06:12:20 UTC (PR #118), die erste
+Kontingent-Meldung kam um 06:40:13 (PR #119, zitiert weiter oben). Die Sperre
+setzte also in diesen **28 Minuten** ein. Im August war dieselbe Lücke 67
+Minuten breit (letzter Erfolg 08:41, erste Meldung 09:48) — und genau diese 67
+Minuten sind der Grund, warum die Rechnung dort nach unten nicht trägt.
 
-Die letzten hier festgehaltenen vollständigen Reviews sind die vom 29.8.
-(12:43 und 16:58, beide in diesem Repo). Ob dazwischen welche liefen, ist nicht
-nachgesehen worden. Die Beobachtung sagt daher nichts über den Beginn der
-Sperre und nichts über ihre Dauer — sie ist ein einzelner Zeitpunkt, kein
-Intervall.
+Sieben Stunden später war sie noch da: An PR #122 stand um 14:02:33 UTC
+dieselbe Meldung. Zwischen 06:40:13 und 14:02:33 liegen **7 h 22 min** — und
+das ist wieder der Abstand zweier Fehlschläge, nicht die belegte Dauer einer
+Sperre. Der Vorbehalt von oben gilt unverändert: Öffnete sich das Fenster
+zwischendurch und schloss es sich durch neue Auslöser wieder, waren es mehrere
+kurze Sperren.
 
-Was sie hergibt, ist der Zusammenhang mit dem Gate: `codex-gate.yml` liest den
-Ausfalltext erst nach seinem Fenster und lässt dann mit einer Warnung durch. Der PR ist damit
+**Der Ausfall ist an der Wartezeit nicht zu erkennen.** Der Gate-Job zum
+`ready_for_review`-Ereignis von #122 startete um 14:02:32, die Meldung stand um
+14:02:33 im Thread. Codex hat also nicht angefangen und abgebrochen, sondern
+sofort abgewunken — gegenüber 48,5 s bis rund 135 s für einen echten Lauf. Wer
+nach dem Umschalten auf ready eine Minute wartet und dann einen Kommentar
+sieht, darf daraus nichts schliessen: Ausfall und Ergebnis unterscheiden sich
+im Text, nicht in der Wartezeit.
+
+Was das Gate daraus macht: `codex-gate.yml` liest den Ausfalltext erst nach
+seinem Fenster und lässt dann mit einer Warnung durch. Der PR ist damit
 mergebar und ungeprüft, und das Häkchen in der Checkliste trägt nichts.
 
 Weil das Kontingent am Konto hängt, traf es in derselben Minute auch die
 Codex-Gates in `fedlex-mcp`, `register-mcp` und `swiss-environment-mcp` —
 geprüft wurde das allerdings nicht, es folgt nur aus der Kontobindung.
 
-**Fünf Minuten später ein fünfter Text, und er trennt die Töpfe.** Unter
-demselben PR stand um 14:06:49 ein Kommentar, der erklärte, wie man Codex von
-Hand auslöst, und dabei die Zeichenfolge `@codex review` im Fliesstext führte —
-in Backticks, was nichts half. Um 14:07:00, elf Sekunden später, antwortete der
-Bot mit:
+**Eine Variante ohne den Zusatz, und sie trennt die Töpfe.** Unter demselben PR
+stand um 14:06:49 ein Kommentar, der erklärte, wie man Codex von Hand auslöst,
+und dabei die Zeichenfolge `@codex review` im Fliesstext führte — in Backticks,
+was nichts half. Um 14:07:00, elf Sekunden später, antwortete der Bot mit:
 
 ```
 You have reached your Codex usage limits.
 ```
 
-Ohne «for code reviews». Zwei Dinge folgen daraus, und beide waren vorher nur
-behauptet.
+Das ist kein neuer Grund, sondern der Kontingent-Text ohne «for code reviews».
+Zwei Dinge folgen daraus, und beide waren vorher nur behauptet.
 
 **Der Auslöser feuert aus Prosa.** Wer in einem Kommentar beschreibt, wie man
 Codex anstösst, stösst ihn an; Code-Formatierung schützt nicht. Das ist das
