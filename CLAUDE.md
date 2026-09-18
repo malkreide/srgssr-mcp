@@ -894,7 +894,10 @@ der Probe im Docstring.
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
 (`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf; ein
 roter Lauf öffnet ein Issue, der von Hand gestartete ebenso. Sie sind hier also
-nicht bloss per `-m "not live"` ausgeschlossen.
+nicht bloss per `-m "not live"` ausgeschlossen. Der Workflow allein erfüllt
+DRIFT-005 aber nicht — dazu gehört, Kadenz und Empfänger zu dokumentieren, und
+das steht in `CONTRIBUTING.md`, gegen den Workflow gehalten von
+`test_live_workflow_docs.py`.
 
 **Der Cron sagt, worum er bittet — nicht, wann gelaufen wird.** Gemessen am
 18.9.2026: Die vier vorangehenden `schedule`-Läufe wurden um 09:44, 09:18,
@@ -913,7 +916,4 @@ Mangel des Tests, sondern seine Grenze: Er hält `0 4 * * *` gegen «04:00 UTC»
 in beiden `CONTRIBUTING`-Dateien, also Deklaration gegen Deklaration. Die
 tatsächliche Auslösezeit liegt bei GitHub und in keiner Datei dieses Repos.
 Was daraus folgt, steht in beiden `CONTRIBUTING`-Dateien: aus dem Cron nicht
-schliessen, dass der Lauf stattgefunden hat — die Lauf-Liste fragen. Der Workflow allein erfüllt
-DRIFT-005 aber nicht — dazu gehört, Kadenz und Empfänger zu dokumentieren, und
-das steht in `CONTRIBUTING.md`, gegen den Workflow gehalten von
-`test_live_workflow_docs.py`.
+schliessen, dass der Lauf stattgefunden hat — die Lauf-Liste fragen.
