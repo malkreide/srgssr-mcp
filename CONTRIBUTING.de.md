@@ -166,6 +166,17 @@ Fragen? Ein [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/discussi
 **Kadenz:** täglich um 04:00 UTC, dazu jederzeit von Hand über *Actions → Live Tests (Nightly) → Run
 workflow*. Siehe [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
 
+**04:00 ist das, worum der Cron bittet — nicht der Zeitpunkt des Laufs.**
+Gemessen am 18.9.2026: Die vier vorangehenden `schedule`-Läufe wurden um 09:44,
+09:18, 09:12 und 09:20 UTC erzeugt (14.–17.9.) — rund fünf Stunden zu spät, und
+zwar jeder einzelne. GitHub verzögert geplante Workflows unter Last; das ist die
+naheliegende Ursache und sie wurde hier **nicht** gemessen, belegt sind allein
+die vier Zeitstempel. Die praktische Folge ist der Teil, auf den es ankommt:
+**Aus dem Cron nicht schliessen, dass der Lauf der letzten Nacht stattgefunden
+hat.** Wer plant «das Ergebnis liegt vor, bevor ich anfange», plant auf die
+Deklaration. Stattdessen die Lauf-Liste fragen — die Workflow-Seite zeigt den
+letzten Lauf und sein Urteil auf einen Blick.
+
 **Wer es sieht:** Ein roter Lauf öffnet ein Issue mit dem Label `live-tests` und dem stabilen Titel «Live tests failed (possible API schema drift)» — der nächtliche wie der von Hand gestartete. Ein zweiter roter Lauf erkennt das offene Issue daran, dass sein Titel **mit diesem Titel beginnt**, und hängt sich an denselben Thread, statt ein zweites aufzumachen. Etwas anhängen ist also unbedenklich — «… — seit dem 15.8.» bleibt derselbe Thread. Wer den Anfang des Titels umschreibt, bricht die Deduplizierung weiterhin. Welcher Auslöser den Lauf gestartet hat, steht im Text des Issues, nicht im Titel — sonst wäre der Titel kein Dedupe-Schlüssel mehr. Ein grüner Lauf schliesst das Issue **nicht** von selbst — nach einem behobenen Ausfall gehört es von Hand zugemacht, sonst hält der nächste Blick den alten Ausfall für den neuen.
 
 **Ein roter Live-Lauf heisst nicht zwingend «unser Fehler».** Er heisst: Der

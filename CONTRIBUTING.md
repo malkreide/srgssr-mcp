@@ -166,6 +166,16 @@ Questions? Open a [GitHub Discussion](https://github.com/malkreide/srgssr-mcp/di
 **Cadence:** daily at 04:00 UTC, plus on demand via *Actions → Live Tests (Nightly) → Run
 workflow*. See [`.github/workflows/live-test.yml`](.github/workflows/live-test.yml).
 
+**04:00 is what the cron asks for, not when the run happens.** Measured on
+18 Sep 2026: the four preceding scheduled runs were created at 09:44, 09:18,
+09:12 and 09:20 UTC (14–17 Sep) — about five hours late, every one of them.
+GitHub defers scheduled workflows under load; that is the likely cause and it
+was not measured here, only the four timestamps were. The practical
+consequence is the part that matters: **do not infer from the cron that last
+night's run has happened.** A plan that reads "the result is in before I start
+work" is a plan built on the declaration. Ask the run list instead — the
+workflow page shows the last run and its verdict in one look.
+
 **Who sees it:** A red run opens an issue labelled `live-tests` with the stable title “Live tests failed (possible API schema drift)” — the nightly run and the hand-started one alike. A second red run recognises the open issue by its title **starting with** that string and appends to that same thread rather than opening a second one. Appending to the title is therefore safe — “… — since 15 Aug” stays the same thread. Rewriting the start of the title still breaks the dedupe. Which trigger started the run is recorded in the issue body, not the title — otherwise the title would stop working as the dedupe key. A green run does **not** close the issue by itself — once the failure is fixed it needs closing by hand, otherwise the next reader mistakes the old failure for the new one.
 
 **A red live run does not necessarily mean *our* bug.** It means the contract
