@@ -1,9 +1,0 @@
-<!-- codex-pull-request-review-summary -->
-
-## Codex Review Summary
-
-This comment shows the latest Codex review activity on this pull request.
-
-| Review | Status | Commit | Review trigger |
-| --- | --- | --- | --- |
-| 📝 **Code Review** | 🔄 **Running** since <relative-time datetime="2026-09-18T03:59:29.513929Z">2026-09-18T03:59:29.513929Z</relative-time> | `0ee99ed` | Draft marked ready |

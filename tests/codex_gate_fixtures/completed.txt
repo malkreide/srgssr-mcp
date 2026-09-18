@@ -1,7 +1,0 @@
-<!-- codex-pull-request-review-summary -->
-
-## Codex Review Summary
-
-| Review | Status | Commit | Review trigger |
-| --- | --- | --- | --- |
-| 📝 **Code Review** | ✅ **Completed** <relative-time datetime="2026-09-18T04:00:35.090790Z">2026-09-18T04:00:35.090790Z</relative-time> | `0ee99ed` | Draft marked ready |

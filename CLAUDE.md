@@ -259,7 +259,9 @@ ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
   Infokasten, den Codex unter jeden Review setzt, behauptet weiterhin eine
   Reaktion («otherwise it will react with 👍») — am 23.8. kam in sechs Repos
   die Meldung und in keinem die Reaktion. Der Kasten ist keine Quelle.
-- **Der PR ist ein Draft** — darauf läuft Codex nicht an.
+- **Der PR ist ein Draft** — dann läuft kein Review an. Dass deshalb *gar
+  nichts* kommt, stimmt seit dem 18.9.2026 nicht mehr; siehe den Nachtrag
+  «Die Environment-Meldung ist kein Befund» weiter unten.
 - **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
@@ -276,6 +278,38 @@ Environment-Prüfung vorn, hätte #54 sie schon am Vortag gesehen; die Environme
 fehlte ja bereits. Zwei Meldungen aus demselben Repo schlagen hier jede
 Vermutung über die Reihenfolge.
 
+**Die Environment-Meldung ist kein Befund.** Am 18.9.2026 um 04:12:00 UTC kam
+sie in diesem Repo unter PR #117, elf Sekunden nach dem Eröffnen — als Draft.
+Wörtlich, und anders als oben zitiert mit Link:
+
+```
+To use Codex here, [create an environment for this repo](https://chatgpt.com/codex/cloud/settings/environments).
+```
+
+Die Environment fehlt dabei nachweislich **nicht**: elf Minuten zuvor, um
+04:00:35, hatte PR #116 im selben Repo einen vollständigen Review bekommen, und
+Codex' eigener Infokasten dort sagt «Your team has set up Codex to review pull
+requests in this repo».
+
+Zwei Sätze oben fallen damit:
+
+- «Darauf läuft Codex nicht an» — auf einem Draft kommt sehr wohl ein
+  Kommentar, nur kein Review. Der kommentarlose Draft war nie der einzige Fall.
+- «Für das Repo fehlt eine Environment — dann schreibt er» — die Umkehrung
+  gilt nicht. Der Text kommt auch, wenn sie da ist.
+
+Was der Text **bedeutet**, ist damit offen, und das bleibt hier so stehen. Die
+naheliegende Lesart — Codex antwortet auf den Draft-Auslöser mit einer generischen
+Meldung, weil er keinen Review starten kann — ist ungemessen. Die Beobachtung vom
+23.8. in `swiss-public-data-mcp` liesse sich rückwirkend genauso lesen, und ob
+jener PR ein Draft war, hat niemand festgehalten. Das ist kein Beleg, sondern eine
+zweite Stelle, an der etwas fehlt.
+
+Praktisch ist die Folge härter als die Deutungsfrage: **die Meldung bleibt
+stehen.** Ein Kommentar verschwindet nicht, wenn der PR auf ready geht. Wer auf
+ihren blossen Text prüft, prüft ab dann für immer positiv — genau das hätte das
+Gate in `codex-gate.yml` an diesem PR getan, bevor es am 18.9. umgebaut wurde.
+
 Praktisch heisst das: **Eine verschwundene Limit-Meldung ist keine Entwarnung.**
 Sie kann bedeuten, dass das Kontingent wieder da ist — und dass jetzt etwas
 anderes den Review verhindert. Belegt ist eine Prüfung erst durch ein
@@ -287,9 +321,10 @@ ein, den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
 («💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund und die
 beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
-Issue-Kommentare und trennen sich nur im Text. Beim Draft gibt es überhaupt
-nichts, weil Codex nicht anläuft; ein kommentarloser Draft ist deshalb kein
-Beleg, sondern ein nicht durchgeführter Test.
+Issue-Kommentare und trennen sich nur im Text. Beim Draft läuft kein Review an;
+ein kommentarloser Draft ist deshalb kein Beleg, sondern ein nicht durchgeführter
+Test — und ein *kommentierter* Draft ist es genauso wenig, siehe den Nachtrag
+unten.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
 alles andere; wer nur eine nimmt, übersieht den Rest. Genau so ist die
@@ -512,12 +547,24 @@ davon. Zwei Dinge, die er ausdrücklich nicht kann:
   hält er den Merge-Button; ohne diesen Eintrag ist er ein sichtbarer Hinweis
   — und ein sichtbarer Hinweis ist genau das, was hier sechsmal nicht gereicht
   hat. Der Eintrag ist eine Repo-Einstellung und steht in keiner Datei.
-- **Bei einem Ausfall lässt er durch.** Erschöpftes Kontingent oder fehlende
-  Environment heissen, dass Codex hier gar nicht prüfen kann; darauf zu
-  blockieren hielte das Repo wegen einer Störung an. Der Lauf sagt dann
-  ausdrücklich, dass der PR ungeprüft ist. Ein Gate, das im Normalbetrieb
+- **Nach Ablauf der Wartezeit lässt er bei einem Ausfalltext durch.** Erschöpftes
+  Kontingent oder Environment-Meldung heissen, dass von Codex nichts zu erwarten
+  ist; darauf zu blockieren hielte das Repo wegen einer Störung an. Der Lauf sagt
+  dann ausdrücklich, dass der PR ungeprüft ist. Ein Gate, das im Normalbetrieb
   anspringt, wird abgeschaltet — die Lehre aus dem ruff-Literal in #114 gilt
   hier genauso.
+
+  **Die Reihenfolge ist die Zusicherung.** In der ersten Fassung wurden die
+  Ausfalltexte zu Beginn jeder Runde geprüft und beendeten den Job sofort. Mit
+  der Draft-Meldung von #117 im Thread hätte das Gate an genau dem PR, der es
+  einführt, auf der Stelle durchgelassen — ohne dem Review die Gelegenheit zu
+  geben. Jetzt wird zuerst gewartet; die Ausfalltexte entscheiden erst über ein
+  *ergebnislos* abgelaufenes Fenster, und was sie bedeuten, muss dafür niemand
+  wissen.
+
+  **Und nur der Bot zählt.** Die erste Fassung las jeden Kommentar. Ein Mensch,
+  der einen der Ausfalltexte zitiert — etwa in einem PR, der über sie schreibt —,
+  entwaffnete das Gate damit.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
@@ -657,7 +704,7 @@ steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
 roter PR bei grünen Tests ist meistens er.
 
 **`codex-gate.yml` gatet den Merge, nicht den Code.** Er prüft nichts am Diff,
-sondern wartet, bis die Codex-Statustabelle für den aktuellen Head auf
+sondern wartet, bis die Codex-Statustabelle des Bots für den aktuellen Head auf
 `Completed` steht — die Begründung dazu steht unter «Wenn Codex gar nicht erst
 hinsieht» in Teil 1, die Mechanik im Workflow selbst. Lokal ist er nicht
 nachstellbar und gehört deshalb nicht in die Gate-Liste oben; er braucht einen
