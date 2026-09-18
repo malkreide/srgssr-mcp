@@ -220,6 +220,25 @@ aufgebraucht — davor echte Reviews, danach in 30 Repos nur noch:
 You have reached your Codex usage limits for code reviews.
 ```
 
+**Der Text ist seither länger geworden.** Am 18.9.2026 um 06:40:13 UTC kam die
+Meldung zum ersten Mal in diesem Repo, unter PR #119, und lautete wörtlich:
+
+```
+You have reached your Codex usage limits for code reviews. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
+```
+
+Zwei Dinge daran sind praktisch:
+
+- **Das Suchmuster des Gates hat gehalten**, weil es nur
+  `reached your Codex usage limits` verlangt. Ein Muster, das den ganzen Satz
+  gefordert hätte, wäre an dieser Drift gescheitert — und zwar still, weil ein
+  nicht gefundener Ausfalltext nicht rot wird, sondern das Fenster auslaufen
+  lässt und dann rot wird, mit der falschen Begründung «kein Review».
+- **Die Aufzeichnung ist jetzt echt.** `kontingent.json` trug bis dahin ein
+  Zitat mit gesetzten IDs und Zeitstempeln, im Nachweis ausdrücklich als
+  schwächste der Aufzeichnungen benannt. Genau diese Schwäche hat sich
+  bestätigt: Das Zitat war die kürzere, ältere Form.
+
 Wie lange die Sperre dauerte, geben die Beobachtungen nur als Spanne her. Vier
 Zeitpunkte sind belegt: letzter gelungener Review am 21.8. um 08:41, erste
 Limit-Meldung um 09:48, letzte beobachtete Limit-Meldung am 22.8. um 11:03,
