@@ -387,6 +387,14 @@ derselben ID, `get_reviews` → `[]`, keine Befundlos-Meldung. Drei weitere am
 PR #115 (ID 5724899490, Commit `4a270e3`), PR #116 (ID 5724943260, `0ee99ed`)
 und PR #117 (ID 5725538956, `f69be45`).
 
+**Der achte Lauf brach die Serie**, und zwar an der Stelle, die der Abschnitt
+oben vorhersagt: Unter PR #118 (ID 5725947917, `93bc690`) lief dieselbe Tabelle
+`Running` → `Completed`, aber `get_reviews` gab diesmal **kein** `[]`, sondern
+ein Review-Objekt (5244784664) mit einem P2-Befund. Die Unterscheidung «Befund
+→ Review-Objekt, kein Befund → Issue-Kommentar» hält also auch neben der
+Statustabelle; die Tabelle ersetzt das Objekt nicht, sie steht daneben. Wer
+nur `get_comments` liest, sieht `Completed` und übersieht den Befund.
+
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
 gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
@@ -401,9 +409,10 @@ als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitier
 nicht einsortiert.
 
 Die Laufzeit **streut weiter, als hier zwei Fassungen lang stand.** Von ready
-bis `Completed` — die Basis, die für alle sieben Läufe öffentlich ablesbar ist:
+bis `Completed` — die Basis, die für alle acht Läufe öffentlich ablesbar ist:
 69 s unter #103, 83 s unter #105, 78 s unter #113, **48,5 s unter #114**,
-79,0 s unter #115, 72,1 s unter #116 und **91 s unter #117**. Der Satz davor lautete «das Fenster von gut einer Minute bis
+79,0 s unter #115, 72,1 s unter #116, 91 s unter #117 und **rund 135 s unter
+#118**. Der Satz davor lautete «das Fenster von gut einer Minute bis
 knapp achtzig Sekunden hält also», geschrieben in #114 auf drei Beobachtungen —
 und derselbe PR hat ihn beim Mergen widerlegt, neunzehn Minuten später. Drei
 Punkte, die nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
@@ -411,20 +420,31 @@ Punkte, die nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
 Die interne Laufzeit («Running since …» bis `Completed`) ist nur für drei
 davon bekannt: 62 s unter #103 (12:41:58,07 → 12:43:00,23), 78 s unter #105
 (16:57:06,81 → 16:58:24,64), 70,9 s unter #113 (18:50:10,42 → 18:51:21,28),
-65,6 s unter #116 (03:59:29,51 → 04:00:35,09) und **82,2 s unter #117**
-(05:18:11,20 → 05:19:33,44). Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
+65,6 s unter #116 (03:59:29,51 → 04:00:35,09), 82,2 s unter #117
+(05:18:11,20 → 05:19:33,44) und **129,4 s unter #118**
+(06:10:11,34 → 06:12:20,77). Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
 Tabelle den Startzeitpunkt dann nicht mehr zeigt. Aus dem `created_at` des
 Kommentars gerechnet wären es 41,5 s bzw. 65,0 s, aber das ist eine andere
 Basis — der Kommentar entsteht zwei bis drei Sekunden nach dem Start. **Die
 beiden Basen nicht mischen**; wer 41,5 gegen 62 stellt, vergleicht zwei
 Messgrössen.
 
-Praktisch heisst das: **48,5 s bis 91 s**, nach sieben Läufen — und die Spanne
-hat sich schon wieder geöffnet. Hier stand «rund 40 bis 85 Sekunden», gestützt
-auf sechs Läufe mit Maximum 83 s; der siebte kam mit 91 s. Das ist bereits die
-dritte Fassung dieses Satzes, und jede wurde vom nächsten Lauf kassiert. Eine
-gemerkte Zahl ist hier das falsche Werkzeug — den Startzeitpunkt lesen, nicht
-das Fenster erinnern.
+**Und der Absatz selbst ist darauf hereingefallen.** Der Abstand zwischen Merge
+und Gate-Ergebnis stand hier zuerst mit 86 Sekunden — das ist der Abstand zum
+*Codex*-`Completed` um 05:19:33, nicht zum Gate-Ergebnis um 05:19:39; richtig
+sind 92 Sekunden. Zwei Endpunkte, sechs Sekunden auseinander, und die falsche
+Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
+Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
+zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
+
+Praktisch heisst das: **48,5 s bis rund 135 s**, nach acht Läufen. Das ist die
+vierte Fassung dieses Satzes, und die dritte wurde kassiert, **während der PR
+offen war, der sie schrieb**: #118 trug «48,5 s bis 91 s» ein, und der
+Codex-Lauf auf ebendiesem PR brauchte 129,4 s.
+
+Damit ist keine Fassung dieses Satzes je einen Tag alt geworden. Eine gemerkte
+Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug — den
+Startzeitpunkt aus der Tabelle lesen, nicht das Fenster erinnern.
 
 **Deshalb die Startzeit lesen, nicht das Fenster erinnern.** Der Absatz oben
 warnt davor, zu früh zu lesen und einen laufenden Review für das Ergebnis zu
@@ -489,8 +509,9 @@ an einem gemergten PR gelandet, wo ihn die Regel «beantworten oder beheben»
 nur noch über einen Folge-PR erreicht.
 
 **«Fünf bis sieben Sekunden bis zum Start» ist widerlegt, und zwar durch den
-PR, der den Einwand dagegen abgeschwächt hatte.** Gemessen sind fünf Startwerte:
-7 s (#103), 5,8 s (#105), 7,4 s (#113), 6,5 s (#116) und **9 s (#117)**.
+PR, der den Einwand dagegen abgeschwächt hatte.** Gemessen sind sechs
+Startwerte: 7 s (#103), 5,8 s (#105), 7,4 s (#113), 6,5 s (#116), **9 s
+(#117)** und 5 s (#118).
 
 Der Weg dorthin ist die eigentliche Lehre. Für #114 und #115 fehlt der
 Startzeitpunkt; ablesbar war nur die Entstehung des Kommentars — 7 s nach ready
@@ -506,13 +527,21 @@ ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
 **Der Abstand wächst nicht monoton, und keiner der sieben hat gereicht.** Zwei,
-drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis 91 Sekunden Laufzeit
-ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
-Grössenordnung verfehlt: gebraucht werden zwei Minuten, nicht ein paar
-Sekunden mehr. Und die zwei Minuten werden durch die kürzere Untergrenze
-**nicht** kleiner: sie müssen den langsamsten Lauf decken, nicht den
-schnellsten. Der langsamste sind jetzt 91 s — die zwei Minuten decken ihn mit
-29 Sekunden Reserve, eine Minute deckt ihn nicht mehr.
+drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis rund 135 Sekunden
+Laufzeit ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
+Grössenordnung verfehlt.
+
+**Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
+hier, seit das Maximum bei 83 s lag; unter #118 waren es rund 135 s. Eine feste
+Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten — und welcher
+das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei viermal nach
+oben korrigiert worden, jedes Mal vom nächsten Lauf.
+
+Die Konsequenz ist deshalb keine grössere Zahl, sondern eine andere Methode:
+**nicht warten, sondern nachsehen.** Die Statustabelle nennt Commit und Status;
+`Completed` für den aktuellen Head ist eine Auskunft, eine abgelaufene Stoppuhr
+ist keine. Wer doch eine Zahl braucht, nimmt sie als Untergrenze und prüft
+danach trotzdem.
 
 **Ein ausgebliebenes Event ist keine Zustandsauskunft.** Unter #114 wurde
 genau daraus ein Fehlbefund: «bisher kein Merge erfolgt», geschlossen aus dem
@@ -548,7 +577,7 @@ verschiedene Handgriffe.
 **Das sechste Glied ist von anderer Art, und darin liegt der Ertrag.** Bei den
 fünf davor fehlte der Mechanismus. Unter #117 gab es ihn: der Job lief, wartete
 92 Sekunden, fand die Statustabelle für den richtigen Head und schloss mit
-`success` — 86 Sekunden nach dem Merge. Gescheitert ist nicht die Mechanik,
+`success` — 92 Sekunden nach dem Merge. Gescheitert ist nicht die Mechanik,
 sondern der eine Handgriff, der in keiner Datei steht. Ein Werkzeug zu bauen
 und es nicht scharf zu stellen, sieht von innen aus wie Fortschritt und wirkt
 von aussen wie nichts.
@@ -580,7 +609,7 @@ davon. Zwei Dinge, die er ausdrücklich nicht kann:
 - **Ohne Branch Protection sperrt er nichts**, und das ist seit dem 18.9.2026
   nicht mehr Vorhersage, sondern gemessen. Auf #117 — dem PR, der ihn einführt —
   lief der Job unter dem Namen `review-abgeschlossen` von 05:18:06 bis 05:19:39
-  und schloss mit `success`; gemergt wurde um 05:18:07, also 86 Sekunden vor
+  und schloss mit `success`; gemergt wurde um 05:18:07, also 92 Sekunden vor
   seinem Ergebnis und eine Sekunde nach seinem Start. Als Required Check
   eingetragen hält er den Merge-Button; ohne diesen Eintrag ist er ein
   sichtbarer Hinweis — und ein sichtbarer Hinweis ist genau das, was hier
