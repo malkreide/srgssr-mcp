@@ -327,6 +327,38 @@ Der Matcher im Gate deckt beide Fassungen: Er prüft auf
 `reached your Codex usage limits`, und dieser Teil steht in beiden Sätzen.
 Geprüft am Workflow, nicht am Lauf.
 
+**Welcher Topf antwortet, hängt am Auslöser.** Vier Meldungen desselben Tages,
+nach Auslöser sortiert:
+
+| Zeit (UTC) | PR | Auslöser | Text |
+| --- | --- | --- | --- |
+| 06:40:13 | #119 | (nicht festgehalten) | mit «for code reviews» |
+| 14:02:33 | #122 | `ready_for_review` | mit «for code reviews» |
+| 14:07:00 | #122 | Erwähnung im Kommentar | **ohne** den Zusatz |
+| 14:25:13 | #123 | `ready_for_review` | mit «for code reviews» |
+
+Drei Beobachtungen auf der einen Seite, eine auf der anderen. Das stützt die
+Zuordnung «GitHub-getriggerter Review → Review-Topf, von Hand angestossener Lauf
+→ allgemeiner Topf», belegt sie aber nicht: Für die Gegenrichtung gibt es genau
+einen Fall, und für #119 ist der Auslöser nicht festgehalten. Wer hier eine
+Regel liest, hat aus einer Beobachtung eine gemacht.
+
+**Der Durchlass ist end-to-end gemessen.** Unter #123 lief das Gate von
+14:25:12 bis 14:30:21 und schloss mit `success` — 309 s, also das volle
+Wartefenster des Workflows plus Overhead, danach der Ausfalltext und die
+Warnung. Das
+ist der erste vollständig beobachtete Durchlauf dieser Ausnahme; vorher stand
+hier nur, was das Skript tut. Zwei Dinge fallen daran auf:
+
+- **Die Wartezeit fällt an, auch wenn die Meldung sofort da ist.** Sie stand um
+  14:25:13 im Thread, gelesen wurde sie um 14:30:21. Das ist Absicht — die
+  Reihenfolge ist die Zusicherung, siehe oben —, kostet aber bei erschöpftem
+  Kontingent fünf Minuten pro PR.
+- **Gemergt wurde diesmal nach dem Gate-Ergebnis**, nicht davor: 14:30:21
+  Ergebnis, 14:31 Merge. Das ist die erste Zeile der Merge-Tabelle weiter unten,
+  bei der die Reihenfolge stimmt — und sie stimmt, weil der Required Check seit
+  demselben Tag gesetzt ist und den Knopf gehalten hat.
+
 **Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
