@@ -220,32 +220,53 @@ def test_runtime_imports_are_all_declared(name: str):
     assert name.replace("_", "-") in declared or name in declared
 
 
-def test_claude_md_nennt_denselben_ruff_pin_wie_pyproject():
-    """Die Konventionen-Datei nennt den Pin im Klartext — und driftete.
+def test_claude_md_wiederholt_den_ruff_pin_nicht():
+    """Umgekehrt zur ersten Fassung — und das ist der Punkt.
 
-    `CLAUDE.md` schreibt «genau eine Quelle — `ruff==X.Y.Z` im `[dev]`-Extra
-    von `pyproject.toml`». Der Satz ist richtig und seine Zahl war es nicht:
-    ein Dependabot-Lauf hob den Pin von 0.16.3 auf 0.16.4
-    (`deps(deps-dev): Bump ruff from 0.16.3 to 0.16.4`), die Datei blieb auf
-    0.16.3 stehen. Das kostet nichts Rotes und genau deshalb faellt es nicht
-    auf — wer den Gates-Abschnitt liest, installiert die falsche Version und
-    sucht die Abweichung danach im Diff.
+    Die erste Fassung (#114) verlangte, dass `CLAUDE.md` dieselbe Nummer nennt
+    wie `pyproject.toml`. Das war richtig gemessen und falsch gebaut. Die
+    Zahl dort war tatsaechlich veraltet (0.16.3 gegen 0.16.4), aber das Gate
+    dagegen hat seinen Fehlschlag im **Normalbetrieb**: Dependabot bumpt den
+    Pin und ruehrt `CLAUDE.md` nicht an, also ist jeder Routine-Bump ein roter
+    Standard-Branch. Belegt am 17.9.2026 — der Bump 0.16.4 → 0.16.5 kam drei
+    Minuten nach dem Merge und machte `main` rot.
 
-    Verglichen wird, nicht nachgeschrieben: eine Zusicherung, die die erwartete
-    Nummer selbst enthielte, waere aus derselben Annahme geschrieben wie die
-    Doku und koennte ihr nicht widersprechen. Dasselbe Vorgehen wie in
-    `test_live_workflow_docs.py`.
+    Ein Gate, das bei jedem gewoehnlichen Vorgang anspringt, wird abgeschaltet.
+    Dann fehlt es dort, wo es noetig waere. Deshalb liegt die Zusicherung jetzt
+    eine Ebene tiefer: nicht «die Kopie stimmt», sondern «es gibt keine Kopie».
+    Damit kann kein Bump sie mehr brechen, und die Drift ist nicht behoben,
+    sondern unmoeglich.
+
+    `scripts/check_version_sync.py` fuehrt dieselbe Regel fuer `src/`: «ein
+    wieder eingefuegtes Literal waere der Beginn derselben Drift». Hier steht
+    sie fuer die Konventionen-Datei.
+
+    Grenze, ausgesprochen: geprueft wird die Pin-Form `ruff==X.Y.Z` — also
+    die Schreibweise, in der die Kopie dort stand. Eine Prosa-Zeile wie «ruff
+    0.16.5» faengt dieser Test nicht, und die Absaetze in `CLAUDE.md`, die die
+    Geschichte dieser Drift erzaehlen, nennen ihre Zahlen genau deshalb ohne
+    `==`. Ein Test, der jede Ziffernfolge verbieten wuerde, koennte seine
+    eigene Begruendung nicht mehr aufschreiben.
+    """
+    text = (_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    kopien = sorted(set(re.findall(r"ruff==(\d+\.\d+\.\d+)", text)))
+    assert not kopien, (
+        f"CLAUDE.md wiederholt den ruff-Pin ({', '.join(kopien)}). Die Nummer gehoert "
+        "nur nach pyproject.toml — eine Kopie hier driftet beim naechsten "
+        "Dependabot-Bump und macht main rot, statt etwas zu sichern. Auf "
+        "pyproject.toml verweisen, nicht die Version nennen."
+    )
+
+
+def test_der_pin_in_pyproject_bleibt_die_eine_quelle():
+    """Positivkontrolle zum Test darueber.
+
+    «`CLAUDE.md` nennt keine Version» ist auch dann erfuellt, wenn es
+    ueberhaupt keinen Pin mehr gibt — die Zusicherung allein kann nicht
+    unterscheiden, ob die Kopie weg ist oder das Original. Hier steht, dass
+    das Original da ist. `test_ruff_is_pinned_exactly` weiter oben prueft
+    seine Form; dieser Test prueft, dass er ueberhaupt existiert, damit der
+    Verweis in `CLAUDE.md` auf etwas zeigt.
     """
     specs = [s for s in _dev_dependencies() if re.match(r"^ruff==", s)]
     assert len(specs) == 1, f"kein eindeutiger ruff-Pin in pyproject.toml: {specs}"
-    pinned = specs[0].split("==", 1)[1]
-
-    text = (_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
-    genannt = re.findall(r"ruff==(\d+\.\d+\.\d+)", text)
-    assert genannt, "CLAUDE.md nennt keinen ruff-Pin — dann ist diese Zusicherung gegenstandslos"
-
-    abweichend = sorted({v for v in genannt if v != pinned})
-    assert not abweichend, (
-        f"CLAUDE.md nennt ruff=={', '.join(abweichend)}, pyproject.toml pinnt {pinned}. "
-        "Wer der Datei folgt, fährt die Gates mit einer anderen Version als die CI."
-    )
