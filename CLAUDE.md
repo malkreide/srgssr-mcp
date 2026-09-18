@@ -782,10 +782,17 @@ der die Pfade nicht berührt. Betroffen waren `image-size`
 Repo. Die Ableitung las die Job-Namen und übersah die Pfadfilter — sie hätte
 drei Repos stillgelegt.
 
-Was das **nicht** hergibt: dass «skipped zählt als bestanden» hier gemessen
-wäre. Gemessen ist nur, dass für die vier `live`-Jobs überhaupt ein Check-Run
-am PR-Head steht; dass ein übersprungener als grün gewertet wird, steht in der
-Dokumentation und wurde nicht nachgeprüft.
+Dass ein übersprungener Job als bestanden zählt, stand hier zuerst nur als
+Dokumentationsbehauptung. Gemessen ist es seit PR #122 in diesem Repo:
+`review-abgeschlossen` ist dort Required Check und stand als Draft-PR auf
+`skipped`. Um 13:55:32 UTC war der PR `blocked` — da liefen die drei
+`test`-Jobs noch; um 13:58:50 UTC waren alle acht Checks fertig, sieben
+`success` und einer `skipped`, und `mergeable_state` stand auf `clean`. Der
+übersprungene hat also zu keinem Zeitpunkt blockiert.
+
+Was die Messung **nicht** hergibt: dass dasselbe für einen pfadgefilterten
+Workflow gälte. Dort entsteht gar kein Check-Run; dieser Fall wurde bewusst
+nicht ausprobiert, weil ein Repo mit dem Versuch dauerhaft blockiert wäre.
 
 **Eine Messung am jüngsten PR ist eine Momentaufnahme, keine Eigenschaft des
 Repos.** `swiss-environment-mcp` lieferte am 18.9. innerhalb von zwei Stunden
