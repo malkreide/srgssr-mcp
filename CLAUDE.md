@@ -265,6 +265,62 @@ Meldung liefen ganz ohne Codex-Auslöser, dort hat niemand gemessen.
 In der Zwischenzeit sind 32 PRs mit formal erfülltem Häkchen gemergt worden,
 ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
 
+**Zweiter belegter Ausfall, 18.9.2026.** An PR #122 in diesem Repo stand um
+14:02:33 UTC dieselbe Kontingent-Meldung; der Gate-Job zum selben
+`ready_for_review`-Ereignis startete um 14:02:32. Codex hat also nicht
+angefangen und abgebrochen, sondern sofort abgewunken — im Gegensatz zu einem
+echten Review, der gemessen 62 bzw. 78 s braucht. Wer nach dem Umschalten auf
+ready eine Minute wartet und dann einen Kommentar sieht, darf daraus deshalb
+nichts schliessen: Ausfall und Ergebnis unterscheiden sich im Text, nicht in
+der Wartezeit.
+
+Die letzten hier festgehaltenen vollständigen Reviews sind die vom 29.8.
+(12:43 und 16:58, beide in diesem Repo). Ob dazwischen welche liefen, ist nicht
+nachgesehen worden. Die Beobachtung sagt daher nichts über den Beginn der
+Sperre und nichts über ihre Dauer — sie ist ein einzelner Zeitpunkt, kein
+Intervall.
+
+Was sie hergibt, ist der Zusammenhang mit dem Gate: `codex-gate.yml` liest den
+Ausfalltext erst nach seinem Fenster und lässt dann mit einer Warnung durch. Der PR ist damit
+mergebar und ungeprüft, und das Häkchen in der Checkliste trägt nichts.
+
+Weil das Kontingent am Konto hängt, traf es in derselben Minute auch die
+Codex-Gates in `fedlex-mcp`, `register-mcp` und `swiss-environment-mcp` —
+geprüft wurde das allerdings nicht, es folgt nur aus der Kontobindung.
+
+**Fünf Minuten später ein fünfter Text, und er trennt die Töpfe.** Unter
+demselben PR stand um 14:06:49 ein Kommentar, der erklärte, wie man Codex von
+Hand auslöst, und dabei die Zeichenfolge `@codex review` im Fliesstext führte —
+in Backticks, was nichts half. Um 14:07:00, elf Sekunden später, antwortete der
+Bot mit:
+
+```
+You have reached your Codex usage limits.
+```
+
+Ohne «for code reviews». Zwei Dinge folgen daraus, und beide waren vorher nur
+behauptet.
+
+**Der Auslöser feuert aus Prosa.** Wer in einem Kommentar beschreibt, wie man
+Codex anstösst, stösst ihn an; Code-Formatierung schützt nicht. Das ist das
+Spiegelbild des Bot-Filters in `codex-gate.yml`: Dort steht `AUTOR=` genau
+deshalb, weil ein Mensch, der einen Ausfalltext zitiert, das Gate sonst
+entwaffnete. Hier ist es dieselbe Klasse in die andere Richtung — nicht ein
+zitierter Text, der etwas vortäuscht, sondern ein zitierter Auslöser, der
+wirklich auslöst. Geschrieben hat den Kommentar dieses Modell, beim Erklären
+eben dieser Mechanik.
+
+**Die beiden Töpfe sind am Text unterscheidbar.** «for code reviews» meint das
+Review-Kontingent, der Satz ohne Zusatz das allgemeine. Am 18.9. waren beide
+erschöpft. Dass ein von Hand ausgelöster Lauf immer den allgemeinen Topf zieht,
+gibt eine einzelne Beobachtung nicht her — und wann das allgemeine Kontingent
+wegging, ist ebenfalls nicht gemessen; belegt ist nur, dass es um 14:07:00 weg
+war.
+
+Der Matcher im Gate deckt beide Fassungen: Er prüft auf
+`reached your Codex usage limits`, und dieser Teil steht in beiden Sätzen.
+Geprüft am Workflow, nicht am Lauf.
+
 **Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
@@ -752,6 +808,92 @@ waren, waren 16 der 59 PRs jenes Tages reine Reibung.
 Dieselbe Klasse wie der handgeschriebene Stub, der denselben Feldnamen annahm
 wie der Code: Nichts ist rot, weil nichts geprüft wird, worauf es ankommt.
 
+### Wenn ein Required Check den Merge nicht hält
+
+Am 18.9.2026 bekamen alle 43 Repos des Portfolios Branch Protection auf ihrem
+Standard-Branch: Required Status Checks, `strict = false`, `enforce_admins`,
+keine Review-Pflicht. Für `srgssr-mcp` und `openlex-mcp` war vorher gemessen,
+dass `main` ungeschützt war (`protected: false`) — ein grüner PR war sofort
+mergebar, und GitHub bot deshalb nicht einmal Auto-Merge an. Das ist die Lücke,
+durch die am 29.8. zwei Codex-Reviews vollständig auf bereits geschlossenen PRs
+liefen. Für die übrigen 41 ist der Zustand davor **nicht** gemessen: das Skript
+überschreibt, ohne vorher zu lesen.
+
+Die Kontexte wurden nicht geraten, sondern am Head des jüngsten gemergten PR
+gemessen — am Push-Head des Standard-Branches fehlen genau die Checks, die nur
+auf `pull_request` triggern. Dagegen stand eine zweite, unabhängig gewonnene
+Liste, abgeleitet aus den Workflow-Dateien. Die vier Repos, in denen beide
+auseinandergingen, trugen vier verschiedene Fehler — und zwar in beiden
+Quellen.
+
+**Zwei Arten von Bedingung, und nur eine ist harmlos.** Ein Job, den ein `if:`
+auf **Job**-Ebene überspringt, meldet laut GitHub-Dokumentation «skipped», und
+das zählt für Branch Protection als bestanden. Ein Workflow, den ein `paths:`
+auf **Workflow**-Ebene gar nicht erst startet, meldet nichts — sein Check
+bleibt auf `pending`, und als Required Check blockiert er jeden PR dauerhaft,
+der die Pfade nicht berührt. Betroffen waren `image-size`
+(`swiss-environment-mcp`), `build & smoke-test` (`bakom-mcp`) und `nachziehen`
+(`hn-tech-signal-mcp`); harmlos sind dagegen die vier `live`-Jobs mit
+`if: github.event_name == 'schedule' || …` und `review-abgeschlossen` in diesem
+Repo. Die Ableitung las die Job-Namen und übersah die Pfadfilter — sie hätte
+drei Repos stillgelegt.
+
+Dass ein übersprungener Job als bestanden zählt, stand hier zuerst nur als
+Dokumentationsbehauptung. Gemessen ist es seit PR #122 in diesem Repo:
+`review-abgeschlossen` ist dort Required Check und stand als Draft-PR auf
+`skipped`. Um 13:55:32 UTC war der PR `blocked` — da liefen die drei
+`test`-Jobs noch; um 13:58:50 UTC waren alle acht Checks fertig, sieben
+`success` und einer `skipped`, und `mergeable_state` stand auf `clean`. Der
+übersprungene hat also zu keinem Zeitpunkt blockiert.
+
+Was die Messung **nicht** hergibt: dass dasselbe für einen pfadgefilterten
+Workflow gälte. Dort entsteht gar kein Check-Run; dieser Fall wurde bewusst
+nicht ausprobiert, weil ein Repo mit dem Versuch dauerhaft blockiert wäre.
+
+**Eine Messung am jüngsten PR ist eine Momentaufnahme, keine Eigenschaft des
+Repos.** `swiss-environment-mcp` lieferte am 18.9. innerhalb von zwei Stunden
+drei verschiedene Antworten: im Trockenlauf PR #114 (ändert nur `CLAUDE.md`, 6
+Kontexte), zehn Minuten später beim Anwenden PR #116 (fasst `src/**` an, also
+lief `image-size` mit, 7 Kontexte), danach PR #117 mit einem umbenannten
+Codex-Job. Die Gegenprobe hat alle drei Male gehalten. Ohne sie wäre beim
+zweiten Lauf ein pfadgefilterter Check erforderlich geworden.
+
+Daraus folgt auch: Ein sauberer Trockenlauf ist keine Freigabe für ein späteres
+`-Apply`. Zwischen beiden Läufen kann gemergt werden, und dann misst der zweite
+etwas anderes als der erste.
+
+**`check-runs` sind nicht alle Checks.** GitHub führt zwei getrennte
+Mechanismen, und `repos/{o}/{r}/commits/{sha}/check-runs` liefert nur den
+neueren. Commit-Status der älteren Status-API stehen unter
+`commits/{sha}/status` und tauchen dort überhaupt nicht auf. Im Portfolio
+tragen genau zwei Repos ihr Codex-Urteil in einem Commit-Status `codex-gate`
+(`fedlex-mcp`, `swiss-environment-mcp`); der Check-Run des zugehörigen Jobs
+endet dort immer mit 0 und sagt nichts aus. `register-mcp` macht es
+andersherum — dort endet der Job selbst rot, sein Check-Run **ist** das Gate.
+Wer nur `check-runs` misst, schützt die ersten beiden ohne ihr eigentliches
+Gate; `fedlex-mcp` stand rund vierzig Minuten genau so da.
+
+**Die Rückleseprobe fängt das nicht.** Sie vergleicht, was gesendet wurde, mit
+dem, was ankam — sie kann nicht wissen, dass zu wenig gesendet wurde. Neben
+zwei unvollständigen Listen stand deshalb ein grünes «gesetzt und verifiziert».
+Aufgefallen ist es nur, weil in `swiss-environment-mcp` zufällig am selben Tag
+ein Job umbenannt wurde und die Abweichung zwang, in die Workflow-Datei zu
+sehen; dort stand der Hinweis ausgeschrieben.
+
+**Ein Repo ausserhalb der Liste wird nicht nachgezogen.** `srgssr-mcp` und
+`openlex-mcp` waren am Vormittag von Hand gesetzt worden und standen deshalb
+nicht in der Repo-Liste des Skripts. In `srgssr-mcp` kam danach
+`codex-gate.yml` dazu (angelegt 18.9.2026, 04:11 UTC) und mit ihm der Kontext
+`review-abgeschlossen` — den konnte die Konfiguration von Hand nicht kennen.
+Ein von Hand gesetzter Schutz altert still; er wird nicht rot, wenn ein Gate
+dazukommt.
+
+**Beide Quellen behalten.** Die Versuchung nach einem sauberen Trockenlauf ist,
+die Ableitung als erledigt wegzuwerfen und beim Anwenden nur noch zu messen.
+Genau dann fällt keiner der vier Fehler mehr auf: Die Messung schleppt
+bedingte Checks ein, die Ableitung übersieht Pfadfilter, und keine der beiden
+sieht die andere Hälfte der API. Erst der Widerspruch ist die Prüfung.
+
 ## Teil 2 — dieses Repo
 
 **ruff:** genau eine Quelle — das `[dev]`-Extra von `pyproject.toml`.
@@ -848,6 +990,35 @@ nachstellbar und gehört deshalb nicht in die Gate-Liste oben; er braucht einen
 PR und die GitHub-API. Dass er den Merge wirklich hält, hängt an einem
 Required-Check-Eintrag in der Branch Protection — der steht in keiner Datei
 dieses Repos und ist beim Lesen des Workflows nicht zu sehen.
+
+Seit dem 18.9.2026 steht er. Gemessen am Head von PR #121, gesetzt und
+zurückgelesen (`enforce_admins`, keine Review-Pflicht), acht Kontexte:
+
+```
+Gitleaks
+quality (3.11)   quality (3.12)   quality (3.13)
+test (3.11)      test (3.12)      test (3.13)
+review-abgeschlossen
+```
+
+Dass die Liste gemessen und nicht abgeschrieben ist, ist hier keine Pedanterie:
+Die Branch Protection war am Vormittag von Hand gesetzt worden, `codex-gate.yml`
+entstand erst um 04:11 UTC desselben Tages. Eine von Hand gesetzte Liste kennt
+keinen Kontext, den es beim Setzen noch nicht gab — `review-abgeschlossen` kam
+deshalb erst im portfolioweiten Durchlauf am Abend dazu.
+
+`review-abgeschlossen` ist der Job aus `codex-gate.yml`; er heisst so, weil er
+keinen `name:` trägt und GitHub dann die Job-ID nimmt. Sein
+`if: ${{ !github.event.pull_request.draft }}` steht auf Job-Ebene, ein Draft
+überspringt ihn also und das gilt als bestanden — ein `paths:`-Filter an
+derselben Stelle würde den Merge dagegen dauerhaft blockieren. Die
+Unterscheidung steht in Teil 1 unter «Wenn ein Required Check den Merge nicht
+hält».
+
+Wer hier einen Job umbenennt oder einen neuen Workflow auf `pull_request`
+legt, muss die Liste nachziehen: ein umbenannter Check fällt still aus der
+Anforderung, ein neuer kommt nicht von selbst hinein. Beides ist an einem PR
+nicht zu sehen — die Checkliste sieht in beiden Fällen gesund aus.
 
 Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
