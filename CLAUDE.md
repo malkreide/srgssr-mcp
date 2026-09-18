@@ -928,11 +928,8 @@ PR und die GitHub-API. Dass er den Merge wirklich hält, hängt an einem
 Required-Check-Eintrag in der Branch Protection — der steht in keiner Datei
 dieses Repos und ist beim Lesen des Workflows nicht zu sehen.
 
-Seit dem 18.9.2026 ist dieses Repo im portfolioweiten Durchlauf mit erfasst
-(`enforce_admins`, keine Review-Pflicht). Diese acht Kontexte sind aus den
-Workflow-Dateien **abgeleitet** und zum Zeitpunkt dieser Zeile nicht aus den
-Repo-Einstellungen zurückgelesen — die Messung am PR-Head ist die Instanz,
-nicht diese Liste:
+Seit dem 18.9.2026 steht er. Gemessen am Head von PR #121, gesetzt und
+zurückgelesen (`enforce_admins`, keine Review-Pflicht), acht Kontexte:
 
 ```
 Gitleaks
@@ -941,10 +938,11 @@ test (3.11)      test (3.12)      test (3.13)
 review-abgeschlossen
 ```
 
-Der Unterschied ist nicht Pedanterie: Genau hier wurde die Branch Protection am
-Vormittag von Hand gesetzt, und `codex-gate.yml` entstand erst um 04:11 UTC
-desselben Tages. Eine von Hand gesetzte Liste kennt keinen Kontext, den es beim
-Setzen noch nicht gab.
+Dass die Liste gemessen und nicht abgeschrieben ist, ist hier keine Pedanterie:
+Die Branch Protection war am Vormittag von Hand gesetzt worden, `codex-gate.yml`
+entstand erst um 04:11 UTC desselben Tages. Eine von Hand gesetzte Liste kennt
+keinen Kontext, den es beim Setzen noch nicht gab — `review-abgeschlossen` kam
+deshalb erst im portfolioweiten Durchlauf am Abend dazu.
 
 `review-abgeschlossen` ist der Job aus `codex-gate.yml`; er heisst so, weil er
 keinen `name:` trägt und GitHub dann die Job-ID nimmt. Sein
