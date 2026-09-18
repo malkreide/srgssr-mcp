@@ -552,7 +552,15 @@ arrive out of order; if the PR's state gates your next action, verify it with
 a fresh fetch first»), und er sagt es, weil der Kanal nicht dafür gebaut ist,
 Abwesenheit zu bedeuten. Wer eine Aussage über den Zustand macht, fragt den
 Zustand ab — eine Abfrage kostet einen Aufruf, der Fehlbefund kostet eine
-Korrektur. Das ist dieselbe Asymmetrie wie bei «Ein 403 ist gar keine
+Korrektur.
+
+**Ein vier Minuten alter Zustand ist genauso wenig eine Auskunft.** Unter #118
+wurde um 06:12 der Zustand gelesen, um 06:13:07 gemergt, und um 06:16:20 ein
+Kommentar «der Head ist jetzt `f8d5980`» an den PR geschrieben — an einen seit
+drei Minuten geschlossenen PR, dessen Head `93bc690` geblieben war. Der Push
+davor landete auf dem Branch und nirgends sonst: was nach dem Merge gepusht
+wird, ist nicht im PR und nicht in `main`, sondern braucht einen neuen PR.
+Nicht das Event fehlte diesmal, sondern die zweite Abfrage vor dem Schreiben. Das ist dieselbe Asymmetrie wie bei «Ein 403 ist gar keine
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
@@ -604,7 +612,7 @@ Was bleibt, ist der Umweg über einen Check, den **das Repo selbst** setzt:
 `.github/workflows/codex-gate.yml` wartet auf die Statustabelle und schliesst
 erst ab, wenn sie für **diesen Head** auf `Completed` steht. Der Workflow
 nennt seine Wartezeit und seine Ausnahmen selbst; hier steht keine Kopie
-davon. Zwei Dinge, die er ausdrücklich nicht kann:
+davon. Drei Dinge, die er ausdrücklich nicht kann:
 
 - **Ohne Branch Protection sperrt er nichts**, und das ist seit dem 18.9.2026
   nicht mehr Vorhersage, sondern gemessen. Auf #117 — dem PR, der ihn einführt —
@@ -639,6 +647,22 @@ davon. Zwei Dinge, die er ausdrücklich nicht kann:
   **Und nur der Bot zählt.** Die erste Fassung las jeden Kommentar. Ein Mensch,
   der einen der Ausfalltexte zitiert — etwa in einem PR, der über sie schreibt —,
   entwaffnete das Gate damit.
+- **Er prüft den Abschluss, nicht den Befund.** `Completed` heisst «der Review
+  ist gelaufen», nicht «er hat nichts gefunden» — und genau so ist es am
+  18.9.2026 eingetreten. Unter #118 meldete Codex um 06:12:18 einen P2, das
+  Gate schloss um 06:12:26 mit `success`, weil die Tabelle auf `Completed`
+  stand, und gemergt wurde um 06:13:07: **49 Sekunden nach dem Befund, mit
+  offenem Thread.** Die Korrektur lag da noch nicht einmal geschrieben vor.
+
+  Ein grünes Gate ist also kein sauberer Code, sondern nur ein durchgeführter
+  Review. Die Checkliste im PR-Template bleibt die Stelle, an der jemand
+  hinsehen muss — das Gate nimmt ihr nichts ab.
+
+  Technisch liesse sich das schliessen: offene Review-Threads sind über die
+  API abfragbar. Ob man es *will*, ist eine andere Frage — dann hielte ein
+  einzelner Nit-Thread den Merge auf, und ein Gate, das im Normalbetrieb
+  anspringt, wird abgeschaltet. Bis das entschieden ist, steht die Lücke hier
+  benannt statt unausgesprochen.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
