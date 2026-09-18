@@ -359,24 +359,24 @@ als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitier
 nicht einsortiert.
 
 Die Laufzeit **streut weiter, als hier zwei Fassungen lang stand.** Von ready
-bis `Completed` — die Basis, die für alle fünf Läufe öffentlich ablesbar ist:
-69 s unter #103, 83 s unter #105, 78 s unter #113, **48,5 s unter #114** und
-79,0 s unter #115. Der Satz davor lautete «das Fenster von gut einer Minute bis
+bis `Completed` — die Basis, die für alle sechs Läufe öffentlich ablesbar ist:
+69 s unter #103, 83 s unter #105, 78 s unter #113, **48,5 s unter #114**,
+79,0 s unter #115 und 72,1 s unter #116. Der Satz davor lautete «das Fenster von gut einer Minute bis
 knapp achtzig Sekunden hält also», geschrieben in #114 auf drei Beobachtungen —
 und derselbe PR hat ihn beim Mergen widerlegt, neunzehn Minuten später. Drei
 Punkte, die nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
 
 Die interne Laufzeit («Running since …» bis `Completed`) ist nur für drei
 davon bekannt: 62 s unter #103 (12:41:58,07 → 12:43:00,23), 78 s unter #105
-(16:57:06,81 → 16:58:24,64), 70,9 s unter #113 (18:50:10,42 → 18:51:21,28).
-Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
+(16:57:06,81 → 16:58:24,64), 70,9 s unter #113 (18:50:10,42 → 18:51:21,28) und
+65,6 s unter #116 (03:59:29,51 → 04:00:35,09). Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
 Tabelle den Startzeitpunkt dann nicht mehr zeigt. Aus dem `created_at` des
 Kommentars gerechnet wären es 41,5 s bzw. 65,0 s, aber das ist eine andere
 Basis — der Kommentar entsteht zwei bis drei Sekunden nach dem Start. **Die
 beiden Basen nicht mischen**; wer 41,5 gegen 62 stellt, vergleicht zwei
 Messgrössen.
 
-Praktisch heisst das: rund 40 bis 85 Sekunden, nach fünf Läufen, und die
+Praktisch heisst das: rund 40 bis 85 Sekunden, nach sechs Läufen, und die
 Spanne kann sich wieder öffnen. Eine gemerkte Zahl ist hier das falsche
 Werkzeug.
 
@@ -426,8 +426,9 @@ Wie viel Zeit, ist inzwischen fünfmal durchgemessen, alle fünf Male in
 | #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 |
 | #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 |
 | #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 |
+| #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 |
 
-Zwei, drei, zehn, fünf und acht Sekunden bis zum Merge, rund vierzig bis
+Zwei, drei, zehn, fünf, acht und zwölf Sekunden bis zum Merge, rund vierzig bis
 fünfundachtzig Sekunden bis zum Ergebnis. Alle fünf Reviews liefen damit
 vollständig auf einem bereits geschlossenen PR — unter #113 war das Ergebnis
 68 Sekunden nach dem Merge da, unter #114 entstand die Statustabelle überhaupt
@@ -435,15 +436,16 @@ erst zwei Sekunden **nach** dem Merge. Dass keiner etwas fand, ist Glück und
 nicht Verfahren: ein Befund wäre an einem gemergten PR gelandet, wo ihn die
 Regel «beantworten oder beheben» nur noch über einen Folge-PR erreicht.
 
-**Der Start ist nur dreimal gemessen, und «fünf bis sieben Sekunden» ist
-deshalb keine Spanne, sondern drei Punkte.** Belegt sind 7 s (#103), 5,8 s
-(#105) und 7,4 s (#113). Für #114 und #115 fehlt der Startzeitpunkt; was dort
-ablesbar ist, ist die Entstehung des Kommentars — 7 s nach ready unter #114,
-aber **14 s** unter #115. Der Kommentar entsteht nach dem Start, also lag der
-Start unter #115 irgendwo davor, und das kann durchaus jenseits von sieben
-Sekunden gewesen sein. Wer die drei gemessenen Werte zur Regel macht, hat
-denselben Schluss gezogen wie beim Laufzeit-Fenster, das eine Fassung weiter
-oben korrigiert werden musste.
+**Der Start ist viermal gemessen, und «fünf bis sieben Sekunden» ist deshalb
+keine Spanne, sondern vier Punkte.** Belegt sind 7 s (#103), 5,8 s (#105),
+7,4 s (#113) und 6,5 s (#116). Für #114 und #115 fehlt der Startzeitpunkt; was
+dort ablesbar ist, ist die Entstehung des Kommentars — 7 s nach ready unter
+#114, aber **14 s** unter #115. Der Kommentar entsteht nach dem Start, also lag
+der Start unter #115 irgendwo davor, und das kann jenseits von sieben Sekunden
+gewesen sein; der vierte gemessene Wert (#116) stützt das nicht, er liegt
+mitten in den drei anderen. Wer die vier zur Regel macht, zieht denselben
+Schluss wie beim Laufzeit-Fenster, das eine Fassung weiter oben korrigiert
+werden musste.
 
 **Der Abstand wächst nicht monoton, und keiner der fünf hat gereicht.** Zwei,
 drei, zehn, fünf, acht — gegenüber vierzig bis fünfundachtzig Sekunden Laufzeit
@@ -466,28 +468,56 @@ Korrektur. Das ist dieselbe Asymmetrie wie bei «Ein 403 ist gar keine
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
-Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt vier Glieder.
+Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt fünf Glieder.
 #105 war der PR, der diese Falle dokumentiert, und ist ihr zum Opfer
 gefallen. #113 führte die Drahtform-Messung ein und fiel ihr mit der Tabelle
 bereits im Repo erneut zum Opfer. #114 schrieb die Zwei-Minuten-Regel und
 diese Tabelle — und wurde fünf Sekunden nach «ready» gemergt. #115 schrieb den
 Satz, dass eine Regel im Text hier nicht greift, und wurde acht Sekunden nach
-«ready» gemergt.
+«ready» gemergt. #116 trug die Zeile über #115 nach und sagte voraus, eine
+sechste Zeile wäre «kein neuer Befund mehr, sondern die Bestätigung, dass
+keines von beidem eingerichtet wurde» — und wurde zwölf Sekunden nach «ready»
+gemergt. Die Vorhersage bewies sich keine dreissig Sekunden später an ihrem
+eigenen PR.
 
-Damit ist die Vermutung keine Vermutung mehr, und der letzte Fall beweist sie
-auf die unangenehmste Art: **der PR, der die Unwirksamkeit der Textregel
-festhielt, wurde von genau dieser Unwirksamkeit eingeholt.** Vier PRs, zwei
-Sessions, derselbe Absatz jeweils unmittelbar vor Augen — die Regel wird beim
-Schreiben gelesen und beim Mergen gebraucht, und das sind zwei verschiedene
-Handgriffe.
+Fünf PRs, zwei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
+Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
+verschiedene Handgriffe.
 
-Wirksam wäre nur, was am Merge selbst hängt. Zwei Wege, beide ausserhalb
-dieser Datei: vor dem Klick `get_comments` lesen und erst mergen, wenn die
-Statustabelle auf `Completed` steht — oder den Merge technisch verstellen, bis
-der Review durch ist (ein Required Check, den Codex setzt, oder schlicht
-Auto-Merge statt Sofort-Merge). Eine sechste Zeile in dieser Tabelle wäre kein
-neuer Befund mehr, sondern nur die Bestätigung, dass weder das eine noch das
-andere eingerichtet wurde.
+**Die beiden Wege, die hier als Abhilfe standen, sind gemessen unbrauchbar —
+und einer davon macht es schlimmer.** Beides am 18.9.2026 nachgeprüft:
+
+- «Ein Required Check, den Codex setzt» — **den gibt es nicht.** Über #113,
+  #114, #115 und #116 trug jeder PR exakt dieselben sieben Check-Runs
+  (`quality` ×3, `test` ×3, `Gitleaks`), alle aus den Workflows dieses Repos.
+  Codex meldet sich ausschliesslich als Issue-Kommentar; es gibt nichts zu
+  fordern.
+- «Auto-Merge statt Sofort-Merge» — **das mergt früher.** Auto-Merge wartet auf
+  Required Checks, nicht auf Kommentare. Unter #116 war der letzte Repo-Check
+  um 03:59:10 grün, dreizehn Sekunden **vor** dem Ready-Klick und fünfundachtzig
+  Sekunden vor dem Codex-Ergebnis. Auto-Merge hätte im Moment des Klicks
+  gemergt, also schneller als die zwölf Sekunden, die tatsächlich vergingen.
+
+Das ist derselbe Fehler wie beim Laufzeit-Fenster und beim ruff-Pin, nur an
+einer dritten Stelle: eine Abhilfe aufschreiben, ohne sie zu messen. Sie stand
+hier zwei Fassungen lang und klang plausibel.
+
+Was bleibt, ist der Umweg über einen Check, den **das Repo selbst** setzt:
+`.github/workflows/codex-gate.yml` wartet auf die Statustabelle und schliesst
+erst ab, wenn sie für **diesen Head** auf `Completed` steht. Der Workflow
+nennt seine Wartezeit und seine Ausnahmen selbst; hier steht keine Kopie
+davon. Zwei Dinge, die er ausdrücklich nicht kann:
+
+- **Ohne Branch Protection sperrt er nichts.** Als Required Check eingetragen
+  hält er den Merge-Button; ohne diesen Eintrag ist er ein sichtbarer Hinweis
+  — und ein sichtbarer Hinweis ist genau das, was hier sechsmal nicht gereicht
+  hat. Der Eintrag ist eine Repo-Einstellung und steht in keiner Datei.
+- **Bei einem Ausfall lässt er durch.** Erschöpftes Kontingent oder fehlende
+  Environment heissen, dass Codex hier gar nicht prüfen kann; darauf zu
+  blockieren hielte das Repo wegen einer Störung an. Der Lauf sagt dann
+  ausdrücklich, dass der PR ungeprüft ist. Ein Gate, das im Normalbetrieb
+  anspringt, wird abgeschaltet — die Lehre aus dem ruff-Literal in #114 gilt
+  hier genauso.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
@@ -625,6 +655,15 @@ Check statt eines übersehenen Kommentars.
 **`secret-scan.yml` gatet ebenfalls jeden PR** (gitleaks, gegen `main`) und
 steht in keiner Liste — lokal stellt ihn keiner der Befehle oben nach. Ein
 roter PR bei grünen Tests ist meistens er.
+
+**`codex-gate.yml` gatet den Merge, nicht den Code.** Er prüft nichts am Diff,
+sondern wartet, bis die Codex-Statustabelle für den aktuellen Head auf
+`Completed` steht — die Begründung dazu steht unter «Wenn Codex gar nicht erst
+hinsieht» in Teil 1, die Mechanik im Workflow selbst. Lokal ist er nicht
+nachstellbar und gehört deshalb nicht in die Gate-Liste oben; er braucht einen
+PR und die GitHub-API. Dass er den Merge wirklich hält, hängt an einem
+Required-Check-Eintrag in der Branch Protection — der steht in keiner Datei
+dieses Repos und ist beim Lesen des Workflows nicht zu sehen.
 
 Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
