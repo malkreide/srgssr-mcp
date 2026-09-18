@@ -288,6 +288,39 @@ Weil das Kontingent am Konto hängt, traf es in derselben Minute auch die
 Codex-Gates in `fedlex-mcp`, `register-mcp` und `swiss-environment-mcp` —
 geprüft wurde das allerdings nicht, es folgt nur aus der Kontobindung.
 
+**Fünf Minuten später ein fünfter Text, und er trennt die Töpfe.** Unter
+demselben PR stand um 14:06:49 ein Kommentar, der erklärte, wie man Codex von
+Hand auslöst, und dabei die Zeichenfolge `@codex review` im Fliesstext führte —
+in Backticks, was nichts half. Um 14:07:00, elf Sekunden später, antwortete der
+Bot mit:
+
+```
+You have reached your Codex usage limits.
+```
+
+Ohne «for code reviews». Zwei Dinge folgen daraus, und beide waren vorher nur
+behauptet.
+
+**Der Auslöser feuert aus Prosa.** Wer in einem Kommentar beschreibt, wie man
+Codex anstösst, stösst ihn an; Code-Formatierung schützt nicht. Das ist das
+Spiegelbild des Bot-Filters in `codex-gate.yml`: Dort steht `AUTOR=` genau
+deshalb, weil ein Mensch, der einen Ausfalltext zitiert, das Gate sonst
+entwaffnete. Hier ist es dieselbe Klasse in die andere Richtung — nicht ein
+zitierter Text, der etwas vortäuscht, sondern ein zitierter Auslöser, der
+wirklich auslöst. Geschrieben hat den Kommentar dieses Modell, beim Erklären
+eben dieser Mechanik.
+
+**Die beiden Töpfe sind am Text unterscheidbar.** «for code reviews» meint das
+Review-Kontingent, der Satz ohne Zusatz das allgemeine. Am 18.9. waren beide
+erschöpft. Dass ein von Hand ausgelöster Lauf immer den allgemeinen Topf zieht,
+gibt eine einzelne Beobachtung nicht her — und wann das allgemeine Kontingent
+wegging, ist ebenfalls nicht gemessen; belegt ist nur, dass es um 14:07:00 weg
+war.
+
+Der Matcher im Gate deckt beide Fassungen: Er prüft auf
+`reached your Codex usage limits`, und dieser Teil steht in beiden Sätzen.
+Geprüft am Workflow, nicht am Lauf.
+
 **Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
