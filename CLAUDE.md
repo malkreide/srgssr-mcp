@@ -490,7 +490,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen siebenmal durchgemessen, alle sieben Male in
+Wie viel Zeit, ist inzwischen achtmal durchgemessen, alle acht Male in
 `srgssr-mcp`:
 
 | PR | Datum | ready | gemergt | Review startet | Review fertig |
@@ -502,19 +502,27 @@ Wie viel Zeit, ist inzwischen siebenmal durchgemessen, alle sieben Male in
 | #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 |
 | #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 |
 | #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 |
+| #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 |
 
-Der ready-Zeitpunkt von #117 ist auf ±1 s genau — abgeleitet aus dem
-Event-Zeitstempel und der Erzeugung des Gate-Jobs um 05:18:03; alle übrigen
-Werte stehen sekundengenau in der API.
+Die ready-Zeitpunkte von #117 und #118 sind auf ±1 s genau — abgeleitet aus dem
+Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle übrigen Werte stehen
+sekundengenau in der API.
 
-Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge, 48,5 bis
-91 Sekunden bis zum Ergebnis. Alle sieben Reviews liefen damit vollständig auf
-einem bereits geschlossenen PR — unter #113 war das Ergebnis 68 Sekunden nach
-dem Merge da, unter #114 entstand die Statustabelle überhaupt erst zwei
+Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — und dann
+**181 Sekunden unter #118**. Sieben der acht Reviews liefen damit vollständig
+auf einem bereits geschlossenen PR: unter #113 war das Ergebnis 68 Sekunden
+nach dem Merge da, unter #114 entstand die Statustabelle überhaupt erst zwei
 Sekunden **nach** dem Merge, und unter #117 begann der Review vier Sekunden
-danach. Dass keiner etwas fand, ist Glück und nicht Verfahren: ein Befund wäre
-an einem gemergten PR gelandet, wo ihn die Regel «beantworten oder beheben»
-nur noch über einen Folge-PR erreicht.
+danach. Dass keiner von ihnen etwas fand, ist Glück und nicht Verfahren: ein
+Befund wäre an einem gemergten PR gelandet, wo ihn die Regel «beantworten oder
+beheben» nur noch über einen Folge-PR erreicht.
+
+**#118 ist die Ausnahme, und sie ist die interessanteste Zeile der Tabelle.**
+Dort wurde drei Minuten gewartet, der Review war 47 Sekunden vor dem Merge
+fertig — und der PR wurde trotzdem mit einem offenen P2 gemergt. Die Zeile
+zeigt damit, dass das Zeitproblem und das Befundproblem zwei verschiedene sind:
+Wer lange genug wartet, hat das Ergebnis, aber noch nicht gelesen. Das Glück
+von oben war unter #118 aufgebraucht.
 
 **«Fünf bis sieben Sekunden bis zum Start» ist widerlegt, und zwar durch den
 PR, der den Einwand dagegen abgeschwächt hatte.** Gemessen sind sechs
@@ -534,10 +542,14 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und keiner der sieben hat gereicht.** Zwei,
-drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis rund 135 Sekunden
+**Der Abstand wächst nicht monoton, und sieben der acht haben nicht gereicht.**
+Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis rund 135 Sekunden
 Laufzeit ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
+
+Der achte hat gereicht und half trotzdem nicht: 181 Sekunden, Ergebnis lag vor,
+Befund offen. Eine ausreichende Wartezeit ist eine notwendige Bedingung, keine
+hinreichende.
 
 **Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
 hier, seit das Maximum bei 83 s lag; unter #118 waren es rund 135 s. Eine feste
