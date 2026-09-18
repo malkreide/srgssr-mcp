@@ -22,6 +22,13 @@
 #     Repo-Check um 03:59:10 gruen, 13 Sekunden VOR dem Ready-Klick und
 #     85 Sekunden vor dem Codex-Ergebnis.
 #
+# **Gruen heisst «Review gelaufen», nicht «Review sauber».** Am 18.9.2026 meldete
+# Codex unter #118 um 06:12:18 einen P2, dieser Job schloss um 06:12:26 mit
+# `success`, weil die Tabelle auf `Completed` stand, und gemergt wurde um
+# 06:13:07 — mit offenem Thread. Offene Review-Threads waeren abfragbar; ob ein
+# einzelner Nit den Merge aufhalten soll, ist nicht entschieden. Bis dahin
+# bleibt die Checkliste im PR-Template die Stelle, an der jemand hinsieht.
+#
 # **Wirksam wird dieser Job erst als Required Check in der Branch Protection.**
 # Ohne diesen Eintrag ist er ein sichtbarer Hinweis und keine Sperre — und das
 # ist seit dem 18.9.2026 gemessen, nicht vermutet: unter #117 lief er von

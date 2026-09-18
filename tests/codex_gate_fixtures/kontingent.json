@@ -1,12 +1,12 @@
 [
   {
-    "id": 4000000001,
+    "id": 5726220512,
     "user": {
       "login": "chatgpt-codex-connector[bot]",
       "id": 199175422
     },
-    "body": "You have reached your Codex usage limits for code reviews.",
-    "created_at": "2026-08-21T09:48:00Z",
-    "updated_at": "2026-08-21T09:48:00Z"
+    "body": "You have reached your Codex usage limits for code reviews. You can see your limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).",
+    "created_at": "2026-09-18T06:40:13Z",
+    "updated_at": "2026-09-18T06:40:13Z"
   }
 ]

@@ -37,11 +37,18 @@ hatte. Sie ist damit **kein** Beleg fuer eine fehlende Environment; siehe
 
 ## `kontingent.json`
 
-**Quelle:** der Text woertlich aus `CLAUDE.md` Teil 1, wo er am 21.–23.8.2026 in
-`malkreide/*-mcp` aufgezeichnet wurde. **In diesem Repo nicht beobachtet** —
-deshalb ein Zitat und keine eigene Messung. Autor, IDs und Zeitstempel sind hier
-gesetzt, nicht aufgenommen; das ist die schwaechste der Aufzeichnungen und steht
-hier so benannt.
+**Quelle:** `malkreide/srgssr-mcp` PR #119, Kommentar-ID 5726220512
+**Aufgenommen:** 2026-09-18, 06:40:13 UTC (`created_at` == `updated_at`)
+
+Bis zum 18.9.2026 stand hier ein **Zitat** aus `CLAUDE.md` mit gesetzten IDs und
+Zeitstempeln, ausdruecklich als schwaechste der Aufzeichnungen benannt — die
+Meldung war in diesem Repo nie beobachtet worden. Jetzt ist sie es, und der
+Unterschied ist nicht bloss formal: der echte Koerper traegt einen zweiten Satz
+mit Link aufs Usage-Dashboard, den die August-Fassung nicht hatte.
+
+Das Suchmuster des Gates (`reached your Codex usage limits`) greift bei beiden.
+Genau dafuer ist es kurz gehalten — ein Muster, das den ganzen Satz verlangt
+haette, waere an dieser Drift gescheitert, ohne dass jemand es merkt.
 
 ## Zusammengesetzt aus den obigen
 
