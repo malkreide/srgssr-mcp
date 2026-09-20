@@ -545,6 +545,21 @@ gar nicht gesetzt war. Hier war er gesetzt, das Gate tat genau, was es soll,
 und liess den Merge trotzdem zu. `Completed` heisst «gelaufen», nicht
 «sauber», und zwei Vorfälle sind kein Zufall mehr.
 
+**Der elfte Lauf, PR #127, machte daraus drei.** Wieder ein Review-Objekt
+(5261069073) mit drei P2-Befunden, wieder das Gate auf `success`, wieder
+gemergt, bevor die Korrektur da war — und der Inhalt des PR war der Bericht
+über genau diesen Vorgang bei #126. Damit ist der dritte Serienbruch auch der
+dritte Fall derselben Gate-Grenze — #118 am 18.9., #126 und #127 am 20.9.,
+die beiden letzten elf Minuten auseinander. Zwischen #118 und #126 liegen
+mehrere PRs, die sauber durchliefen; «dreimal hintereinander» wäre also
+falsch, «drei Fälle an zwei Tagen» ist die Messung.
+
+Die drei Befunde selbst waren dabei nicht inhaltlich, sondern buchhalterisch:
+ein stehengebliebener Zähler, ein Einzelwert in der Prosa, eine überholte
+Ableitung — alles Folgen des Eintragens **einer** Tabellenzeile. Das ist die
+Rekursion, die unter der Tabelle beschrieben ist, in ihrer teuersten Form:
+Sie erzeugt pro Durchgang Befunde, die pro Durchgang einen Folge-PR kosten.
+
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
 gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
@@ -574,9 +589,9 @@ es ist, vor genau dieser Art doppelter Buchführung zu warnen. Eine Regel zu
 formulieren und sie im selben Commit zu brechen, ist hier kein Einzelfall
 mehr; es ist das Muster, gegen das die halbe Datei geschrieben ist.
 
-Was die neun Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+Was die elf Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
 ersetzt. Alle neun stehen in **einem** Repo. Über vier Tage (29.8., 17.9.,
-18.9., 20.9.) und neun Läufe hinweg ist die Form dort stabil, über das
+18.9., 20.9.) und elf Läufe hinweg ist die Form dort stabil, über das
 Portfolio sagt sie nichts, und ob der alte Satz anderswo noch kommt, hat
 niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
@@ -606,7 +621,7 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 205 s**, nach zehn Läufen. Das ist die
+Praktisch heisst das: **48,5 s bis rund 205 s**, nach elf Läufen. Das ist die
 **fünfte** Fassung dieses Satzes, und die Geschichte der vier davor ist das
 eigentliche Argument gegen sie alle:
 
@@ -614,9 +629,10 @@ eigentliche Argument gegen sie alle:
   #118 trug «48,5 s bis 91 s» ein, und der Codex-Lauf auf ebendiesem PR
   sprengte die Obergrenze.
 - Die vierte überlebte genau einen Lauf (#125 lag innerhalb) und fiel am
-  nächsten: **#126 brauchte 204 s**, also die Hälfte mehr als die Obergrenze,
-  die derselbe PR gerade eingetragen hatte. Zum zweiten Mal hat ein PR seine
-  eigene frisch geschriebene Spanne widerlegt, bevor er gemergt war.
+  nächsten: **#126 sprengte die Obergrenze um die Hälfte**, die derselbe PR
+  gerade eingetragen hatte — seine Zeile steht in der Tabelle. Zum zweiten Mal
+  hat ein PR seine eigene frisch geschriebene Spanne widerlegt, bevor er
+  gemergt war.
 
 Eine gemerkte Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug.
 Die fünfte Fassung steht nur noch da, weil dieser Absatz ohne sie leer wäre —
@@ -668,32 +684,22 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen zehnmal durchgemessen, alle zehn Male in
-`srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
-stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
-wiederholen:
+Wie viel Zeit, ist inzwischen elfmal durchgemessen, alle elf Läufe in
+`srgssr-mcp`. Die Rohwerte je Lauf — ready, Merge, Start und Ende des Reviews,
+Laufzeit — stehen in **`docs/codex-messreihe.md`** und nur dort; hier stehen
+die Schlüsse daraus.
 
-| PR | Datum | ready | gemergt | Review startet | Review fertig | bis Start | Laufzeit | intern |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 | 7 s | 69 s | 62 s |
-| #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 | 5,8 s | 83 s | 78 s |
-| #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 | 7,4 s | 78 s | 70,9 s |
-| #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 | — | **48,5 s** | — |
-| #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 | — | 79,0 s | — |
-| #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 | 6,5 s | 72,1 s | 65,6 s |
-| #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 | **9 s** | 91 s | 82,2 s |
-| #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
-| #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
-| #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
-
-«bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
-«intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`. Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
-abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
-übrigen Werte stehen sekundengenau in der API.
+Die Trennung ist selbst ein Befund. Das Eintragen **einer** Tabellenzeile hat
+dreimal hintereinander Befunde erzeugt (#126, #127, #128), jedes Mal
+derselben Art: ein stehengebliebener Zähler, ein Einzelwert in der Prosa, eine
+überholte Ableitung. Eine Konventionen-Datei, in der eine Messreihe mitwächst,
+produziert diese Fehler bei jedem Durchgang neu — und der Handgriff dagegen
+stand hier als `grep`-Checkliste, die ihren eigenen Autor zweimal unterlief.
+`tests/test_codex_messreihe.py` prüft das jetzt mechanisch, über beide
+Dateien.
 
 Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
-**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der neun
+**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der elf
 Reviews liefen damit vollständig auf einem bereits geschlossenen PR: unter
 #113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
 Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge, und unter #117
@@ -726,7 +732,7 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und sieben der neun haben nicht gereicht.**
+**Der Abstand wächst nicht monoton, und sieben der elf haben nicht gereicht.**
 Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber der Laufzeit-Spanne ist
 jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
@@ -744,10 +750,15 @@ Genau so ist es gemeint. Die Zahl in der Spalte «gemergt» misst hier keine
 Geduld, sondern eine Mechanik.
 
 **Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
-hier, seit das Maximum bei 83 s lag; unter #118 waren es rund 135 s. Eine feste
-Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten — und welcher
-das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei viermal nach
-oben korrigiert worden, jedes Mal vom nächsten Lauf.
+hier, als das Maximum noch bei gut achtzig Sekunden lag; inzwischen liegt der
+langsamste Lauf der Tabelle deutlich über zwei Minuten — um wie viel, sagt die
+Spalte «Laufzeit» und nicht dieser Satz. Hier stand zwischenzeitlich «mehr als
+das Doppelte», und das war schlicht falsch gerechnet: Es ist rund das
+1,7-Fache. Der Satz sollte die Zahl loswerden und hat stattdessen eine
+Ableitung erfunden — ein Verweis wäre beides gewesen, kürzer und richtig.
+Eine feste Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten —
+und welcher das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei
+fünfmal nach oben korrigiert worden, jedes Mal vom nächsten Lauf.
 
 Die Konsequenz ist deshalb keine grössere Zahl, sondern eine andere Methode:
 **nicht warten, sondern nachsehen.** Die Statustabelle nennt Commit und Status;
@@ -803,10 +814,25 @@ keines von beidem — es fehlte der Blick in `get_reviews`, also genau der
 Handgriff, den der PR selbst beschreibt. Unter #125 war er eine Stunde vorher
 noch gemacht worden.
 
-Sieben PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
+**Das achte Glied schloss den Kreis vollends.** #127 war der PR, der das
+siebte Glied aufschrieb — «#126 wurde 99 Sekunden nach den Befunden gemergt» —
+und wurde selbst mit drei offenen Befunden gemergt, keine zwei Minuten
+nachdem Codex sie gemeldet hatte. Die Korrektur landete wieder auf dem Branch
+und brauchte wieder einen Folge-PR. Drei PRs hintereinander, dreimal derselbe
+Ablauf, und der mittlere beschreibt ihn.
+
+Acht PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
 Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
 verschiedene Handgriffe. Das grüne Häkchen ersetzt den zweiten nicht — es
 verdeckt ihn.
+
+**Was daraus folgt, ist keine weitere Ermahnung.** Acht Wiederholungen mit dem
+Text vor Augen sind der Beleg, dass Aufschreiben hier nicht wirkt. Wirksam
+wäre nur, was den Knopf sperrt: ein Gate, das auf offene Review-Threads
+blockiert. Warum das nicht ohne Weiteres zu haben ist, steht bei der dritten
+Gate-Grenze — ein Gate, das bei jedem Nit anspringt, wird abgeschaltet. Die
+Entscheidung steht aus; bis dahin ist dieser Absatz eine Beschreibung und
+keine Abhilfe, und er soll auch nicht als eine gelesen werden.
 
 **Das sechste Glied ist von anderer Art, und darin liegt der Ertrag.** Bei den
 fünf davor fehlte der Mechanismus. Unter #117 gab es ihn: der Job lief, wartete
