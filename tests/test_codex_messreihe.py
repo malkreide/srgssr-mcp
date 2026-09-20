@@ -206,6 +206,33 @@ def test_die_abgeleitete_spanne_deckt_die_tabelle():
     )
 
 
+def test_die_startspanne_deckt_die_tabelle():
+    """Dieselbe Zusicherung fuer die Spalte «bis Start» — und sie fehlte.
+
+    Der Spannentest darueber deckt die Laufzeit. Die zweite abgeleitete Spanne
+    des Textes, «sie reichen von X s bis Y s» fuer den Abstand ready → Start,
+    war ungesichert: Am 20.9.2026 hob #128 die Obergrenze von 9 s auf 10,4 s,
+    und der Satz blieb stehen, obwohl derselbe PR ihn zuletzt angefasst hatte.
+
+    Gefunden hat das kein Test, sondern das Nachrechnen von Hand. Zwei
+    gleichartige Ableitungen, eine bewacht und eine nicht — das ist dieselbe
+    Asymmetrie wie zwischen den beiden Dateien vor der Positivkontrolle.
+    """
+    werte = []
+    for zeile in _zeilen():
+        if treffer := re.search(r"(\d+(?:,\d+)?)\s*s", _spalte(zeile, 6)):
+            werte.append(float(treffer.group(1).replace(",", ".")))
+    assert werte, "die Spalte «bis Start» ist leer — dann prueft dieser Test nichts"
+
+    spanne = re.search(r"reichen von (\d+(?:,\d+)?)\s*s bis (\d+(?:,\d+)?)\s*s", _claude_md())
+    assert spanne, "CLAUDE.md nennt keine Startwert-Spanne mehr — dann ist dieser Test gegenstandslos"
+
+    unten = float(spanne.group(1).replace(",", "."))
+    oben = float(spanne.group(2).replace(",", "."))
+    assert unten <= min(werte), f"die Spanne beginnt bei {unten} s, gemessen ist {min(werte)} s"
+    assert oben >= max(werte), f"die Spanne endet bei {oben} s, der spaeteste Start liegt bei {max(werte)} s."
+
+
 def test_claude_md_verweist_auf_die_messreihe():
     """Sonst laufen die beiden Dateien auseinander, ohne dass etwas rot wird.
 

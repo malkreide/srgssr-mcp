@@ -13,6 +13,15 @@ dreimal von Hand vergessen wurde, ist damit ein roter Check.
 
 ## Ready bis Merge, je Lauf
 
+**Eine Zeile je PR, und zwar der Lauf, den «ready» ausgelöst hat.** Unter #128
+liefen drei Durchgänge auf drei Heads: der eingetragene, ein von Hand
+angestossener auf `65b9825` (Start 16:47:21,89, `Completed` 16:51:42,55, also
+260,7 s intern — der längste gemessene Lauf überhaupt) und ein dritter Versuch
+auf `416f83c`, der am erschöpften Kontingent scheiterte. Die Spalten sind auf
+den ready-Auslöser definiert; die übrigen Läufe stehen deshalb hier im Text
+und nicht in der Tabelle, weil ihre «bis Start»-Werte eine andere Basis
+hätten.
+
 | PR | Datum | ready | gemergt | Review startet | Review fertig | bis Start | Laufzeit | intern |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 | 7 s | 69 s | 62 s |
@@ -26,6 +35,7 @@ dreimal von Hand vergessen wurde, ist damit ein roter Check.
 | #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
 | #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
 | #127 | 20.9.2026 | 16:28:44 | 16:32:34 | 16:28:51 | 16:31:29 | 7,1 s | 165 s | 158,2 s |
+| #128 | 20.9.2026 | 16:39:54 | 17:01:36 | 16:40:04 | 16:42:38 | **10,4 s** | 164 s | 153,4 s |
 
 «bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
 «intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
@@ -37,13 +47,13 @@ Gate-Jobs; alle übrigen Werte stehen sekundengenau in der API.
 Nachlässigkeit.** Ein PR, der diese Datei ändert, löst beim Umschalten auf
 ready selbst einen Codex-Lauf aus — dessen Merge-Zeitpunkt er nicht kennen
 kann, weil er zum Schreibzeitpunkt noch offen ist. Die letzte Zeile stammt
-deshalb immer vom *vorigen* PR. «Elf Läufe» heisst hier «elf
-aufgezeichnete», nicht «elf stattgefundene»; wer die Zahl als Stichprobengrösse
+deshalb immer vom *vorigen* PR. «Zwölf Läufe» heisst hier «zwölf
+aufgezeichnete», nicht «zwölf stattgefundene»; wer die Zahl als Stichprobengrösse
 liest, zählt einen zu wenig.
 
 Diese Rekursion ist der Grund, warum jeder PR an dieser Stelle dieselbe Art
 Befund produziert: Eine Zeile einzutragen heisst, alles Abgeleitete
-nachzuführen — Zähler, Spanne, «sieben der elf», die Zwei-Minuten-Regel —, und
+nachzuführen — Zähler, Spanne, «sieben der zwölf», die Zwei-Minuten-Regel —, und
 wer nur die Zeile einträgt, hat die Drift wieder eingebaut. Beim Eintragen von
 #126 ist genau das passiert, an drei Stellen, gefunden vom Review des
 Folge-PR, und beim Eintragen von #127 noch einmal an zwei.

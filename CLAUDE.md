@@ -338,11 +338,28 @@ nach Auslöser sortiert:
 | 14:07:00 | #122 | Erwähnung im Kommentar | **ohne** den Zusatz |
 | 14:25:13 | #123 | `ready_for_review` | mit «for code reviews» |
 
-Drei Beobachtungen auf der einen Seite, eine auf der anderen. Das stützt die
+Drei Beobachtungen auf der einen Seite, eine auf der anderen. Das stützte die
 Zuordnung «GitHub-getriggerter Review → Review-Topf, von Hand angestossener Lauf
-→ allgemeiner Topf», belegt sie aber nicht: Für die Gegenrichtung gibt es genau
-einen Fall, und für #119 ist der Auslöser nicht festgehalten. Wer hier eine
-Regel liest, hat aus einer Beobachtung eine gemacht.
+→ allgemeiner Topf», belegte sie aber nicht: Für die Gegenrichtung gab es genau
+einen Fall.
+
+**Am 20.9.2026 ist sie widerlegt.** Unter #128 wurde um 16:55 von Hand
+ausgelöst, und die Antwort trug den Zusatz:
+
+```
+You have reached your Codex usage limits for code reviews.
+```
+
+Ein Handauslöser, und doch die Meldung des Review-Topfs. Damit stehen zwei
+Handauslöser gegen zwei verschiedene Texte, und die Zuordnung «Auslöser
+bestimmt den Topf» ist keine. Was sie ersetzt, ist offen — vielleicht
+entscheidet die Reihenfolge der Erschöpfung, vielleicht etwas anderes; gemessen
+ist nur, dass der Auslöser es nicht tut.
+
+Der Fall ist auch methodisch lehrreich: Die Vorhersage stand vor der Messung im
+Auslöser-Kommentar («falls er ohne den Zusatz endet, stützt er sie, sonst
+widerlegt er sie»). Eine Vermutung vorher aufzuschreiben kostet eine Zeile und
+macht aus einer Beobachtung einen Test.
 
 **Der Durchlass ist end-to-end gemessen.** Unter #123 lief das Gate von
 14:25:12 bis 14:30:21 und schloss mit `success` — 309 s, also das volle
@@ -462,6 +479,10 @@ Texte, sondern mit einer Statustabelle:
 | Review | Status | Commit | Review trigger |
 | 📝 **Code Review** | ✅ **Completed** 2026-08-29T12:43:00Z | `ca747ea` | Draft marked ready |
 ```
+
+Die letzte Spalte kennt mindestens zwei Werte: «Draft marked ready» und, seit
+dem 20.9.2026 unter #128, «Manual request». Die Tabelle macht den Auslöser also
+selbst ablesbar — was bis dahin nur aus dem Kontext zu erschliessen war.
 
 Zweierlei daran ändert das Vorgehen oben.
 
@@ -589,9 +610,9 @@ es ist, vor genau dieser Art doppelter Buchführung zu warnen. Eine Regel zu
 formulieren und sie im selben Commit zu brechen, ist hier kein Einzelfall
 mehr; es ist das Muster, gegen das die halbe Datei geschrieben ist.
 
-Was die elf Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
-ersetzt. Alle neun stehen in **einem** Repo. Über vier Tage (29.8., 17.9.,
-18.9., 20.9.) und elf Läufe hinweg ist die Form dort stabil, über das
+Was die zwölf Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+ersetzt. Sie stehen alle in **einem** Repo. Über vier Tage (29.8., 17.9.,
+18.9., 20.9.) hinweg ist die Form dort stabil, über das
 Portfolio sagt sie nichts, und ob der alte Satz anderswo noch kommt, hat
 niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
@@ -621,7 +642,7 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 205 s**, nach elf Läufen. Das ist die
+Praktisch heisst das: **48,5 s bis rund 205 s**, nach zwölf Läufen. Das ist die
 **fünfte** Fassung dieses Satzes, und die Geschichte der vier davor ist das
 eigentliche Argument gegen sie alle:
 
@@ -648,9 +669,18 @@ nennt ihn selbst («Running since …»); die Differenz zur aktuellen Zeit koste
 eine Zeile. Das ist der Handgriff, der die Korrektur oben überlebt hat — die
 Zahl daneben nicht. Ohne ihn ist `Running` nur ein Wort.
 
-Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
-while any review is running … and reacts with 👍 once all reviews finish with no
-findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
+**Die 👀-Reaktion kommt — nur nicht dort, wo alle nachgesehen haben.** Am
+20.9.2026 trug der Kommentar, der den Lauf von Hand auslöste (`@codex review`
+unter #128), `reactions.eyes: 1`; die Statustabelle daneben weiterhin `0`.
+Codex reagiert also auf den **auslösenden Kommentar**, und bei «Draft marked
+ready» gibt es keinen — deshalb war in acht Beobachtungen nichts zu sehen. Die
+Messungen waren richtig, der Schluss daraus falsch: Geprüft wurde am falschen
+Objekt. Wer «der Kasten lügt» notiert, hat eine Abwesenheit am unbeteiligten
+Ort gemessen.
+
+Für die 👍-Hälfte gilt das nicht automatisch — sie ist nie beobachtet worden,
+und ob sie an derselben Stelle erscheint, hat niemand nachgesehen. Der bisherige
+Wortlaut hier lautete: `reactions.total_count` war `0`, weder
 während des Laufs noch danach — zuletzt unter #118, also in den ersten acht
 Beobachtungen; unter #125 hat niemand nachgesehen, und ungemessen heisst hier
 ungemessen und nicht «wieder nicht geliefert». Unter #118 fällt dabei genau die 👀-Hälfte der Behauptung: Der
@@ -684,7 +714,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen elfmal durchgemessen, alle elf Läufe in
+Wie viel Zeit, ist inzwischen zwölfmal durchgemessen, alle zwölf Läufe in
 `srgssr-mcp`. Die Rohwerte je Lauf — ready, Merge, Start und Ende des Reviews,
 Laufzeit — stehen in **`docs/codex-messreihe.md`** und nur dort; hier stehen
 die Schlüsse daraus.
@@ -699,7 +729,7 @@ stand hier als `grep`-Checkliste, die ihren eigenen Autor zweimal unterlief.
 Dateien.
 
 Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
-**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der elf
+**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der zwölf
 Reviews liefen damit vollständig auf einem bereits geschlossenen PR: unter
 #113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
 Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge, und unter #117
@@ -717,7 +747,9 @@ von oben war unter #118 aufgebraucht.
 
 **«Fünf bis sieben Sekunden bis zum Start» ist widerlegt, und zwar durch den
 PR, der den Einwand dagegen abgeschwächt hatte.** Die sieben gemessenen
-Startwerte stehen in der Spalte «bis Start»; sie reichen von 5 s bis 9 s.
+Startwerte stehen in der Spalte «bis Start»; sie reichen von 5 s bis 10,4 s —
+die Obergrenze ist am 20.9. durch #128 von 9 s heraufgesetzt worden, also durch
+denselben PR, der diesen Satz zuletzt anfasste.
 
 Der Weg dorthin ist die eigentliche Lehre. Für #114 und #115 fehlt der
 Startzeitpunkt; ablesbar war nur die Entstehung des Kommentars — 7 s nach ready
@@ -732,7 +764,7 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und sieben der elf haben nicht gereicht.**
+**Der Abstand wächst nicht monoton, und sieben der zwölf haben nicht gereicht.**
 Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber der Laufzeit-Spanne ist
 jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
@@ -820,6 +852,14 @@ und wurde selbst mit drei offenen Befunden gemergt, keine zwei Minuten
 nachdem Codex sie gemeldet hatte. Die Korrektur landete wieder auf dem Branch
 und brauchte wieder einen Folge-PR. Drei PRs hintereinander, dreimal derselbe
 Ablauf, und der mittlere beschreibt ihn.
+
+**Bei #128 riss die Kette.** Der PR wurde um 17:01:36 gemergt, und der Fix
+mit den Befunden des letzten Laufs war drin — zum ersten Mal in vier Runden
+landete die Korrektur in `main` statt auf dem Branch. Was den Unterschied
+machte, ist nicht mehr Einsicht, sondern Mechanik: das Kontingent war
+erschöpft, es kam kein neuer Befund mehr, der hätte auflaufen können. Ein
+Abbruch aus Erschöpfung ist keine Abhilfe, und er gehört nicht als Erfolg
+verbucht.
 
 Acht PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
 Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
@@ -928,6 +968,31 @@ davon. Drei Dinge, die er ausdrücklich nicht kann:
   `get_review_comments` beide abgefragt, beide leer, dann gemergt. Das ist die
   Lücke gestopft und nicht behoben — dieselbe Abfrage am nächsten PR zu
   vergessen, kostet dasselbe wie vorher.
+- **Ein Push auf einen offenen PR löst keinen Review aus — das Gate läuft dann
+  leer ab.** Codex' Infokasten nennt drei Auslöser: PR eröffnen, Draft auf
+  ready setzen, `@codex review` kommentieren. Ein Push steht nicht darunter.
+  Das Gate wartet aber auf `Completed` für **diesen** Head; ohne Auslöser
+  findet es die Tabelle auf dem Vorgänger-Head, das Fenster läuft aus, und es
+  wird rot mit der Begründung «kein Review» — bei vollem Kontingent und grünem
+  Code.
+
+  Gemessen am 20.9.2026 unter #128: Push um 16:45:32, Gate ab 16:45:45, rot um
+  16:50:49 nach 304 s. Der Handauslöser kam um 16:47:10 — 98 Sekunden zu spät,
+  und der Lauf war bei Fensterende noch nicht fertig.
+
+  **Das trifft ausgerechnet den, der die Befunde behebt.** Wer einen Review
+  ignoriert, behält sein grünes Gate; wer nachbessert, verliert den Prüfer.
+  Der Handgriff dagegen ist billig und muss unmittelbar nach dem Push kommen:
+  einen Kommentar mit dem Auslöser schreiben. Wer erst das Gate rot werden
+  lässt, zahlt eine weitere Fensterlänge.
+
+  Die Statustabelle macht den Zustand dabei nicht sichtbar: Sie wird
+  **überschrieben**, auch über Läufe und Commits hinweg. Dieselbe ID trug unter
+  #128 nacheinander `Completed` für `39d3d34` und `Running` für `65b9825`. Wer
+  sie liest, sieht immer nur den letzten Lauf und kann nicht erkennen, ob ein
+  Vorgänger-Head geprüft war. Für «wurde dieser Diff geprüft?» taugt sie nur im
+  Moment ihres Entstehens — die Antwort dazu steht im Review-Objekt, das seinen
+  Commit nennt und bleibt.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
