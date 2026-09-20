@@ -104,6 +104,15 @@ def test_kein_zaehler_widerspricht_der_tabelle(datei: str):
     Form «Zahlwort der Zahlwort» gilt hier immer als Laufzaehlung; wer
     «drei der vier Befunde» schreiben will, formuliert um oder erweitert
     diesen Test.
+
+    **Eine zweite Zaehlung bleibt ungeschuetzt, und zwar mit Absicht.**
+    `CLAUDE.md` zaehlt in der Wiederholungskette «Glieder» — das sind PRs,
+    die derselben Falle erlagen, nicht Zeilen dieser Tabelle. Ihr Nenner ist
+    ein anderer, also kann dieser Test sie nicht pruefen, ohne falsch zu
+    melden. Am 20.9.2026 stand dort «sieben Glieder» neben einem beschriebenen
+    achten und einem «Acht PRs» im selben Absatz; gefunden hat das ein Mensch
+    beim Lesen, nicht ein Check. Wer die Kette fortschreibt, zaehlt von Hand —
+    und weiss jetzt, dass ihn dabei nichts auffaengt.
     """
     text = _messreihe() if datei == "messreihe" else _claude_md()
     soll = len(_zeilen())
