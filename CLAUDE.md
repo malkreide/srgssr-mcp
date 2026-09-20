@@ -545,6 +545,19 @@ gar nicht gesetzt war. Hier war er gesetzt, das Gate tat genau, was es soll,
 und liess den Merge trotzdem zu. `Completed` heisst «gelaufen», nicht
 «sauber», und zwei Vorfälle sind kein Zufall mehr.
 
+**Der elfte Lauf, PR #127, machte daraus drei.** Wieder ein Review-Objekt
+(5261069073) mit drei P2-Befunden, wieder das Gate auf `success`, wieder
+gemergt, bevor die Korrektur da war — und der Inhalt des PR war der Bericht
+über genau diesen Vorgang bei #126. Damit ist der dritte Serienbruch auch der
+dritte Fall derselben Gate-Grenze, an drei aufeinanderfolgenden PRs desselben
+Nachmittags.
+
+Die drei Befunde selbst waren dabei nicht inhaltlich, sondern buchhalterisch:
+ein stehengebliebener Zähler, ein Einzelwert in der Prosa, eine überholte
+Ableitung — alles Folgen des Eintragens **einer** Tabellenzeile. Das ist die
+Rekursion, die unter der Tabelle beschrieben ist, in ihrer teuersten Form:
+Sie erzeugt pro Durchgang Befunde, die pro Durchgang einen Folge-PR kosten.
+
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
 gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
@@ -574,9 +587,9 @@ es ist, vor genau dieser Art doppelter Buchführung zu warnen. Eine Regel zu
 formulieren und sie im selben Commit zu brechen, ist hier kein Einzelfall
 mehr; es ist das Muster, gegen das die halbe Datei geschrieben ist.
 
-Was die zehn Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+Was die elf Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
 ersetzt. Alle neun stehen in **einem** Repo. Über vier Tage (29.8., 17.9.,
-18.9., 20.9.) und zehn Läufe hinweg ist die Form dort stabil, über das
+18.9., 20.9.) und elf Läufe hinweg ist die Form dort stabil, über das
 Portfolio sagt sie nichts, und ob der alte Satz anderswo noch kommt, hat
 niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
@@ -606,7 +619,7 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 205 s**, nach zehn Läufen. Das ist die
+Praktisch heisst das: **48,5 s bis rund 205 s**, nach elf Läufen. Das ist die
 **fünfte** Fassung dieses Satzes, und die Geschichte der vier davor ist das
 eigentliche Argument gegen sie alle:
 
@@ -669,7 +682,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen zehnmal durchgemessen, alle zehn Male in
+Wie viel Zeit, ist inzwischen elfmal durchgemessen, alle elf Male in
 `srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
 stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
 wiederholen:
@@ -686,31 +699,38 @@ wiederholen:
 | #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
 | #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
 | #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
+| #127 | 20.9.2026 | 16:28:44 | 16:32:34 | 16:28:51 | 16:31:29 | 7,1 s | 165 s | 158,2 s |
 
 «bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
 «intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`.
+`Completed`. Die ready-Zeitpunkte von #117, #118 und #125 bis #127 sind auf
+±1 s genau — abgeleitet aus dem Event-Zeitstempel und der Erzeugung des
+Gate-Jobs; alle übrigen Werte stehen sekundengenau in der API.
 
 **Die Tabelle hinkt zwangsläufig um einen Lauf hinterher, und das ist keine
 Nachlässigkeit.** Ein PR, der diese Datei ändert, löst beim Umschalten auf
 ready selbst einen Codex-Lauf aus — dessen Merge-Zeitpunkt er nicht kennen
 kann, weil er zum Schreibzeitpunkt noch offen ist. Die letzte Zeile stammt
-deshalb immer vom *vorigen* PR. «Zehn Läufe» heisst hier «zehn
-aufgezeichnete», nicht «zehn stattgefundene»; wer die Zahl als Stichprobengrösse
+deshalb immer vom *vorigen* PR. «Elf Läufe» heisst hier «elf
+aufgezeichnete», nicht «elf stattgefundene»; wer die Zahl als Stichprobengrösse
 liest, zählt einen zu wenig.
 
 Diese Rekursion ist der Grund, warum jeder PR an dieser Stelle dieselbe Art
 Befund produziert: Eine Zeile einzutragen heisst, alles Abgeleitete
-nachzuführen — Zähler, Spanne, «sieben der zehn», die Zwei-Minuten-Regel —, und
+nachzuführen — Zähler, Spanne, «sieben der elf», die Zwei-Minuten-Regel —, und
 wer nur die Zeile einträgt, hat die Drift wieder eingebaut. Beim Eintragen von
 #126 ist genau das passiert, an drei Stellen, gefunden vom Review des
-Folge-PR. Vor dem Eintragen einer Zeile deshalb `grep` auf den alten Zähler,
-auf die alte Obergrenze und auf «der langsamste Lauf». Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
-abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
-übrigen Werte stehen sekundengenau in der API.
+Folge-PR, und beim Eintragen von #127 noch einmal an zwei.
+
+Der Handgriff, mit Fallen: `grep -i` auf den alten Zähler, auf die alte
+Obergrenze und auf «der langsamste Lauf», dann `grep -c "^| #"` gegen jede
+Zählstelle halten. **Das `-i` ist nicht Zierde** — beim Eintragen von #127
+blieb «Zehn Läufe» am Satzanfang stehen, weil die Suche nach «zehn Läufe»
+case-sensitiv lief und der Grossbuchstabe sie unterlief. Eine Prüfung, die
+eine Schreibweise nicht kennt, meldet «sauber» und meint «nicht gesucht».
 
 Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
-**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der zehn
+**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der elf
 Reviews liefen damit vollständig auf einem bereits geschlossenen PR: unter
 #113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
 Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge, und unter #117
@@ -743,7 +763,7 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und sieben der zehn haben nicht gereicht.**
+**Der Abstand wächst nicht monoton, und sieben der elf haben nicht gereicht.**
 Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber der Laufzeit-Spanne ist
 jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
@@ -821,10 +841,25 @@ keines von beidem — es fehlte der Blick in `get_reviews`, also genau der
 Handgriff, den der PR selbst beschreibt. Unter #125 war er eine Stunde vorher
 noch gemacht worden.
 
-Sieben PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
+**Das achte Glied schloss den Kreis vollends.** #127 war der PR, der das
+siebte Glied aufschrieb — «#126 wurde 99 Sekunden nach den Befunden gemergt» —
+und wurde selbst mit drei offenen Befunden gemergt, keine zwei Minuten
+nachdem Codex sie gemeldet hatte. Die Korrektur landete wieder auf dem Branch
+und brauchte wieder einen Folge-PR. Drei PRs hintereinander, dreimal derselbe
+Ablauf, und der mittlere beschreibt ihn.
+
+Acht PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
 Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
 verschiedene Handgriffe. Das grüne Häkchen ersetzt den zweiten nicht — es
 verdeckt ihn.
+
+**Was daraus folgt, ist keine weitere Ermahnung.** Acht Wiederholungen mit dem
+Text vor Augen sind der Beleg, dass Aufschreiben hier nicht wirkt. Wirksam
+wäre nur, was den Knopf sperrt: ein Gate, das auf offene Review-Threads
+blockiert. Warum das nicht ohne Weiteres zu haben ist, steht bei der dritten
+Gate-Grenze — ein Gate, das bei jedem Nit anspringt, wird abgeschaltet. Die
+Entscheidung steht aus; bis dahin ist dieser Absatz eine Beschreibung und
+keine Abhilfe, und er soll auch nicht als eine gelesen werden.
 
 **Das sechste Glied ist von anderer Art, und darin liegt der Ertrag.** Bei den
 fünf davor fehlte der Mechanismus. Unter #117 gab es ihn: der Job lief, wartete
