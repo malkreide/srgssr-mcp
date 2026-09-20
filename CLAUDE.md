@@ -682,52 +682,19 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen elfmal durchgemessen, alle elf Male in
-`srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
-stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
-wiederholen:
+Wie viel Zeit, ist inzwischen elfmal durchgemessen, alle elf Läufe in
+`srgssr-mcp`. Die Rohwerte je Lauf — ready, Merge, Start und Ende des Reviews,
+Laufzeit — stehen in **`docs/codex-messreihe.md`** und nur dort; hier stehen
+die Schlüsse daraus.
 
-| PR | Datum | ready | gemergt | Review startet | Review fertig | bis Start | Laufzeit | intern |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 | 7 s | 69 s | 62 s |
-| #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 | 5,8 s | 83 s | 78 s |
-| #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 | 7,4 s | 78 s | 70,9 s |
-| #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 | — | **48,5 s** | — |
-| #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 | — | 79,0 s | — |
-| #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 | 6,5 s | 72,1 s | 65,6 s |
-| #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 | **9 s** | 91 s | 82,2 s |
-| #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
-| #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
-| #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
-| #127 | 20.9.2026 | 16:28:44 | 16:32:34 | 16:28:51 | 16:31:29 | 7,1 s | 165 s | 158,2 s |
-
-«bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
-«intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`. Die ready-Zeitpunkte von #117, #118 und #125 bis #127 sind auf
-±1 s genau — abgeleitet aus dem Event-Zeitstempel und der Erzeugung des
-Gate-Jobs; alle übrigen Werte stehen sekundengenau in der API.
-
-**Die Tabelle hinkt zwangsläufig um einen Lauf hinterher, und das ist keine
-Nachlässigkeit.** Ein PR, der diese Datei ändert, löst beim Umschalten auf
-ready selbst einen Codex-Lauf aus — dessen Merge-Zeitpunkt er nicht kennen
-kann, weil er zum Schreibzeitpunkt noch offen ist. Die letzte Zeile stammt
-deshalb immer vom *vorigen* PR. «Elf Läufe» heisst hier «elf
-aufgezeichnete», nicht «elf stattgefundene»; wer die Zahl als Stichprobengrösse
-liest, zählt einen zu wenig.
-
-Diese Rekursion ist der Grund, warum jeder PR an dieser Stelle dieselbe Art
-Befund produziert: Eine Zeile einzutragen heisst, alles Abgeleitete
-nachzuführen — Zähler, Spanne, «sieben der elf», die Zwei-Minuten-Regel —, und
-wer nur die Zeile einträgt, hat die Drift wieder eingebaut. Beim Eintragen von
-#126 ist genau das passiert, an drei Stellen, gefunden vom Review des
-Folge-PR, und beim Eintragen von #127 noch einmal an zwei.
-
-Der Handgriff, mit Fallen: `grep -i` auf den alten Zähler, auf die alte
-Obergrenze und auf «der langsamste Lauf», dann `grep -c "^| #"` gegen jede
-Zählstelle halten. **Das `-i` ist nicht Zierde** — beim Eintragen von #127
-blieb «Zehn Läufe» am Satzanfang stehen, weil die Suche nach «zehn Läufe»
-case-sensitiv lief und der Grossbuchstabe sie unterlief. Eine Prüfung, die
-eine Schreibweise nicht kennt, meldet «sauber» und meint «nicht gesucht».
+Die Trennung ist selbst ein Befund. Das Eintragen **einer** Tabellenzeile hat
+dreimal hintereinander Befunde erzeugt (#126, #127, #128), jedes Mal
+derselben Art: ein stehengebliebener Zähler, ein Einzelwert in der Prosa, eine
+überholte Ableitung. Eine Konventionen-Datei, in der eine Messreihe mitwächst,
+produziert diese Fehler bei jedem Durchgang neu — und der Handgriff dagegen
+stand hier als `grep`-Checkliste, die ihren eigenen Autor zweimal unterlief.
+`tests/test_codex_messreihe.py` prüft das jetzt mechanisch, über beide
+Dateien.
 
 Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
 **181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der elf
@@ -781,8 +748,9 @@ Genau so ist es gemeint. Die Zahl in der Spalte «gemergt» misst hier keine
 Geduld, sondern eine Mechanik.
 
 **Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr**, und der
-Abstand ist inzwischen grotesk: Sie stand hier, seit das Maximum bei 83 s lag;
-der langsamste Lauf der Tabelle braucht mehr als das Doppelte der zwei Minuten.
+Abstand ist inzwischen grotesk: Sie stand hier, als das Maximum noch bei gut
+achtzig Sekunden lag; der langsamste Lauf der Tabelle braucht mehr als das
+Doppelte der zwei Minuten.
 Eine feste Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten —
 und welcher das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei
 fünfmal nach oben korrigiert worden, jedes Mal vom nächsten Lauf.
