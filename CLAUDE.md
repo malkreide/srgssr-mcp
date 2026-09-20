@@ -531,6 +531,20 @@ Gefunden hat den zu weiten Satz der Codex-Review auf ebendiesem PR. Das ist
 dieselbe Figur wie bei den 86 Sekunden unter #118: Die Instanz, die das Gate
 schützen soll, korrigiert den Absatz, der das Gate beschreibt.
 
+**Der zehnte Lauf brach die Serie zum zweiten Mal — und wurde zum zweiten Mal
+überfahren.** Unter PR #126 (Kommentar-ID 5751012419, Commit `3de05f1`) lief
+dieselbe Tabelle auf `Completed`, aber `get_reviews` gab ein Review-Objekt
+(5261045906) mit **drei** P2-Befunden. Das Gate schloss um 16:20:38 mit
+`success`, weil die Tabelle `Completed` sagt, und gemergt wurde um 16:22:10:
+**99 Sekunden nach den Befunden, mit drei offenen Threads.** Der Fix dazu lag
+zu diesem Zeitpunkt nicht vor; er kam über einen Folge-PR.
+
+Das ist die dritte Gate-Grenze weiter unten, zum zweiten Mal eingetreten —
+und diesmal ohne den mildernden Umstand von #118, wo der Required Check noch
+gar nicht gesetzt war. Hier war er gesetzt, das Gate tat genau, was es soll,
+und liess den Merge trotzdem zu. `Completed` heisst «gelaufen», nicht
+«sauber», und zwei Vorfälle sind kein Zufall mehr.
+
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
 gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
@@ -592,18 +606,22 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 135 s**, nach neun Läufen. Das ist die
-vierte Fassung dieses Satzes, und die dritte wurde kassiert, **während der PR
-offen war, der sie schrieb**: #118 trug «48,5 s bis 91 s» ein, und der
-Codex-Lauf auf ebendiesem PR sprengte die Obergrenze — seine Zeile steht in
-der Tabelle.
+Praktisch heisst das: **48,5 s bis rund 205 s**, nach zehn Läufen. Das ist die
+**fünfte** Fassung dieses Satzes, und die Geschichte der vier davor ist das
+eigentliche Argument gegen sie alle:
 
-**Die vierte Fassung hat als erste einen Lauf überlebt**, und das ist kein
-Freispruch für die Methode: #125 lag innerhalb der Spanne, die Zahl hat also
-nichts entschieden, was die Tabelle nicht auch zeigt. Vorher war
-keine Fassung dieses Satzes je einen Tag alt geworden. Eine gemerkte Zahl ist
-hier nicht bloss ungenau, sie ist das falsche Werkzeug — den Startzeitpunkt
-aus der Tabelle lesen, nicht das Fenster erinnern.
+- Die dritte wurde kassiert, **während der PR offen war, der sie schrieb** —
+  #118 trug «48,5 s bis 91 s» ein, und der Codex-Lauf auf ebendiesem PR
+  sprengte die Obergrenze.
+- Die vierte überlebte genau einen Lauf (#125 lag innerhalb) und fiel am
+  nächsten: **#126 brauchte 204 s**, also die Hälfte mehr als die Obergrenze,
+  die derselbe PR gerade eingetragen hatte. Zum zweiten Mal hat ein PR seine
+  eigene frisch geschriebene Spanne widerlegt, bevor er gemergt war.
+
+Eine gemerkte Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug.
+Die fünfte Fassung steht nur noch da, weil dieser Absatz ohne sie leer wäre —
+verlassen sollte sich niemand auf sie. Den Startzeitpunkt aus der Tabelle
+lesen, nicht das Fenster erinnern.
 
 **Deshalb die Startzeit lesen, nicht das Fenster erinnern.** Der Absatz oben
 warnt davor, zu früh zu lesen und einen laufenden Review für das Ergebnis zu
@@ -650,7 +668,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen neunmal durchgemessen, alle neun Male in
+Wie viel Zeit, ist inzwischen zehnmal durchgemessen, alle zehn Male in
 `srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
 stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
 wiederholen:
@@ -666,10 +684,11 @@ wiederholen:
 | #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 | **9 s** | 91 s | 82,2 s |
 | #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
 | #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
+| #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
 
 «bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
 «intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`. Die ready-Zeitpunkte von #117, #118 und #125 sind auf ±1 s genau —
+`Completed`. Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
 abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
 übrigen Werte stehen sekundengenau in der API.
 
@@ -757,7 +776,7 @@ Nicht das Event fehlte diesmal, sondern die zweite Abfrage vor dem Schreiben. Da
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
-Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt sechs Glieder.
+Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt sieben Glieder.
 #105 war der PR, der diese Falle dokumentiert, und ist ihr zum Opfer
 gefallen. #113 führte die Drahtform-Messung ein und fiel ihr mit der Tabelle
 bereits im Repo erneut zum Opfer. #114 schrieb die Zwei-Minuten-Regel und
@@ -771,9 +790,23 @@ eigenen PR. #117 baute schliesslich das Gate, das den Merge halten soll — und
 wurde fünf Sekunden nach «ready» gemergt, eine Sekunde nachdem sein eigener
 Gate-Job angelaufen war.
 
-Sechs PRs, zwei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
+**Das siebte Glied ist das bisher bitterste**, weil diesmal alles da war.
+#126 schrieb den Absatz über #118 — «49 Sekunden nach dem Befund, mit offenem
+Thread» — und trug die Tabellenzeile dazu ein. Der Required Check war gesetzt,
+das Gate lief, Codex meldete drei P2-Befunde um 16:20:31, das Gate schloss um
+16:20:38 grün, gemergt wurde um 16:22:10. **99 Sekunden nach den Befunden, mit
+drei offenen Threads.** Die Korrektur landete auf dem Branch und brauchte einen
+Folge-PR.
+
+Bei #117 fehlte der Mechanismus, bei #118 der Required Check. Bei #126 fehlte
+keines von beidem — es fehlte der Blick in `get_reviews`, also genau der
+Handgriff, den der PR selbst beschreibt. Unter #125 war er eine Stunde vorher
+noch gemacht worden.
+
+Sieben PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
 Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
-verschiedene Handgriffe.
+verschiedene Handgriffe. Das grüne Häkchen ersetzt den zweiten nicht — es
+verdeckt ihn.
 
 **Das sechste Glied ist von anderer Art, und darin liegt der Ertrag.** Bei den
 fünf davor fehlte der Mechanismus. Unter #117 gab es ihn: der Job lief, wartete
