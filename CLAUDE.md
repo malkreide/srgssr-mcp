@@ -282,7 +282,8 @@ kurze Sperren.
 **Der Ausfall ist an der Wartezeit nicht zu erkennen.** Der Gate-Job zum
 `ready_for_review`-Ereignis von #122 startete um 14:02:32, die Meldung stand um
 14:02:33 im Thread. Codex hat also nicht angefangen und abgebrochen, sondern
-sofort abgewunken — gegenüber 48,5 s bis rund 135 s für einen echten Lauf. Wer
+sofort abgewunken — gegenüber der Spanne eines echten Laufs (siehe
+«Praktisch heisst das …» weiter unten). Wer
 nach dem Umschalten auf ready eine Minute wartet und dann einen Kommentar
 sieht, darf daraus nichts schliessen: Ausfall und Ergebnis unterscheiden sich
 im Text, nicht in der Wartezeit.
@@ -508,16 +509,41 @@ ein Review-Objekt (5244784664) mit einem P2-Befund. Die Unterscheidung «Befund
 Statustabelle; die Tabelle ersetzt das Objekt nicht, sie steht daneben. Wer
 nur `get_comments` liest, sieht `Completed` und übersieht den Befund.
 
-**Der neunte Lauf ist der erste, bei dem die Reihenfolge ganz stimmte.**
-Unter PR #125 am 20.9.2026 (Kommentar-ID 5748822372, Commit `58071d7`,
-Auslöser «Draft marked ready») lief wieder `Running` → `Completed` an
-derselben ID, `get_reviews` → `[]`, `get_review_comments` → 0 Threads, keine
-Befundlos-Meldung. Neu ist nicht die Form, sondern was drumherum geschah: Das
-Gate schloss um 09:02:45 mit `success`, gemergt wurde um 09:28:15 — 25½
-Minuten **nach** dem Ergebnis. Das ist die erste Zeile der Merge-Tabelle
-weiter unten, bei der ein *echter* Review abgewartet wurde; unter #123 hatte
-die Reihenfolge zwar auch gestimmt, dort liess aber der Ausfalltext durch, es
-gab gar keinen Review.
+**Der neunte Lauf ist der erste, dessen Ergebnis auch gelesen wurde.** Unter
+PR #125 am 20.9.2026 (Kommentar-ID 5748822372, Commit `58071d7`, Auslöser
+«Draft marked ready») lief wieder `Running` → `Completed` an derselben ID,
+`get_reviews` → `[]`, `get_review_comments` → 0 Threads, keine
+Befundlos-Meldung. Gate um 09:02:45 auf `success`, gemergt um 09:28:15.
+
+**Die Erstmaligkeit ist eng zu fassen, und der erste Anlauf hat sie zu weit
+gefasst.** Hier stand «die erste Zeile, bei der ein echter Review abgewartet
+wurde» — das widerlegt die Tabelle selbst: Unter #118 war der Review
+47 Sekunden vor dem Merge fertig, gewartet wurde dort drei Minuten. Ein
+Abstand zwischen Ergebnis und Merge ist also nicht neu. Neu ist zweierlei:
+Der Required Check war diesmal gesetzt (bei #118 noch nicht, er kam am Abend
+des 18.9. über #121), und jemand hat das Ergebnis **abgefragt** statt es bloss
+abzuwarten — `get_reviews` und `get_review_comments`, beide leer, dann erst
+der Merge. #118 hatte das Ergebnis und merkte den P2 nicht; #123 hatte den
+Required Check, aber gar keinen Review, weil der Ausfalltext durchliess. Erst
+#125 hat beides.
+
+Gefunden hat den zu weiten Satz der Codex-Review auf ebendiesem PR. Das ist
+dieselbe Figur wie bei den 86 Sekunden unter #118: Die Instanz, die das Gate
+schützen soll, korrigiert den Absatz, der das Gate beschreibt.
+
+**Der zehnte Lauf brach die Serie zum zweiten Mal — und wurde zum zweiten Mal
+überfahren.** Unter PR #126 (Kommentar-ID 5751012419, Commit `3de05f1`) lief
+dieselbe Tabelle auf `Completed`, aber `get_reviews` gab ein Review-Objekt
+(5261045906) mit **drei** P2-Befunden. Das Gate schloss um 16:20:38 mit
+`success`, weil die Tabelle `Completed` sagt, und gemergt wurde um 16:22:10:
+**99 Sekunden nach den Befunden, mit drei offenen Threads.** Der Fix dazu lag
+zu diesem Zeitpunkt nicht vor; er kam über einen Folge-PR.
+
+Das ist die dritte Gate-Grenze weiter unten, zum zweiten Mal eingetreten —
+und diesmal ohne den mildernden Umstand von #118, wo der Required Check noch
+gar nicht gesetzt war. Hier war er gesetzt, das Gate tat genau, was es soll,
+und liess den Merge trotzdem zu. `Completed` heisst «gelaufen», nicht
+«sauber», und zwei Vorfälle sind kein Zufall mehr.
 
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
@@ -525,18 +551,34 @@ gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
 ist dieselbe Mechanik wie beim ruff-Literal, nur ohne roten Check, der es
 meldet.
 
-**Seit dem 20.9.2026 steht jede Zahl nur noch in der Merge-Tabelle.** Die drei
-Listen, die hier Startwerte, Laufzeiten und interne Laufzeiten je einzeln
-wiederholten, sind dort zu Spalten geworden. Der Absatz über die driftende
-Zählung hatte es zweimal vorhergesagt und zweimal selbst vorgeführt; die
-Vorhersage abzuschreiben und die Struktur zu lassen, wäre das dritte Mal
+**Seit dem 20.9.2026 steht jeder Einzelwert nur noch in der Merge-Tabelle.**
+Die drei Listen, die hier Startwerte, Laufzeiten und interne Laufzeiten je
+einzeln wiederholten, sind dort zu Spalten geworden. Der Absatz über die
+driftende Zählung hatte es zweimal vorhergesagt und zweimal selbst vorgeführt;
+die Vorhersage abzuschreiben und die Struktur zu lassen, wäre das dritte Mal
 gewesen. Die Lehrsätze bleiben, wo sie stehen — sie verweisen jetzt auf die
 Tabelle, statt ihre Zahlen mitzuführen.
 
+**Eine Zahl steht absichtlich daneben: die Spanne.** Sie ist keine Ablesung,
+sondern der Schluss aus der Spalte «Laufzeit», und der Absatz «Praktisch
+heisst das …» weiter unten handelt von nichts anderem als davon, wie oft
+dieser Schluss schon kassiert wurde — ohne die Zahl wäre er leer. Sie steht
+deshalb genau dort **einmal**; die beiden anderen Stellen, die sie führten,
+verweisen jetzt dorthin. Damit kostet ein langsamerer Lauf künftig zwei
+Änderungen (Tabellenzeile und Spanne) statt vier.
+
+Die erste Fassung dieses Abschnitts behauptete «jede Zahl», und das war
+falsch: zwei Einzelwerte und die Spanne standen weiter in der Prosa. Gefunden
+hat es der Codex-Review auf diesem PR — an einem Absatz, dessen ganzer Zweck
+es ist, vor genau dieser Art doppelter Buchführung zu warnen. Eine Regel zu
+formulieren und sie im selben Commit zu brechen, ist hier kein Einzelfall
+mehr; es ist das Muster, gegen das die halbe Datei geschrieben ist.
+
 Was die neun Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
-ersetzt. Alle neun stehen in **einem** Repo. Über drei Tage und neun Läufe
-hinweg ist die Form dort stabil, über das Portfolio sagt sie nichts, und ob der
-alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides
+ersetzt. Alle neun stehen in **einem** Repo. Über vier Tage (29.8., 17.9.,
+18.9., 20.9.) und neun Läufe hinweg ist die Form dort stabil, über das
+Portfolio sagt sie nichts, und ob der alte Satz anderswo noch kommt, hat
+niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
 nicht einsortiert.
 
@@ -564,17 +606,22 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 135 s**, nach neun Läufen. Das ist die
-vierte Fassung dieses Satzes, und die dritte wurde kassiert, **während der PR
-offen war, der sie schrieb**: #118 trug «48,5 s bis 91 s» ein, und der
-Codex-Lauf auf ebendiesem PR brauchte 129,4 s.
+Praktisch heisst das: **48,5 s bis rund 205 s**, nach zehn Läufen. Das ist die
+**fünfte** Fassung dieses Satzes, und die Geschichte der vier davor ist das
+eigentliche Argument gegen sie alle:
 
-**Die vierte Fassung hat als erste einen Lauf überlebt**, und das ist kein
-Freispruch für die Methode: #125 lag mit 113 s innerhalb der Spanne, also hat
-die Zahl nichts entschieden, was die Tabelle nicht auch zeigt. Vorher war
-keine Fassung dieses Satzes je einen Tag alt geworden. Eine gemerkte Zahl ist
-hier nicht bloss ungenau, sie ist das falsche Werkzeug — den Startzeitpunkt
-aus der Tabelle lesen, nicht das Fenster erinnern.
+- Die dritte wurde kassiert, **während der PR offen war, der sie schrieb** —
+  #118 trug «48,5 s bis 91 s» ein, und der Codex-Lauf auf ebendiesem PR
+  sprengte die Obergrenze.
+- Die vierte überlebte genau einen Lauf (#125 lag innerhalb) und fiel am
+  nächsten: **#126 brauchte 204 s**, also die Hälfte mehr als die Obergrenze,
+  die derselbe PR gerade eingetragen hatte. Zum zweiten Mal hat ein PR seine
+  eigene frisch geschriebene Spanne widerlegt, bevor er gemergt war.
+
+Eine gemerkte Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug.
+Die fünfte Fassung steht nur noch da, weil dieser Absatz ohne sie leer wäre —
+verlassen sollte sich niemand auf sie. Den Startzeitpunkt aus der Tabelle
+lesen, nicht das Fenster erinnern.
 
 **Deshalb die Startzeit lesen, nicht das Fenster erinnern.** Der Absatz oben
 warnt davor, zu früh zu lesen und einen laufenden Review für das Ergebnis zu
@@ -591,8 +638,8 @@ findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, wede
 während des Laufs noch danach — zuletzt unter #118, also in den ersten acht
 Beobachtungen; unter #125 hat niemand nachgesehen, und ungemessen heisst hier
 ungemessen und nicht «wieder nicht geliefert». Unter #118 fällt dabei genau die 👀-Hälfte der Behauptung: Der
-Lauf hatte einen Befund, das 👍 stand also ohnehin nicht zu, aber während der
-129 Sekunden Laufzeit war auch kein 👀 da. Der Kasten bleibt keine Quelle.
+Lauf hatte einen Befund, das 👍 stand also ohnehin nicht zu, aber über die
+ganze Laufzeit war auch kein 👀 da. Der Kasten bleibt keine Quelle.
 
 **Und diese drei Zählungen hingen wieder hinterher** — «sieben», nachdem der
 achte Lauf zwei Absätze höher eingetragen war. Der Absatz über die driftende
@@ -621,7 +668,7 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen neunmal durchgemessen, alle neun Male in
+Wie viel Zeit, ist inzwischen zehnmal durchgemessen, alle zehn Male in
 `srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
 stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
 wiederholen:
@@ -637,10 +684,11 @@ wiederholen:
 | #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 | **9 s** | 91 s | 82,2 s |
 | #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
 | #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
+| #126 | 20.9.2026 | 16:17:07 | 16:22:10 | 16:17:12 | 16:20:31 | 5,5 s | **204 s** | **198,5 s** |
 
 «bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
 «intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`. Die ready-Zeitpunkte von #117, #118 und #125 sind auf ±1 s genau —
+`Completed`. Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
 abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
 übrigen Werte stehen sekundengenau in der API.
 
@@ -679,8 +727,8 @@ ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
 **Der Abstand wächst nicht monoton, und sieben der neun haben nicht gereicht.**
-Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis rund 135 Sekunden
-Laufzeit ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
+Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber der Laufzeit-Spanne ist
+jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
 
 Der achte hat gereicht und half trotzdem nicht: 181 Sekunden, Ergebnis lag vor,
@@ -728,7 +776,7 @@ Nicht das Event fehlte diesmal, sondern die zweite Abfrage vor dem Schreiben. Da
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
-Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt sechs Glieder.
+Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt sieben Glieder.
 #105 war der PR, der diese Falle dokumentiert, und ist ihr zum Opfer
 gefallen. #113 führte die Drahtform-Messung ein und fiel ihr mit der Tabelle
 bereits im Repo erneut zum Opfer. #114 schrieb die Zwei-Minuten-Regel und
@@ -742,9 +790,23 @@ eigenen PR. #117 baute schliesslich das Gate, das den Merge halten soll — und
 wurde fünf Sekunden nach «ready» gemergt, eine Sekunde nachdem sein eigener
 Gate-Job angelaufen war.
 
-Sechs PRs, zwei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
+**Das siebte Glied ist das bisher bitterste**, weil diesmal alles da war.
+#126 schrieb den Absatz über #118 — «49 Sekunden nach dem Befund, mit offenem
+Thread» — und trug die Tabellenzeile dazu ein. Der Required Check war gesetzt,
+das Gate lief, Codex meldete drei P2-Befunde um 16:20:31, das Gate schloss um
+16:20:38 grün, gemergt wurde um 16:22:10. **99 Sekunden nach den Befunden, mit
+drei offenen Threads.** Die Korrektur landete auf dem Branch und brauchte einen
+Folge-PR.
+
+Bei #117 fehlte der Mechanismus, bei #118 der Required Check. Bei #126 fehlte
+keines von beidem — es fehlte der Blick in `get_reviews`, also genau der
+Handgriff, den der PR selbst beschreibt. Unter #125 war er eine Stunde vorher
+noch gemacht worden.
+
+Sieben PRs, drei Sessions, derselbe Absatz jeweils unmittelbar vor Augen. Die
 Regel wird beim Schreiben gelesen und beim Mergen gebraucht, und das sind zwei
-verschiedene Handgriffe.
+verschiedene Handgriffe. Das grüne Häkchen ersetzt den zweiten nicht — es
+verdeckt ihn.
 
 **Das sechste Glied ist von anderer Art, und darin liegt der Ertrag.** Bei den
 fünf davor fehlte der Mechanismus. Unter #117 gab es ihn: der Job lief, wartete
@@ -790,10 +852,11 @@ davon. Drei Dinge, die er ausdrücklich nicht kann:
 
   **Mit dem Eintrag greift er, und auch das ist jetzt gemessen.** Unter #125 am
   20.9.2026 schloss der Job um 09:02:45 mit `success`, gemergt wurde um
-  09:28:15 — zum ersten Mal lag zwischen einem echten Review-Ergebnis und dem
-  Merge überhaupt ein Abstand, und zwar in der richtigen Richtung. Die Mechanik
-  war seit #117 in Ordnung; gefehlt hatte der eine Handgriff, der in keiner
-  Datei steht.
+  09:28:15. Das ist nicht der erste Abstand zwischen Ergebnis und Merge — den
+  gab es unter #118 auch, 47 Sekunden, ohne Required Check und ohne dass
+  jemand den Befund las. Es ist der erste, bei dem der Eintrag den Knopf
+  tatsächlich hielt. Die Mechanik war seit #117 in Ordnung; gefehlt hatte der
+  eine Handgriff, der in keiner Datei steht.
 - **Nach Ablauf der Wartezeit lässt er bei einem Ausfalltext durch.** Erschöpftes
   Kontingent oder Environment-Meldung heissen, dass von Codex nichts zu erwarten
   ist; darauf zu blockieren hielte das Repo wegen einer Störung an. Der Lauf sagt
