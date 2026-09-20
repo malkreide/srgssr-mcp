@@ -350,11 +350,25 @@ ausgelöst, und die Antwort trug den Zusatz:
 You have reached your Codex usage limits for code reviews.
 ```
 
-Ein Handauslöser, und doch die Meldung des Review-Topfs. Damit stehen zwei
-Handauslöser gegen zwei verschiedene Texte, und die Zuordnung «Auslöser
-bestimmt den Topf» ist keine. Was sie ersetzt, ist offen — vielleicht
-entscheidet die Reihenfolge der Erschöpfung, vielleicht etwas anderes; gemessen
-ist nur, dass der Auslöser es nicht tut.
+Ein Handauslöser, und doch die Meldung des Review-Topfs. Elf Minuten später,
+um 17:07:38, brachte das blosse **Eröffnen** von PR #129 — als Draft — die
+Meldung wieder **ohne** den Zusatz. Damit sind es drei Beobachtungen:
+
+| Zeit | Auslöser | Text |
+| --- | --- | --- |
+| 18.9., 14:07:00 | Erwähnung im Kommentar | ohne Zusatz |
+| 20.9., 16:56 | Erwähnung im Kommentar | **mit** «for code reviews» |
+| 20.9., 17:07:38 | PR eröffnet (Draft) | ohne Zusatz |
+
+Derselbe Auslöser, zwei Texte — die Zuordnung «Auslöser bestimmt den Topf» ist
+damit keine. Was sie ersetzt, ist offen: Vielleicht entscheidet, welcher Topf
+zuerst leer war, vielleicht etwas anderes. Gemessen ist nur, dass der Auslöser
+es nicht tut.
+
+Der dritte Punkt trägt nebenbei eine eigene Auskunft: Ein **Draft** löst etwas
+aus, das am Kontingent zieht. Das passt zur Environment-Meldung unter #117,
+die elf Sekunden nach dem Eröffnen eines Drafts kam — und es heisst, dass ein
+Draft-PR nicht gratis ist, auch wenn kein Review daraus wird.
 
 Der Fall ist auch methodisch lehrreich: Die Vorhersage stand vor der Messung im
 Auslöser-Kommentar («falls er ohne den Zusatz endet, stützt er sie, sonst
