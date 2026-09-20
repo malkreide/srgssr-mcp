@@ -86,28 +86,52 @@ def test_kein_zaehler_widerspricht_der_tabelle(datei: str):
     """Befundart 1: «neun Laeufe» neben zehn Zeilen.
 
     Gesucht sind Wendungen, die eine Anzahl Laeufe behaupten — «elf Laeufe»,
-    «elfmal durchgemessen», «alle elf Male», «sieben der elf». Der Nenner muss
-    die Zeilenzahl sein; der Zaehler davor (die «sieben») bleibt Sache des
-    Autors, denn er zaehlt etwas anderes.
+    «elfmal durchgemessen», «sieben der elf». Der Nenner muss die Zeilenzahl
+    sein; der Zaehler davor (die «sieben») bleibt Sache des Autors, denn er
+    zaehlt etwas anderes.
+
+    **Die erste Fassung hat zwei Drittel davon nicht gesehen**, und in
+    `docs/codex-messreihe.md` gar nichts — sie verlangte einen Artikel vor dem
+    Zahlwort (`der|die|alle|nach`), und beide Zaehlstellen dort stehen ohne:
+    «Elf Laeufe» am Satzanfang in Anfuehrungszeichen und «sieben der elf».
+    Der Test lief also gruen, waehrend er die Haelfte der Dateien nicht
+    ansah. Genau davor warnt der Docstring von `test_live_coverage.py`: ein
+    Muster, das nichts findet, macht jede Aussage darueber wahr. Deshalb
+    steht unten eine Positivkontrolle.
 
     Grenze, ausgesprochen: «der zehnte Lauf» ist eine Ordnungszahl und meint
-    einen bestimmten PR — die faengt dieses Muster absichtlich nicht.
+    einen bestimmten PR — die faengt dieses Muster absichtlich nicht. Und die
+    Form «Zahlwort der Zahlwort» gilt hier immer als Laufzaehlung; wer
+    «drei der vier Befunde» schreiben will, formuliert um oder erweitert
+    diesen Test.
     """
     text = _messreihe() if datei == "messreihe" else _claude_md()
     soll = len(_zeilen())
 
     woerter = "|".join(sorted(_ZAHLWORT, key=len, reverse=True))
     muster = re.compile(
-        rf"\b(?:der|die|alle|nach)\s+({woerter})\s+(?:Läufe|Läufen)\b"
-        rf"|\b({woerter})mal\s+durchgemessen\b",
+        # «elf Laeufe», «elf Reviews» — ohne Artikelzwang, der Satzanfaenge
+        # und Anfuehrungszeichen ausschloss.
+        rf"({woerter})\s+(?:Läufe|Läufen|Reviews)\b"
+        # «elfmal durchgemessen»
+        rf"|({woerter})mal\s+durchgemessen\b"
+        # «sieben der elf» — der Nenner steht hinten.
+        rf"|(?:{woerter})\s+der\s+({woerter})\b",
         re.IGNORECASE,
     )
 
+    treffer = list(muster.finditer(text))
+    assert treffer, (
+        f"das Zaehlermuster findet in {datei} nichts. Dann ist dieser Test "
+        "gegenstandslos und faerbt trotzdem gruen — entweder sind die "
+        "Zaehlstellen weg oder das Muster passt nicht mehr."
+    )
+
     falsch = []
-    for treffer in muster.finditer(text):
-        wort = (treffer.group(1) or treffer.group(2)).lower()
+    for gefunden in treffer:
+        wort = next(g for g in gefunden.groups() if g).lower()
         if _ZAHLWORT[wort] != soll:
-            falsch.append(treffer.group(0))
+            falsch.append(gefunden.group(0))
 
     assert not falsch, (
         f"{datei} behauptet {falsch}, die Tabelle hat aber {soll} Zeilen. "

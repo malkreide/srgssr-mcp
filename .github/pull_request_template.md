@@ -9,9 +9,10 @@ nicht, dass er nichts gefunden hat. Die Befunde stehen in einem
 Review-Objekt, nicht in der Statustabelle; wer nur die Kommentare liest,
 sieht `Completed` und übersieht sie.
 
-Am 20.9.2026 sind drei PRs hintereinander so gemergt worden (#126, #127,
-#128), je ein bis zwei Minuten nach den Befunden. Jedes Mal brauchte es
-einen Folge-PR, und jedes Mal trug `main` zwischenzeitlich einen Text, der
+Am 20.9.2026 ist das zweimal hintereinander passiert: #126 und #127 wurden
+je ein bis zwei Minuten nach den Befunden gemergt. Beide Male lag die
+Korrektur danach auf dem Branch und nirgends sonst, beide Male brauchte es
+einen Folge-PR, und beide Male trug `main` zwischenzeitlich einen Text, der
 sich selbst widersprach.
 
 - [ ] Review-Objekte abgefragt (`get_reviews`), keines mit offenem Befund

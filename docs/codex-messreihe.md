@@ -48,9 +48,13 @@ wer nur die Zeile einträgt, hat die Drift wieder eingebaut. Beim Eintragen von
 #126 ist genau das passiert, an drei Stellen, gefunden vom Review des
 Folge-PR, und beim Eintragen von #127 noch einmal an zwei.
 
-Der Handgriff, mit Fallen: `grep -i` auf den alten Zähler, auf die alte
-Obergrenze und auf «der langsamste Lauf», dann `grep -c "^| #"` gegen jede
-Zählstelle halten. **Das `-i` ist nicht Zierde** — beim Eintragen von #127
-blieb «Zehn Läufe» am Satzanfang stehen, weil die Suche nach «zehn Läufe»
-case-sensitiv lief und der Grossbuchstabe sie unterlief. Eine Prüfung, die
-eine Schreibweise nicht kennt, meldet «sauber» und meint «nicht gesucht».
+Den Handgriff dazu macht `tests/test_codex_messreihe.py`; von Hand gefahren
+hat er zweimal versagt. Beim Eintragen von #127 blieb der alte Zähler am
+Satzanfang stehen — dort gross geschrieben, und die Suche lief
+case-sensitiv. Und das Muster im Test verlangte anfangs einen Artikel vor
+dem Zahlwort, weshalb es in **dieser** Datei überhaupt nichts fand und
+trotzdem grün meldete.
+
+Zweimal dieselbe Klasse: Eine Prüfung, die eine Schreibweise nicht kennt,
+meldet «sauber» und meint «nicht gesucht». Der Test trägt deshalb eine
+Positivkontrolle — findet sein Muster gar nichts, fällt er.
