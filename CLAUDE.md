@@ -574,9 +574,9 @@ es ist, vor genau dieser Art doppelter Buchführung zu warnen. Eine Regel zu
 formulieren und sie im selben Commit zu brechen, ist hier kein Einzelfall
 mehr; es ist das Muster, gegen das die halbe Datei geschrieben ist.
 
-Was die neun Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+Was die zehn Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
 ersetzt. Alle neun stehen in **einem** Repo. Über vier Tage (29.8., 17.9.,
-18.9., 20.9.) und neun Läufe hinweg ist die Form dort stabil, über das
+18.9., 20.9.) und zehn Läufe hinweg ist die Form dort stabil, über das
 Portfolio sagt sie nichts, und ob der alte Satz anderswo noch kommt, hat
 niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
@@ -614,9 +614,10 @@ eigentliche Argument gegen sie alle:
   #118 trug «48,5 s bis 91 s» ein, und der Codex-Lauf auf ebendiesem PR
   sprengte die Obergrenze.
 - Die vierte überlebte genau einen Lauf (#125 lag innerhalb) und fiel am
-  nächsten: **#126 brauchte 204 s**, also die Hälfte mehr als die Obergrenze,
-  die derselbe PR gerade eingetragen hatte. Zum zweiten Mal hat ein PR seine
-  eigene frisch geschriebene Spanne widerlegt, bevor er gemergt war.
+  nächsten: **#126 sprengte die Obergrenze um die Hälfte**, die derselbe PR
+  gerade eingetragen hatte — seine Zeile steht in der Tabelle. Zum zweiten Mal
+  hat ein PR seine eigene frisch geschriebene Spanne widerlegt, bevor er
+  gemergt war.
 
 Eine gemerkte Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug.
 Die fünfte Fassung steht nur noch da, weil dieser Absatz ohne sie leer wäre —
@@ -688,12 +689,28 @@ wiederholen:
 
 «bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
 «intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
-`Completed`. Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
+`Completed`.
+
+**Die Tabelle hinkt zwangsläufig um einen Lauf hinterher, und das ist keine
+Nachlässigkeit.** Ein PR, der diese Datei ändert, löst beim Umschalten auf
+ready selbst einen Codex-Lauf aus — dessen Merge-Zeitpunkt er nicht kennen
+kann, weil er zum Schreibzeitpunkt noch offen ist. Die letzte Zeile stammt
+deshalb immer vom *vorigen* PR. «Zehn Läufe» heisst hier «zehn
+aufgezeichnete», nicht «zehn stattgefundene»; wer die Zahl als Stichprobengrösse
+liest, zählt einen zu wenig.
+
+Diese Rekursion ist der Grund, warum jeder PR an dieser Stelle dieselbe Art
+Befund produziert: Eine Zeile einzutragen heisst, alles Abgeleitete
+nachzuführen — Zähler, Spanne, «sieben der zehn», die Zwei-Minuten-Regel —, und
+wer nur die Zeile einträgt, hat die Drift wieder eingebaut. Beim Eintragen von
+#126 ist genau das passiert, an drei Stellen, gefunden vom Review des
+Folge-PR. Vor dem Eintragen einer Zeile deshalb `grep` auf den alten Zähler,
+auf die alte Obergrenze und auf «der langsamste Lauf». Die ready-Zeitpunkte von #117, #118, #125 und #126 sind auf ±1 s genau —
 abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
 übrigen Werte stehen sekundengenau in der API.
 
 Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
-**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der neun
+**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der zehn
 Reviews liefen damit vollständig auf einem bereits geschlossenen PR: unter
 #113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
 Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge, und unter #117
@@ -726,7 +743,7 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und sieben der neun haben nicht gereicht.**
+**Der Abstand wächst nicht monoton, und sieben der zehn haben nicht gereicht.**
 Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber der Laufzeit-Spanne ist
 jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
@@ -743,11 +760,12 @@ Befundstands drauf — `get_reviews` und `get_review_comments`, beide leer.
 Genau so ist es gemeint. Die Zahl in der Spalte «gemergt» misst hier keine
 Geduld, sondern eine Mechanik.
 
-**Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
-hier, seit das Maximum bei 83 s lag; unter #118 waren es rund 135 s. Eine feste
-Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten — und welcher
-das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei viermal nach
-oben korrigiert worden, jedes Mal vom nächsten Lauf.
+**Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr**, und der
+Abstand ist inzwischen grotesk: Sie stand hier, seit das Maximum bei 83 s lag;
+der langsamste Lauf der Tabelle braucht mehr als das Doppelte der zwei Minuten.
+Eine feste Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten —
+und welcher das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei
+fünfmal nach oben korrigiert worden, jedes Mal vom nächsten Lauf.
 
 Die Konsequenz ist deshalb keine grössere Zahl, sondern eine andere Methode:
 **nicht warten, sondern nachsehen.** Die Statustabelle nennt Commit und Status;
