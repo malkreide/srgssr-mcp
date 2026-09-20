@@ -508,38 +508,52 @@ ein Review-Objekt (5244784664) mit einem P2-Befund. Die Unterscheidung «Befund
 Statustabelle; die Tabelle ersetzt das Objekt nicht, sie steht daneben. Wer
 nur `get_comments` liest, sieht `Completed` und übersieht den Befund.
 
+**Der neunte Lauf ist der erste, bei dem die Reihenfolge ganz stimmte.**
+Unter PR #125 am 20.9.2026 (Kommentar-ID 5748822372, Commit `58071d7`,
+Auslöser «Draft marked ready») lief wieder `Running` → `Completed` an
+derselben ID, `get_reviews` → `[]`, `get_review_comments` → 0 Threads, keine
+Befundlos-Meldung. Neu ist nicht die Form, sondern was drumherum geschah: Das
+Gate schloss um 09:02:45 mit `success`, gemergt wurde um 09:28:15 — 25½
+Minuten **nach** dem Ergebnis. Das ist die erste Zeile der Merge-Tabelle
+weiter unten, bei der ein *echter* Review abgewartet wurde; unter #123 hatte
+die Reihenfolge zwar auch gestimmt, dort liess aber der Ausfalltext durch, es
+gab gar keinen Review.
+
 **Diese Aufzählung hinkte zwei Läufe hinterher.** Der Lauf unter #116 stand
 nur in der Laufzeit-Liste unten, nicht hier — gezählt wurde, was gerade
 gebraucht wurde. Eine Zählung, die an zwei Stellen geführt wird, driftet; das
 ist dieselbe Mechanik wie beim ruff-Literal, nur ohne roten Check, der es
 meldet.
 
-Was die acht Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
-ersetzt. Alle acht stehen in **einem** Repo. Über zwei Tage und acht Läufe
+**Seit dem 20.9.2026 steht jede Zahl nur noch in der Merge-Tabelle.** Die drei
+Listen, die hier Startwerte, Laufzeiten und interne Laufzeiten je einzeln
+wiederholten, sind dort zu Spalten geworden. Der Absatz über die driftende
+Zählung hatte es zweimal vorhergesagt und zweimal selbst vorgeführt; die
+Vorhersage abzuschreiben und die Struktur zu lassen, wäre das dritte Mal
+gewesen. Die Lehrsätze bleiben, wo sie stehen — sie verweisen jetzt auf die
+Tabelle, statt ihre Zahlen mitzuführen.
+
+Was die neun Läufe nicht hergeben: dass die Tabelle den alten Text *überall*
+ersetzt. Alle neun stehen in **einem** Repo. Über drei Tage und neun Läufe
 hinweg ist die Form dort stabil, über das Portfolio sagt sie nichts, und ob der
 alte Satz anderswo noch kommt, hat niemand nachgesehen. Bis dahin gilt beides
 als möglicher Beleg — und ein weiterer unbekannter Text wird wörtlich zitiert,
 nicht einsortiert.
 
-Die Laufzeit **streut weiter, als hier zwei Fassungen lang stand.** Von ready
-bis `Completed` — die Basis, die für alle acht Läufe öffentlich ablesbar ist:
-69 s unter #103, 83 s unter #105, 78 s unter #113, **48,5 s unter #114**,
-79,0 s unter #115, 72,1 s unter #116, 91 s unter #117 und **rund 135 s unter
-#118**. Der Satz davor lautete «das Fenster von gut einer Minute bis
-knapp achtzig Sekunden hält also», geschrieben in #114 auf drei Beobachtungen —
-und derselbe PR hat ihn beim Mergen widerlegt, neunzehn Minuten später. Drei
-Punkte, die nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
+Die Laufzeit **streut weiter, als hier zwei Fassungen lang stand** — die
+Spalte «Laufzeit» der Merge-Tabelle weiter unten führt sie je Lauf. Der Satz
+davor lautete «das Fenster von gut einer Minute bis knapp achtzig Sekunden
+hält also», geschrieben in #114 auf drei Beobachtungen — und derselbe PR hat
+ihn beim Mergen widerlegt, neunzehn Minuten später. Drei Punkte, die
+nebeneinanderliegen, sind keine Untergrenze; sie sind drei Punkte.
 
-Die interne Laufzeit («Running since …» bis `Completed`) ist nur für drei
-davon bekannt: 62 s unter #103 (12:41:58,07 → 12:43:00,23), 78 s unter #105
-(16:57:06,81 → 16:58:24,64), 70,9 s unter #113 (18:50:10,42 → 18:51:21,28),
-65,6 s unter #116 (03:59:29,51 → 04:00:35,09), 82,2 s unter #117
-(05:18:11,20 → 05:19:33,44) und **129,4 s unter #118**
-(06:10:11,34 → 06:12:20,77). Für #114 und #115 fehlt sie, weil erst nach `Completed` gelesen wurde und die
-Tabelle den Startzeitpunkt dann nicht mehr zeigt. Aus dem `created_at` des
-Kommentars gerechnet wären es 41,5 s bzw. 65,0 s, aber das ist eine andere
-Basis — der Kommentar entsteht zwei bis drei Sekunden nach dem Start. **Die
-beiden Basen nicht mischen**; wer 41,5 gegen 62 stellt, vergleicht zwei
+**Zwei Basen, und sie dürfen nicht gemischt werden.** «Laufzeit» meint ready
+bis `Completed` und ist für jeden Lauf öffentlich ablesbar; «intern» meint
+«Running since …» bis `Completed` und fehlt dort, wo erst nach `Completed`
+gelesen wurde — die Tabelle zeigt den Startzeitpunkt dann nicht mehr. Für
+#114 und #115 liesse sich aus dem `created_at` des Kommentars 41,5 s bzw.
+65,0 s rechnen, aber das ist eine dritte Basis: Der Kommentar entsteht zwei
+bis drei Sekunden nach dem Start. Wer 41,5 gegen 62 stellt, vergleicht zwei
 Messgrössen.
 
 **Und der Absatz selbst ist darauf hereingefallen.** Der Abstand zwischen Merge
@@ -550,14 +564,17 @@ Zahl untertreibt genau das, worum es in dem Satz geht. Gefunden hat es der
 Codex-Review auf #118, also die Instanz, die das Gate schützen soll. Eine Regel
 zu kennen, schützt nicht davor, sie zu brechen — ein zweiter Leser schon.
 
-Praktisch heisst das: **48,5 s bis rund 135 s**, nach acht Läufen. Das ist die
+Praktisch heisst das: **48,5 s bis rund 135 s**, nach neun Läufen. Das ist die
 vierte Fassung dieses Satzes, und die dritte wurde kassiert, **während der PR
 offen war, der sie schrieb**: #118 trug «48,5 s bis 91 s» ein, und der
 Codex-Lauf auf ebendiesem PR brauchte 129,4 s.
 
-Damit ist keine Fassung dieses Satzes je einen Tag alt geworden. Eine gemerkte
-Zahl ist hier nicht bloss ungenau, sie ist das falsche Werkzeug — den
-Startzeitpunkt aus der Tabelle lesen, nicht das Fenster erinnern.
+**Die vierte Fassung hat als erste einen Lauf überlebt**, und das ist kein
+Freispruch für die Methode: #125 lag mit 113 s innerhalb der Spanne, also hat
+die Zahl nichts entschieden, was die Tabelle nicht auch zeigt. Vorher war
+keine Fassung dieses Satzes je einen Tag alt geworden. Eine gemerkte Zahl ist
+hier nicht bloss ungenau, sie ist das falsche Werkzeug — den Startzeitpunkt
+aus der Tabelle lesen, nicht das Fenster erinnern.
 
 **Deshalb die Startzeit lesen, nicht das Fenster erinnern.** Der Absatz oben
 warnt davor, zu früh zu lesen und einen laufenden Review für das Ergebnis zu
@@ -571,8 +588,9 @@ Zahl daneben nicht. Ohne ihn ist `Running` nur ein Wort.
 Die 👍-Reaktion hat der Infokasten übrigens neu formuliert («reacts with 👀
 while any review is running … and reacts with 👍 once all reviews finish with no
 findings») und weiterhin nicht geliefert: `reactions.total_count` war `0`, weder
-während des Laufs noch danach — zuletzt unter #118, also in allen acht
-Beobachtungen. Unter #118 fällt dabei genau die 👀-Hälfte der Behauptung: Der
+während des Laufs noch danach — zuletzt unter #118, also in den ersten acht
+Beobachtungen; unter #125 hat niemand nachgesehen, und ungemessen heisst hier
+ungemessen und nicht «wieder nicht geliefert». Unter #118 fällt dabei genau die 👀-Hälfte der Behauptung: Der
 Lauf hatte einen Befund, das 👍 stand also ohnehin nicht zu, aber während der
 129 Sekunden Laufzeit war auch kein 👀 da. Der Kasten bleibt keine Quelle.
 
@@ -603,32 +621,38 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Wie viel Zeit, ist inzwischen achtmal durchgemessen, alle acht Male in
-`srgssr-mcp`:
+Wie viel Zeit, ist inzwischen neunmal durchgemessen, alle neun Male in
+`srgssr-mcp`. **Diese Tabelle ist die einzige Stelle, an der diese Zahlen
+stehen** — die Absätze darüber und darunter verweisen darauf, statt sie zu
+wiederholen:
 
-| PR | Datum | ready | gemergt | Review startet | Review fertig |
-| --- | --- | --- | --- | --- | --- |
-| #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 |
-| #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 |
-| #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 |
-| #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 |
-| #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 |
-| #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 |
-| #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 |
-| #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 |
+| PR | Datum | ready | gemergt | Review startet | Review fertig | bis Start | Laufzeit | intern |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #103 | 29.8.2026 | 12:41:51 | 12:41:53 | 12:41:58 | 12:43:00 | 7 s | 69 s | 62 s |
+| #105 | 29.8.2026 | 16:57:01 | 16:57:04 | 16:57:06 | 16:58:24 | 5,8 s | 83 s | 78 s |
+| #113 | 17.9.2026 | 18:50:03 | 18:50:13 | 18:50:10 | 18:51:21 | 7,4 s | 78 s | 70,9 s |
+| #114 | 17.9.2026 | 19:06:56 | 19:07:01 | (ungemessen) | 19:07:44 | — | **48,5 s** | — |
+| #115 | 18.9.2026 | 03:52:49 | 03:52:57 | (ungemessen) | 03:54:08 | — | 79,0 s | — |
+| #116 | 18.9.2026 | 03:59:23 | 03:59:35 | 03:59:29 | 04:00:35 | 6,5 s | 72,1 s | 65,6 s |
+| #117 | 18.9.2026 | 05:18:02 | 05:18:07 | 05:18:11 | 05:19:33 | **9 s** | 91 s | 82,2 s |
+| #118 | 18.9.2026 | 06:10:06 | **06:13:07** | 06:10:11 | 06:12:20 | 5 s | **rund 135 s** | 129,4 s |
+| #125 | 20.9.2026 | 09:00:48 | **09:28:15** | 09:00:55 | 09:02:41 | 7 s | 113 s | 106,3 s |
 
-Die ready-Zeitpunkte von #117 und #118 sind auf ±1 s genau — abgeleitet aus dem
-Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle übrigen Werte stehen
-sekundengenau in der API.
+«bis Start» ist ready → «Review startet», «Laufzeit» ready → «Review fertig»,
+«intern» der Startzeitpunkt aus der Statustabelle («Running since …») →
+`Completed`. Die ready-Zeitpunkte von #117, #118 und #125 sind auf ±1 s genau —
+abgeleitet aus dem Event-Zeitstempel und der Erzeugung des Gate-Jobs; alle
+übrigen Werte stehen sekundengenau in der API.
 
-Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — und dann
-**181 Sekunden unter #118**. Sieben der acht Reviews liefen damit vollständig
-auf einem bereits geschlossenen PR: unter #113 war das Ergebnis 68 Sekunden
-nach dem Merge da, unter #114 entstand die Statustabelle überhaupt erst zwei
-Sekunden **nach** dem Merge, und unter #117 begann der Review vier Sekunden
-danach. Dass keiner von ihnen etwas fand, ist Glück und nicht Verfahren: ein
-Befund wäre an einem gemergten PR gelandet, wo ihn die Regel «beantworten oder
-beheben» nur noch über einen Folge-PR erreicht.
+Zwei, drei, zehn, fünf, acht, zwölf und fünf Sekunden bis zum Merge — dann
+**181 Sekunden unter #118** und **25½ Minuten unter #125**. Sieben der neun
+Reviews liefen damit vollständig auf einem bereits geschlossenen PR: unter
+#113 war das Ergebnis 68 Sekunden nach dem Merge da, unter #114 entstand die
+Statustabelle überhaupt erst zwei Sekunden **nach** dem Merge, und unter #117
+begann der Review vier Sekunden danach. Dass keiner von ihnen etwas fand, ist
+Glück und nicht Verfahren: ein Befund wäre an einem gemergten PR gelandet, wo
+ihn die Regel «beantworten oder beheben» nur noch über einen Folge-PR
+erreicht.
 
 **#118 ist die Ausnahme, und sie ist die interessanteste Zeile der Tabelle.**
 Dort wurde drei Minuten gewartet, der Review war 47 Sekunden vor dem Merge
@@ -638,9 +662,8 @@ Wer lange genug wartet, hat das Ergebnis, aber noch nicht gelesen. Das Glück
 von oben war unter #118 aufgebraucht.
 
 **«Fünf bis sieben Sekunden bis zum Start» ist widerlegt, und zwar durch den
-PR, der den Einwand dagegen abgeschwächt hatte.** Gemessen sind sechs
-Startwerte: 7 s (#103), 5,8 s (#105), 7,4 s (#113), 6,5 s (#116), **9 s
-(#117)** und 5 s (#118).
+PR, der den Einwand dagegen abgeschwächt hatte.** Die sieben gemessenen
+Startwerte stehen in der Spalte «bis Start»; sie reichen von 5 s bis 9 s.
 
 Der Weg dorthin ist die eigentliche Lehre. Für #114 und #115 fehlt der
 Startzeitpunkt; ablesbar war nur die Entstehung des Kommentars — 7 s nach ready
@@ -655,7 +678,7 @@ sich so liest. Derselbe Kurzschluss steckte in «rund 40 bis 85 Sekunden» und
 ist dort eine Fassung weiter oben ebenfalls korrigiert worden, durch denselben
 Lauf.
 
-**Der Abstand wächst nicht monoton, und sieben der acht haben nicht gereicht.**
+**Der Abstand wächst nicht monoton, und sieben der neun haben nicht gereicht.**
 Zwei, drei, zehn, fünf, acht, zwölf, fünf — gegenüber 48,5 bis rund 135 Sekunden
 Laufzeit ist jeder davon bedeutungslos. Wer hier «etwas warten» liest, hat die
 Grössenordnung verfehlt.
@@ -663,6 +686,14 @@ Grössenordnung verfehlt.
 Der achte hat gereicht und half trotzdem nicht: 181 Sekunden, Ergebnis lag vor,
 Befund offen. Eine ausreichende Wartezeit ist eine notwendige Bedingung, keine
 hinreichende.
+
+**Der neunte hat gereicht und geholfen — aber nicht, weil jemand gewartet
+hätte.** Unter #125 lagen 25½ Minuten zwischen Ergebnis und Merge, und keine
+davon war eine Wartezeit: Der Required Check hielt den Knopf, das Ergebnis lag
+nach knapp zwei Minuten vor, und der Rest der Zeit ging für das Lesen des
+Befundstands drauf — `get_reviews` und `get_review_comments`, beide leer.
+Genau so ist es gemeint. Die Zahl in der Spalte «gemergt» misst hier keine
+Geduld, sondern eine Mechanik.
 
 **Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
 hier, seit das Maximum bei 83 s lag; unter #118 waren es rund 135 s. Eine feste
@@ -756,6 +787,13 @@ davon. Drei Dinge, die er ausdrücklich nicht kann:
   sichtbarer Hinweis — und ein sichtbarer Hinweis ist genau das, was hier
   siebenmal nicht gereicht hat. Der Eintrag ist eine Repo-Einstellung, steht in
   keiner Datei und ist beim Lesen des Workflows nicht zu sehen.
+
+  **Mit dem Eintrag greift er, und auch das ist jetzt gemessen.** Unter #125 am
+  20.9.2026 schloss der Job um 09:02:45 mit `success`, gemergt wurde um
+  09:28:15 — zum ersten Mal lag zwischen einem echten Review-Ergebnis und dem
+  Merge überhaupt ein Abstand, und zwar in der richtigen Richtung. Die Mechanik
+  war seit #117 in Ordnung; gefehlt hatte der eine Handgriff, der in keiner
+  Datei steht.
 - **Nach Ablauf der Wartezeit lässt er bei einem Ausfalltext durch.** Erschöpftes
   Kontingent oder Environment-Meldung heissen, dass von Codex nichts zu erwarten
   ist; darauf zu blockieren hielte das Repo wegen einer Störung an. Der Lauf sagt
@@ -796,6 +834,11 @@ davon. Drei Dinge, die er ausdrücklich nicht kann:
   einzelner Nit-Thread den Merge auf, und ein Gate, das im Normalbetrieb
   anspringt, wird abgeschaltet. Bis das entschieden ist, steht die Lücke hier
   benannt statt unausgesprochen.
+
+  Unter #125 hat sie ein Mensch von Hand geschlossen: `get_reviews` und
+  `get_review_comments` beide abgefragt, beide leer, dann gemergt. Das ist die
+  Lücke gestopft und nicht behoben — dieselbe Abfrage am nächsten PR zu
+  vergessen, kostet dasselbe wie vorher.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
@@ -1062,14 +1105,32 @@ Kein `include` unter `[tool.ruff]` setzen. Es stand dort auf
 `["src/**/*.py"]` und hob die Pfadangabe der beiden ruff-Gates still wieder
 auf: sie liefen grün, während sie nur `src/` prüften (behoben in #68).
 
-**Fixtures: der Recorder steht, die Aufzeichnungen fehlen noch.** Die Messung
-vom 15.08.2026 stimmt — ohne Consumer Key antworten Token-Endpunkt und alle
-fünf Produkt-Basen mit 401 —, aber die Schlussfolgerung daraus war zu weit.
+**Fixtures: 25 Aufzeichnungen, und dieser Absatz hat sie einen Monat lang
+geleugnet.** Hier stand bis zum 20.9.2026 «der Recorder steht, die
+Aufzeichnungen fehlen noch» — während `tests/fixtures/` seit dem 16.8.2026
+25 Antworten samt `PROVENANCE.md` trägt (Commit `3f54c90`) und
+`tests/test_recorded_fixtures.py` sie mit 25 Tests abspielt, über **alle 15**
+Werkzeuge. Die Portfolio-Konvention ist hier also erfüllt und war es beim
+Lesen dieses Satzes schon.
+
+Der Weg dahin gehört in die Akte, weil er zweimal an derselben Stelle
+abgebogen ist. Die Messung vom 15.08.2026 stimmt — ohne Consumer Key
+antworten Token-Endpunkt und alle fünf Produkt-Basen mit 401 —, aber die
+Schlussfolgerung «also gibt es hier keine Fixtures» ging zu weit.
 Nachgemessen am 16.08.2026: die 401 kommt von SRG SSR selbst (eigene Header,
 CONNECT geht durch), der Host ist also erreichbar und es fehlen allein die
 Credentials. Die liegen längst da, wo der nächtliche Live-Lauf sie nimmt.
 `.github/workflows/record-fixtures.yml` fährt `scripts/record_fixtures.py` mit
-denselben Secrets, auf Knopfdruck.
+denselben Secrets, auf Knopfdruck — und hat sie am selben Tag gefahren.
+
+**Der zweite Fehler ist der lehrreichere.** Der erste war eine zu weite
+Schlussfolgerung; der zweite war, sie nach ihrer Widerlegung stehen zu lassen.
+Die Aufzeichnungen kamen, die Zeile blieb. Ein Satz, der einmal gemessen war,
+altert nicht von selbst — und er altert still, weil kein Test ihn hält:
+`check_version_sync.py` bewacht eine Zahl, aber niemand bewacht eine
+Zustandsbehauptung über das Dateisystem. Aufgefallen ist es beim
+Release-Vorlauf zu 2.1.0, als jemand die Werkzeuge zählte und dabei über den
+Ordner stolperte.
 
 Ein Recorder, den niemand fahren *und* niemand prüfen kann, wäre das plausibel
 aussehende, unwiderlegbare Artefakt, gegen das die Konvention gerichtet ist.
@@ -1095,10 +1156,12 @@ einmal (`_EinmalHolen`) und pausiert zwischen den Plan-Einträgen. Wer den
 Aufnahme-Workflow zweimal kurz hintereinander fährt, misst die Drosselung und
 nicht die Quelle — nach einem roten Lauf erst warten, dann wiederholen.
 
-Bis die Aufzeichnungen da sind, trägt der nächtliche Live-Lauf die Drift-Frage
-— stärker als Fixtures, weil er die Quelle von heute prüft, aber nur solange er
-*jedes* Werkzeug erreicht. Genau das hält `test_live_coverage.py` fest, samt
-der Probe im Docstring.
+Aufzeichnungen und Live-Lauf beantworten verschiedene Fragen, und keiner
+ersetzt den anderen: Die Fixtures halten die Drahtform von gestern fest und
+laufen ohne Credentials, der nächtliche Live-Lauf prüft die Quelle von heute —
+aber nur solange er *jedes* Werkzeug erreicht. Genau das hält
+`test_live_coverage.py` fest, samt der Probe im Docstring; die Abspielsuite
+zählt ihrerseits gegen dieselbe Werkzeugliste.
 
 **Live-Tests:** `.github/workflows/live-test.yml` läuft nächtlich per Cron
 (`0 4 * * *`) plus `workflow_dispatch`, mit Credential-Guard vor dem Lauf; ein
