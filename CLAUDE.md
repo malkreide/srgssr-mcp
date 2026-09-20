@@ -359,9 +359,17 @@ Meldung wieder **ohne** den Zusatz. Damit sind es drei Beobachtungen:
 | 18.9., 14:07:00 | Erwähnung im Kommentar | ohne Zusatz |
 | 20.9., 16:56 | Erwähnung im Kommentar | **mit** «for code reviews» |
 | 20.9., 17:07:38 | PR eröffnet (Draft) | ohne Zusatz |
+| 20.9., 17:10:20 | `ready_for_review` | **mit** «for code reviews» |
 
 Derselbe Auslöser, zwei Texte — die Zuordnung «Auslöser bestimmt den Topf» ist
-damit keine. Was sie ersetzt, ist offen: Vielleicht entscheidet, welcher Topf
+damit keine.
+
+**Aber nur die eine Hälfte fällt.** Der ready-Auslöser hat bisher dreimal
+denselben Text gebracht, den mit dem Zusatz (18.9. unter #122 und #123, 20.9.
+unter #129); widersprüchlich ist allein der Handauslöser. Wer aus dem
+Widerspruch schliesst, die Textvariante sei von keinem Auslöser vorhersagbar,
+hat mehr verworfen als gemessen — dieselbe Übertreibung, vor der der Absatz
+über den 4xx in Teil 1 warnt, nur in die andere Richtung. Was sie ersetzt, ist offen: Vielleicht entscheidet, welcher Topf
 zuerst leer war, vielleicht etwas anderes. Gemessen ist nur, dass der Auslöser
 es nicht tut.
 
