@@ -549,8 +549,10 @@ und liess den Merge trotzdem zu. `Completed` heisst «gelaufen», nicht
 (5261069073) mit drei P2-Befunden, wieder das Gate auf `success`, wieder
 gemergt, bevor die Korrektur da war — und der Inhalt des PR war der Bericht
 über genau diesen Vorgang bei #126. Damit ist der dritte Serienbruch auch der
-dritte Fall derselben Gate-Grenze, an drei aufeinanderfolgenden PRs desselben
-Nachmittags.
+dritte Fall derselben Gate-Grenze — #118 am 18.9., #126 und #127 am 20.9.,
+die beiden letzten elf Minuten auseinander. Zwischen #118 und #126 liegen
+mehrere PRs, die sauber durchliefen; «dreimal hintereinander» wäre also
+falsch, «drei Fälle an zwei Tagen» ist die Messung.
 
 Die drei Befunde selbst waren dabei nicht inhaltlich, sondern buchhalterisch:
 ein stehengebliebener Zähler, ein Einzelwert in der Prosa, eine überholte
@@ -747,10 +749,13 @@ Befundstands drauf — `get_reviews` und `get_review_comments`, beide leer.
 Genau so ist es gemeint. Die Zahl in der Spalte «gemergt» misst hier keine
 Geduld, sondern eine Mechanik.
 
-**Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr**, und der
-Abstand ist inzwischen grotesk: Sie stand hier, als das Maximum noch bei gut
-achtzig Sekunden lag; der langsamste Lauf der Tabelle braucht mehr als das
-Doppelte der zwei Minuten.
+**Die Zwei-Minuten-Regel deckt den langsamsten Lauf nicht mehr.** Sie stand
+hier, als das Maximum noch bei gut achtzig Sekunden lag; inzwischen liegt der
+langsamste Lauf der Tabelle deutlich über zwei Minuten — um wie viel, sagt die
+Spalte «Laufzeit» und nicht dieser Satz. Hier stand zwischenzeitlich «mehr als
+das Doppelte», und das war schlicht falsch gerechnet: Es ist rund das
+1,7-Fache. Der Satz sollte die Zahl loswerden und hat stattdessen eine
+Ableitung erfunden — ein Verweis wäre beides gewesen, kürzer und richtig.
 Eine feste Wartezeit muss den langsamsten Lauf decken, nicht den schnellsten —
 und welcher das ist, weiss man erst hinterher. Die Zahl ist in dieser Datei
 fünfmal nach oben korrigiert worden, jedes Mal vom nächsten Lauf.
