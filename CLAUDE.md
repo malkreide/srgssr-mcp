@@ -841,7 +841,7 @@ Nicht das Event fehlte diesmal, sondern die zweite Abfrage vor dem Schreiben. Da
 Auskunft» in Teil 1: nichts gehört zu haben heisst nicht, dass nichts
 geschehen ist.
 
-Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt sieben Glieder.
+Der lehrreiche Teil ist die Wiederholung, und sie hat jetzt acht Glieder.
 #105 war der PR, der diese Falle dokumentiert, und ist ihr zum Opfer
 gefallen. #113 führte die Drahtform-Messung ein und fiel ihr mit der Tabelle
 bereits im Repo erneut zum Opfer. #114 schrieb die Zwei-Minuten-Regel und
