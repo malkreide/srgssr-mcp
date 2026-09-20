@@ -5,6 +5,8 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-20
+
 ### Fixed
 
 - **Jedes `tools/call` kam mit `isError` zurueck — bei 425 gruenen Tests.** Die
@@ -268,6 +270,15 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   im Docstring von `tests/test_live_coverage.py`, damit die nächste Sitzung sie
   nicht wiederholt. Getrennt, weil die `CLAUDE.md` kurz bleiben muss — eine
   lange wird überlesen und ist dann schlechter als keine.
+
+  **Überholt, noch innerhalb desselben Releases.** Der Eintrag zum
+  Fixture-Recorder weiter oben nimmt die Begründung zurück: Die 401 kam von
+  SRG SSR selbst, der Host war erreichbar, es fehlten allein die Credentials —
+  und die liegen dort, wo der nächtliche Live-Lauf sie nimmt. Seit dem
+  16.8.2026 liegen 25 Aufzeichnungen in `tests/fixtures/` samt
+  `PROVENANCE.md`, abgespielt von `tests/test_recorded_fixtures.py`. Der
+  Eintrag bleibt stehen, weil die Fehlmessung zum Release gehört; wer nur die
+  Überschrift liest, läse sonst das Gegenteil des Auslieferungsstands.
 
 - **Retry-Politik gegenüber dem SRG-SSR-Gateway** (ARCH-014). Bisher gab es
   keine: Ein einzelner Netzwerkfehler, ein Timeout oder ein 503 beendete den
