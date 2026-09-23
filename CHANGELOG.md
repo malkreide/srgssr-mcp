@@ -5,6 +5,30 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Entfernt
+
+- **Das Codex-Gate ist weg:** `.github/workflows/codex-gate.yml`,
+  `tests/test_codex_gate.py`, `tests/test_codex_messreihe.py`, der
+  Fixture-Ordner `tests/codex_gate_fixtures/` und `docs/codex-messreihe.md`
+  (die Rohwerte zum entfernten `CLAUDE.md`-Abschnitt). Die dev-Abhaengigkeit
+  `pyyaml` faellt mit — sie hing allein an `tests/test_codex_gate.py`.
+
+  Dazu der Abschnitt «Wenn Codex gar nicht erst hinsieht» in `CLAUDE.md`
+  (829 Zeilen), die Beschreibung des Workflows in Teil 2 und der Abschnitt
+  «Vor dem Mergen» im PR-Template — sein erster Satz benannte den entfernten
+  Check, seine Haekchen setzten die Codex-Review-Disziplin durch.
+
+  **Der required Kontext `review-abgeschlossen` muss von Hand aus der Branch
+  Protection.** Er heisst so und nicht `codex-gate`: Der Job trug keinen
+  `name:`, also nahm GitHub die Job-ID — wer in den Einstellungen nach
+  «codex» sucht, findet ihn nicht. Diese Einstellung sperrt der Agent-Proxy
+  mit HTTP 403.
+
+  Der Abschnitt «Wenn ein Required Check den Merge nicht haelt» in Teil 1
+  bleibt: Er handelt von Branch Protection portfolio-weit und von den zwei
+  getrennten Check-APIs; Codex kommt dort nur als datiertes Beispiel vor.
+
+
 ## [2.1.0] - 2026-09-20
 
 ### Fixed
