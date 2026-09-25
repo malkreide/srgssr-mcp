@@ -57,11 +57,6 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "respx>=0.21.0",
-    # Fuer `tests/test_codex_gate.py`: der Test extrahiert das `run`-Skript
-    # aus `codex-gate.yml` und faehrt es, statt seine Logik nachzubauen.
-    # Deklariert und nicht per `importorskip` umgangen — ein Test, der in der
-    # CI still uebersprungen wird, haelt die Suite gruen und prueft nichts.
-    "pyyaml>=6.0",
 ]
 
 [project.scripts]
