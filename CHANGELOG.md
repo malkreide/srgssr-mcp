@@ -41,11 +41,13 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
   «Vor dem Mergen» im PR-Template — sein erster Satz benannte den entfernten
   Check, seine Haekchen setzten die Codex-Review-Disziplin durch.
 
-  **Der required Kontext `review-abgeschlossen` muss von Hand aus der Branch
-  Protection.** Er heisst so und nicht `codex-gate`: Der Job trug keinen
-  `name:`, also nahm GitHub die Job-ID — wer in den Einstellungen nach
-  «codex» sucht, findet ihn nicht. Diese Einstellung sperrt der Agent-Proxy
-  mit HTTP 403.
+  **Der required Kontext `review-abgeschlossen` blockiert nicht mehr.** Ohne
+  `codex-gate.yml` meldet ihn nichts; am 23.9.2026 stand PR #131 deshalb bei
+  sieben gruenen Check-Runs auf `blocked`. Mit denselben sieben stand PR #136
+  am 14.10.2026 auf `clean` und ging durch — der Kontext wird also nicht mehr
+  gefordert. Wer den Eintrag wann entfernt hat, ist nicht gemessen; die
+  Einstellung sperrt der Agent-Proxy mit HTTP 403. Hier stand bis dahin, er
+  muesse noch von Hand entfernt werden.
 
   Der Abschnitt «Wenn ein Required Check den Merge nicht haelt» in Teil 1
   bleibt: Er handelt von Branch Protection portfolio-weit und von den zwei
