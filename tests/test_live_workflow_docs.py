@@ -14,6 +14,7 @@ docs and cannot contradict them.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -131,12 +132,15 @@ def _notify_script() -> str:
     return textwrap.dedent("\n".join(kept))
 
 
-def _run_notify(event_name: str, open_issues: list[dict]) -> list[dict]:
+def _run_notify(event_name: str, open_issues: list[dict], reason: str = "") -> list[dict]:
     """Execute the real notify script against a stubbed GitHub API.
 
     Asserting that the source contains ``startsWith`` would also pass for
     ``startsWith(runUrl)``. Running it is the only way to find out what it
     actually treats as the same report.
+
+    ``reason`` arrives the way the workflow hands it over: as ``LIVE_REASON``
+    in the environment, not spliced into the script.
     """
     harness = f"""
     const OPEN = {json.dumps(open_issues)};
@@ -166,12 +170,13 @@ def _run_notify(event_name: str, open_issues: list[dict]) -> list[dict]:
         capture_output=True,
         text=True,
         timeout=30,
+        env={**os.environ, "LIVE_REASON": reason},
     )
     assert proc.returncode == 0, f"notify script failed to run:\n{proc.stderr}"
     return json.loads(proc.stdout)
 
 
-_TITLE = "Live tests failed (possible API schema drift)"
+_TITLE = "Live tests failed"
 _NEEDS_NODE = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
 
 
@@ -210,3 +215,51 @@ def test_the_body_names_the_trigger(event_name: str, expected: str):
     calls = _run_notify(event_name, [])
     assert calls[0]["op"] == "create"
     assert calls[0]["body"].startswith(f"{expected}: live tests")
+
+
+@_NEEDS_NODE
+def test_an_issue_under_the_old_title_keeps_its_thread():
+    """The title lost "(possible API schema drift)"; the open issue must not fork.
+
+    Issue #135 was opened under the long title on 9.10.2026 and was still open
+    when the title changed. The short one is a prefix of it, so the next red
+    run comments there instead of filing a second report beside it.
+    """
+    calls = _run_notify("schedule", [{"number": 135, "title": "Live tests failed (possible API schema drift)"}])
+    assert [c["op"] for c in calls] == ["comment"], "the old-titled issue was not recognised"
+    assert calls[0]["issue_number"] == 135
+
+
+_POLIS_503 = (
+    "3 Fehlschlag/Fehlschlaege und 0 Fehler von 15 Test(s) — Quelle nicht erreichbar (HTTP 503), "
+    "ueber das Schema sagt dieser Lauf nichts: test_live_polis_get_votations"
+)
+
+
+@_NEEDS_NODE
+def test_a_comment_says_what_failed():
+    """Five nights of a bare "Still failing" hid that only Polis was down."""
+    calls = _run_notify("schedule", [{"number": 7, "title": _TITLE}], reason=_POLIS_503)
+    assert calls[0]["op"] == "comment"
+    assert calls[0]["body"].startswith("Still failing — nightly run: https://github.com/o/r/actions/runs/42")
+    assert _POLIS_503 in calls[0]["body"]
+
+
+@_NEEDS_NODE
+def test_a_new_issue_says_what_failed():
+    calls = _run_notify("workflow_dispatch", [], reason=_POLIS_503)
+    assert calls[0]["op"] == "create"
+    assert _POLIS_503 in calls[0]["body"]
+
+
+@_NEEDS_NODE
+def test_no_reason_leaves_no_empty_paragraph():
+    calls = _run_notify("schedule", [{"number": 7, "title": _TITLE}])
+    assert calls[0]["body"] == "Still failing — nightly run: https://github.com/o/r/actions/runs/42"
+
+
+def test_the_reason_reaches_the_script_through_env():
+    """`${{ }}` inside the script would splice the reason into JavaScript source."""
+    step = _notify_step()
+    assert "LIVE_REASON: ${{ steps.verdict.outputs.reason }}" in step
+    assert "${{ steps.verdict.outputs.reason }}" not in _notify_script()

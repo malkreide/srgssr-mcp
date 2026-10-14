@@ -82,17 +82,34 @@ jobs:
       # exists only for whoever thinks to open the Actions tab. A hand-started
       # run is the one most likely to be checking a real suspicion, so it is the
       # last one that should stay silent.
+      #
+      # The classified reason travels into the issue. From 9.10.2026 on the same
+      # three Polis tests failed every night on an HTTP 503 from the gateway,
+      # and for five red nights (9.–13.10.) the thread said no more than
+      # "Still failing" — that the source had not answered at all, and only
+      # for Polis, was in the log alone. Via
+      # `env`, not `${{ }}` in the script, for the same reason as below.
       - name: Notify on failure
         if: steps.verdict.outputs.state == 'finding'
         uses: actions/github-script@v9
+        env:
+          LIVE_REASON: ${{ steps.verdict.outputs.reason }}
         with:
           script: |
             // One stable title across both triggers, because it is the dedupe
             // key below: a run-specific title would file a fresh issue every
             // time. Which trigger produced the run is recorded in the body.
-            const title = "Live tests failed (possible API schema drift)";
+            //
+            // It read "Live tests failed (possible API schema drift)" and so
+            // called every finding a drift — including the 503 outage, where no
+            // response came back that a schema could be checked against. What
+            // the run actually found is in the reason now. The shorter title is
+            // still a prefix of the old one, so an issue opened under it keeps
+            // its thread.
+            const title = "Live tests failed";
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const trigger = context.eventName === "schedule" ? "Nightly run" : "Manual run";
+            const reason = process.env.LIVE_REASON || "";
 
             // A drifted API stays drifted, so an unconditional issues.create()
             // would file one report per night for the same break. Reuse the
@@ -117,7 +134,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body: `Still failing — ${trigger.toLowerCase()}: ${runUrl}`,
+                body: [`Still failing — ${trigger.toLowerCase()}: ${runUrl}`, reason].filter(Boolean).join("\n\n"),
               });
               return;
             }
@@ -131,9 +148,13 @@ jobs:
                 "",
                 `Workflow run: ${runUrl}`,
                 "",
-                "Check the failing assertions in `tests/test_live.py` — they read typed",
-                "fields off the tool responses, so a failure points at the field that",
-                "changed shape rather than at a missing substring.",
+                ...(reason ? [reason, ""] : []),
+                "An HTTP status above means the tool got an error instead of data. A",
+                "502, 503 or 504 means the source did not answer at all — an outage,",
+                "not a drift. Without a status, check the failing assertions in",
+                "`tests/test_live.py` — they read typed fields off the tool responses,",
+                "so a failure points at the field that changed shape rather than at a",
+                "missing substring.",
                 "",
                 "Close this issue once the tests pass again; the next failure opens a new one.",
               ].join("\n"),

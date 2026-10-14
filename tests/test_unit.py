@@ -1012,6 +1012,50 @@ def test_handle_error_leaves_other_statuses_alone():
     assert "nimm srf-1" not in msg
 
 
+# Wortlaut aus dem nächtlichen Live-Lauf vom 13.10.2026 (Run 38391355382): so
+# antwortete das Gateway ab dem 9.10. auf jede Polis-Anfrage.
+_GATEWAY_503_BODY = (
+    '{"fault":{"faultstring":"The Service is temporarily unavailable",'
+    '"detail":{"errorcode":"messaging.adaptors.http.flow.ServiceUnavailable"}}}'
+)
+
+
+@pytest.mark.parametrize("status", [502, 503, 504])
+def test_handle_error_names_an_unreachable_upstream_instead_of_echoing_its_body(status):
+    req = httpx.Request("GET", "https://api.srgssr.ch/polis-api/v2/cases")
+    err = httpx.HTTPStatusError(
+        "boom", request=req, response=httpx.Response(status, text=_GATEWAY_503_BODY, request=req)
+    )
+    msg = _server._handle_error(err)
+    assert msg.startswith(f"Fehler {status}:"), msg
+    assert "nicht erreichbar" in msg
+    assert "andere Parameter" in msg, "the point of the message: retrying with other input will not help"
+    assert "fault" not in msg and "errorcode" not in msg, "gateway body leaked into the model-facing message"
+
+
+def test_handle_error_keeps_a_500_generic():
+    """A 500 is the service answering — the request may be its cause, so no outage claim."""
+    req = httpx.Request("GET", "https://api.srgssr.ch/polis-api/v2/cases")
+    err = httpx.HTTPStatusError("boom", request=req, response=httpx.Response(500, text="nope", request=req))
+    msg = _server._handle_error(err)
+    assert msg == "API-Fehler 500: nope"
+
+
+@respx.mock
+async def test_polis_gateway_503_reaches_the_caller_as_unreachable(caplog):
+    """End to end through the tool, with the body the gateway really sent."""
+    from srgssr_mcp.tools.polis import _clear_reference_cache
+
+    _clear_reference_cache()  # a cached case list from an earlier test would skip the 503
+    respx.get(f"{POLIS_BASE}/cases").mock(return_value=httpx.Response(503, text=_GATEWAY_503_BODY))
+    result = await srgssr_polis_get_votations(PolisListInput(year_from=2020, year_to=2024))
+    assert isinstance(result, ToolErrorResponse)
+    assert result.message.startswith("Fehler 503:"), result.message
+    assert "ServiceUnavailable" not in result.message
+    # The errorcode is what a report to SRG SSR needs — it moves to the log, not away.
+    assert "messaging.adaptors.http.flow.ServiceUnavailable" in caplog.text
+
+
 @respx.mock
 async def test_epg_get_programs_handles_404():
     respx.get(_epg_station()).mock(return_value=httpx.Response(404, text="Not Found"))

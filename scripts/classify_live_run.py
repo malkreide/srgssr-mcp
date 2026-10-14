@@ -53,6 +53,25 @@ Einordnung reicht den Grund durch, statt einen zu konstruieren. Sie sieht dann
 auch nicht ins XML — ein liegengebliebener Report aus einem frueheren Schritt
 belegt nichts ueber einen Lauf, der nicht stattgefunden hat.
 
+EIN FINDING SAGT, WAS GEFALLEN IST — UND OB DIE QUELLE UEBERHAUPT ANTWORTETE
+-------------------------------------------------------------------------
+Vom 9.10.2026 an fielen jede Nacht dieselben drei Polis-Tests, jedes Mal mit
+HTTP 503 vom Gateway. Das Issue hiess «possible API schema drift», und fuenf
+rote Naechte lang (9.–13.10.) sagten die Kommentare darunter nur «Still
+failing». Dass die Quelle gar nicht geantwortet hatte — und zwar nur Polis —,
+stand allein im Log.
+
+Ein Schema laesst sich nur an einer Antwort pruefen. Meldet das Gateway 502,
+503 oder 504, kam keine, und der Lauf sagt ueber das Schema nichts. Er bleibt
+trotzdem ein `finding`: ein Werkzeug, das seit Tagen nicht antwortet, gehoert
+ins Issue. Aber der Grund nennt jetzt die gefallenen Tests und ihren Status,
+damit das Issue selbst sagt, was ein Blick ins Log sonst erst zeigen muss.
+
+Den Status liest diese Einordnung aus der `message` des Testfalls. Dort steht
+er nur, weil `tests/test_live.py` die Meldung des Werkzeugs als Text
+uebergibt (`_describe`) — ein Objekt kuerzt pytest ohne `-v` auf 240 Zeichen,
+und der Schnitt fiel genau vor den Status.
+
 Aufruf:
     python scripts/classify_live_run.py live-report.xml
     python scripts/classify_live_run.py live-report.xml --pytest-exit 1
@@ -67,12 +86,58 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 CLEAR = "clear"
 FINDING = "finding"
 UNKNOWN = "unknown"
+
+# Das Werkzeug nennt den Status vorn in seiner Meldung: «Fehler 404: …»,
+# «Fehler 503: …», «API-Fehler 500: …» (srgssr_mcp._http._handle_error).
+_STATUS = re.compile(r"\bFehler (\d{3})\b")
+
+# Das Gateway hat geantwortet, der Dienst dahinter nicht. Dieselbe Menge wie
+# `srgssr_mcp._http.UPSTREAM_UNAVAILABLE_STATUSES`; das Skript bleibt bei der
+# Standardbibliothek, der Test haelt beide gegeneinander.
+UNREACHABLE = frozenset({502, 503, 504})
+
+
+def _failed_cases(suites: list[ET.Element]) -> list[tuple[str, int | None]]:
+    """(Testname, HTTP-Status oder None) je gefallenem Testfall.
+
+    Gelesen wird nur das `message`-Attribut, nicht der Traceback: Dort steht
+    auch der Quelltext des Tests, und ein Kommentar mit «Fehler 404» darin
+    wuerde als Status gelesen.
+    """
+    cases = []
+    for s in suites:
+        for case in s.iter("testcase"):
+            for child in case:
+                if child.tag in ("failure", "error"):
+                    match = _STATUS.search(child.get("message") or "")
+                    cases.append((case.get("name") or "?", int(match.group(1)) if match else None))
+                    break
+    return cases
+
+
+def _describe_failures(cases: list[tuple[str, int | None]]) -> str:
+    """Was gefallen ist, in einer Zeile — mit der Frage, ob die Quelle antwortete."""
+    statuses = {status for _, status in cases}
+    if statuses <= UNREACHABLE:
+        codes = "/".join(str(s) for s in sorted(statuses))
+        names = ", ".join(name for name, _ in cases)
+        return f" — Quelle nicht erreichbar (HTTP {codes}), ueber das Schema sagt dieser Lauf nichts: {names}"
+
+    def label(status: int | None) -> str:
+        if status is None:
+            return "ohne HTTP-Status"
+        if status in UNREACHABLE:
+            return f"HTTP {status}, Quelle nicht erreichbar"
+        return f"HTTP {status}"
+
+    return ": " + ", ".join(f"{name} ({label(status)})" for name, status in cases)
 
 
 def classify(
@@ -113,10 +178,12 @@ def classify(
     )
 
     if failures or errors:
-        return (
-            FINDING,
-            f"{failures} Fehlschlag/Fehlschlaege und {errors} Fehler von {tests} Test(s)",
-        )
+        reason = f"{failures} Fehlschlag/Fehlschlaege und {errors} Fehler von {tests} Test(s)"
+        # Ohne einzelne Testfaelle im Report bleibt es bei den Zahlen — eine
+        # leere Liste waere sonst «alle nicht erreichbar», weil nichts dagegen
+        # spricht.
+        cases = _failed_cases(suites)
+        return FINDING, reason + (_describe_failures(cases) if cases else "")
     if tests == 0:
         return (
             UNKNOWN,

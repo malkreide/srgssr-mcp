@@ -5,6 +5,29 @@ Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ## [Unreleased]
 
+### Geändert
+
+- **Ein Gateway-503 heisst jetzt «nicht erreichbar», nicht «Schema-Drift».**
+  Vom 9.10.2026 an beantwortete das SRG-SSR-Gateway jede Polis-Anfrage mit
+  HTTP 503 (`messaging.adaptors.http.flow.ServiceUnavailable`); Token, Wetter,
+  Video, Audio und EPG liefen mit demselben Schluessel weiter. Der naechtliche
+  Lauf meldete das fuenf Naechte lang unter «Live tests failed (possible API
+  schema drift)» mit nichts als «Still failing» darunter.
+  - Bei 502, 503 und 504 meldet ein Werkzeug jetzt «Fehler 503: SRG SSR meldet
+    den Dienst … als nicht erreichbar» und dass andere Parameter nichts
+    aendern. Der Gateway-Rumpf geht ins Log (`upstream_unavailable`), wo der
+    errorcode fuer eine Meldung an SRG SSR gebraucht wird. Ein 500 bleibt
+    generisch — dort antwortet der Dienst selbst.
+  - `scripts/classify_live_run.py` nennt bei einem Finding die gefallenen
+    Tests samt HTTP-Status und sagt, wenn alle an einem 502/503/504 hingen,
+    dass der Lauf ueber das Schema nichts aussagt. Der Grund steht im Issue
+    und in jedem Kommentar.
+  - Der Issue-Titel heisst nur noch «Live tests failed». Er ist ein Praefix
+    des alten, das offene Issue behaelt also seinen Thread.
+  - `tests/test_live.py` uebergibt die Meldung des Werkzeugs als Text
+    (`_describe`): Ein Objekt kuerzt pytest ohne `-v` auf 240 Zeichen, und der
+    Schnitt fiel genau vor den Status.
+
 ### Entfernt
 
 - **Das Codex-Gate ist weg:** `.github/workflows/codex-gate.yml`,
