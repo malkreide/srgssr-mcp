@@ -464,17 +464,31 @@ acht Kontexte:
 Gitleaks
 quality (3.11)   quality (3.12)   quality (3.13)
 test (3.11)      test (3.12)      test (3.13)
-review-abgeschlossen   ← zu entfernen, der Workflow ist weg
+review-abgeschlossen   ← wird nicht mehr gefordert, siehe unten
 ```
 
-**Der letzte Kontext hängt in der Luft.** Mit `codex-gate.yml` ist weg, was
-ihn berichtet; ein required Kontext ohne Berichterstatter hält jeden PR auf.
-Er muss von Hand aus der Branch Protection — eine Repo-Einstellung, die der
-Agent-Proxy mit HTTP 403 sperrt.
+**`review-abgeschlossen` hält keinen PR mehr auf.** Mit `codex-gate.yml`
+(entfernt in PR #131) verschwand, was den Kontext berichtete. Zwei Messungen
+mit denselben sieben grünen Check-Runs — den sieben oberen, ohne
+`review-abgeschlossen`:
 
-**Achtung beim Suchen:** Der Kontext heisst `review-abgeschlossen`, nicht
-`codex-gate`. Der Job trug keinen `name:`, also nahm GitHub die Job-ID. Wer
-in den Einstellungen nach «codex» sucht, findet ihn nicht.
+- 23.9.2026, 17:02 UTC, PR #131: `mergeable_state: blocked`.
+- 14.10.2026, 05:50 UTC, PR #136: `mergeable_state: clean`; Merge um
+  06:09 UTC.
+
+Gleiche Checks, anderer Zustand: Der Kontext wird nicht mehr gefordert.
+Dazwischen wurden #131 (25.9., 18:12 UTC) bis #134 gemergt.
+
+Hier stand bis zum 14.10.2026 «muss von Hand aus der Branch Protection» —
+drei Wochen und fünf Merges lang, die alle dagegen sprachen. Dieselbe
+Klasse wie der Fixture-Absatz weiter unten: ein Satz, der eine Lücke
+beschreibt, wird nicht rot, wenn jemand sie schliesst.
+
+Was die Messung **nicht** hergibt: wer den Eintrag wann entfernt hat (die
+Einstellung sperrt der Agent-Proxy mit HTTP 403), ob die übrigen sieben noch
+eingetragen sind und ob `enforce_admins` noch gilt. Alle sieben waren grün;
+der Merge wäre mit wie ohne sie durchgegangen. Belegt ist nur, dass `main`
+geschützt ist (`protected: true`, 14.10.2026).
 
 Dass die Liste gemessen und nicht abgeschrieben ist, ist hier keine Pedanterie:
 Die Branch Protection war am Vormittag von Hand gesetzt worden, `codex-gate.yml`
