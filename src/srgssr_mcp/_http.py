@@ -538,6 +538,12 @@ async def _safe_api_get(url: str, params: dict | None = None, not_found_hint: st
         return _handle_error(e, not_found_hint=not_found_hint)
 
 
+# Gateway statuses that say the service behind it did not deliver: bad answer
+# (502), none at all (503), none in time (504). A 500 is left out on purpose —
+# that is the service itself answering, and the request may well be its cause.
+UPSTREAM_UNAVAILABLE_STATUSES = frozenset({502, 503, 504})
+
+
 def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
     if isinstance(e, ValueError):
         return f"Konfigurationsfehler: {e}"
@@ -554,6 +560,21 @@ def _handle_error(e: Exception, not_found_hint: str | None = None) -> str:
             return f"{base}\n\n**Tipp:** {not_found_hint}" if not_found_hint else base
         if sc == 429:
             return "Fehler 429: Rate-Limit überschritten. Bitte etwas warten und erneut versuchen."
+        # The gateway answered, the service behind it did not. Measured from
+        # 9.10.2026 on: every Polis call came back 503 with the gateway's own
+        # fault body (`messaging.adaptors.http.flow.ServiceUnavailable`), while
+        # token, weather, A/V and EPG answered normally with the same key.
+        # Passing that body through handed the model a JSON blob and left open
+        # whether different parameters would help. They would not — so the
+        # message says so, and the body goes to the log, where the errorcode
+        # is still needed for a report to SRG SSR.
+        if sc in UPSTREAM_UNAVAILABLE_STATUSES:
+            logger.warning("upstream_unavailable", status=sc, body=e.response.text[:200])
+            return (
+                f"Fehler {sc}: SRG SSR meldet den Dienst hinter diesem Werkzeug als nicht erreichbar. "
+                "An der Anfrage liegt es nicht, andere Parameter ändern daran nichts. "
+                "Später erneut versuchen."
+            )
         base = f"API-Fehler {sc}: {e.response.text[:200]}"
         # A bad identifier does not always come back as 404. The EPG rejects an
         # unknown station with 400 (`400.01.004`), so a hint attached to 404

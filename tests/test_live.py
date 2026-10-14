@@ -57,6 +57,22 @@ def _is_error(result) -> bool:
     return isinstance(result, ToolErrorResponse)
 
 
+def _describe(result) -> str:
+    """The assertion message for a tool call that came back as an error.
+
+    A string, not the model. pytest shortens an object in an assertion message
+    to about 240 characters unless it runs with ``-v``, and the cut lands in the
+    middle of the repr. Measured 14.10.2026: without ``-v`` the JUnit report
+    kept ``source`` and ``license`` and dropped ``message`` — the one field that
+    names the HTTP status. ``scripts/classify_live_run.py`` reads that status
+    from the report to tell an outage from a drift, so its verdict would hang
+    on a verbosity flag in the workflow. A string message is never shortened.
+    """
+    if _is_error(result):
+        return f"{result.error_type}: {result.message}"
+    return repr(result)
+
+
 # ---------------------------------------------------------------------------
 # Weather
 # ---------------------------------------------------------------------------
@@ -64,7 +80,7 @@ def _is_error(result) -> bool:
 
 async def test_live_weather_search_location(live_credentials):
     result = await srgssr_weather_search_location(WeatherSearchInput(query="Zürich"))
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.locations, "expected at least one match for Zürich"
     assert result.locations[0].id and result.locations[0].name
 
@@ -73,7 +89,7 @@ async def test_live_weather_current(live_credentials):
     result = await srgssr_weather_current(
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.current.temperature_c is not None
 
 
@@ -81,7 +97,7 @@ async def test_live_weather_forecast_24h(live_credentials):
     result = await srgssr_weather_forecast_24h(
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.hours, "expected hourly intervals"
     assert result.hours[0].timestamp
 
@@ -90,7 +106,7 @@ async def test_live_weather_forecast_7day(live_credentials):
     result = await srgssr_weather_forecast_7day(
         WeatherForecastInput(latitude=47.3769, longitude=8.5417),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.days, "expected daily intervals"
     assert result.days[0].date
 
@@ -104,7 +120,7 @@ async def test_live_video_get_shows(live_credentials):
     result = await srgssr_video_get_shows(
         VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="t", page_size=5),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.shows, "expected at least one show for SRF/'t'"
     assert result.shows[0].id and result.shows[0].title
 
@@ -113,7 +129,7 @@ async def test_live_video_get_livestreams(live_credentials):
     result = await srgssr_video_get_livestreams(
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.channels, "expected at least one SRF TV channel"
 
 
@@ -122,7 +138,7 @@ async def test_live_video_get_episodes(live_credentials):
     shows = await srgssr_video_get_shows(
         VideoShowsInput(business_unit=BusinessUnit.SRF, character_filter="t", page_size=5),
     )
-    assert not _is_error(shows), shows
+    assert not _is_error(shows), _describe(shows)
     if not shows.shows:
         pytest.skip("Live show list returned no shows; cannot test episodes")
     show_id = shows.shows[0].id
@@ -134,7 +150,7 @@ async def test_live_video_get_episodes(live_credentials):
             page_size=3,
         ),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +163,7 @@ async def test_live_audio_get_shows(live_credentials):
     channels = await srgssr_audio_get_livestreams(
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
-    assert not _is_error(channels), channels
+    assert not _is_error(channels), _describe(channels)
     assert channels.channels, "no SRF radio channels to list shows for"
 
     result = await srgssr_audio_get_shows(
@@ -158,14 +174,14 @@ async def test_live_audio_get_shows(live_credentials):
             page_size=5,
         ),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
 
 
 async def test_live_audio_get_livestreams(live_credentials):
     result = await srgssr_audio_get_livestreams(
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.channels, "expected at least one SRF radio channel"
 
 
@@ -173,7 +189,7 @@ async def test_live_audio_get_episodes(live_credentials):
     channels = await srgssr_audio_get_livestreams(
         VideoLivestreamsInput(business_unit=BusinessUnit.SRF),
     )
-    assert not _is_error(channels), channels
+    assert not _is_error(channels), _describe(channels)
     if not channels.channels:
         pytest.skip("No SRF radio channels; cannot test audio episodes")
     shows = await srgssr_audio_get_shows(
@@ -183,7 +199,7 @@ async def test_live_audio_get_episodes(live_credentials):
             page_size=5,
         ),
     )
-    assert not _is_error(shows), shows
+    assert not _is_error(shows), _describe(shows)
     if not shows.shows:
         pytest.skip("Live audio show list returned no shows; cannot test episodes")
     show_id = shows.shows[0].id
@@ -195,7 +211,7 @@ async def test_live_audio_get_episodes(live_credentials):
             page_size=3,
         ),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +230,7 @@ async def test_live_epg_get_programs(live_credentials):
             date=yesterday,
         ),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.programs, "expected a schedule for srf-1"
 
 
@@ -227,7 +243,7 @@ async def test_live_polis_get_votations(live_credentials):
     result = await srgssr_polis_get_votations(
         PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.votations, "expected votations between 2020 and 2024"
 
 
@@ -235,7 +251,7 @@ async def test_live_polis_get_elections(live_credentials):
     result = await srgssr_polis_get_elections(
         PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
     assert result.elections, "expected elections between 2020 and 2024"
 
 
@@ -244,7 +260,7 @@ async def test_live_polis_get_votation_results(live_credentials):
     votations = await srgssr_polis_get_votations(
         PolisListInput(year_from=2020, year_to=2024, page_size=5),
     )
-    assert not _is_error(votations), votations
+    assert not _is_error(votations), _describe(votations)
     if not votations.votations:
         pytest.skip("Live votations list returned empty; cannot test results")
     votation_id = votations.votations[0].id
@@ -252,7 +268,7 @@ async def test_live_polis_get_votation_results(live_credentials):
     result = await srgssr_polis_get_votation_results(
         PolisResultInput(votation_id=str(votation_id)),
     )
-    assert not _is_error(result), result
+    assert not _is_error(result), _describe(result)
 
 
 # ---------------------------------------------------------------------------
@@ -316,7 +332,7 @@ async def test_live_daily_briefing(live_credentials):
             longitude=8.5417,
         ),
     )
-    assert not isinstance(result, ToolErrorResponse), result
-    assert not isinstance(result.weather, ToolErrorResponse), result.weather
-    assert not isinstance(result.epg, ToolErrorResponse), result.epg
+    assert not isinstance(result, ToolErrorResponse), _describe(result)
+    assert not isinstance(result.weather, ToolErrorResponse), _describe(result.weather)
+    assert not isinstance(result.epg, ToolErrorResponse), _describe(result.epg)
     assert result.epg.programs, "expected a schedule for srf-1"
